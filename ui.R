@@ -1,33 +1,13 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
-library(shiny)
 
 # Define UI for application that draws a histogram
-fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-            plotOutput("distPlot")
-        )
-    )
-)
+bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
+                   title = "Paleotidal Visualization", 
+                   bslib::nav_panel("About", 
+                                    about_tab_ui("about_tab_content")), 
+                   bslib::nav_panel("Explore Data Visualizations"), 
+                   bslib::nav_spacer(), 
+                   bslib::nav_menu("Supporting Entities", 
+                                   align = "right", 
+                                   bslib::nav_item("Link 1"), 
+                                   bslib::nav_item("Link 1"))
+                   )

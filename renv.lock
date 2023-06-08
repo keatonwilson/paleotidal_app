@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.2.3",
+    "Version": "4.3.0",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -42,9 +42,14 @@
     },
     "bslib": {
       "Package": "bslib",
-      "Version": "0.4.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
+      "Version": "0.4.2.9000",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "rstudio",
+      "RemoteRepo": "bslib",
+      "RemoteRef": "main",
+      "RemoteSha": "ab5956fac68b23b62f1704858ec8dff31d5b5b55",
       "Requirements": [
         "R",
         "base64enc",
@@ -58,7 +63,7 @@
         "rlang",
         "sass"
       ],
-      "Hash": "a7fbf03946ad741129dc81098722fca1"
+      "Hash": "7cc8d253a02501f63dfc9ea295f96b11"
     },
     "cachem": {
       "Package": "cachem",
