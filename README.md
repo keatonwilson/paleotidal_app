@@ -26,6 +26,28 @@ git clone https://github.com/keatonwilson/paleotidal_app.git
 -   Package dependencies (and R) are handled via
     [renv](https://rstudio.github.io/renv/index.html). Run
     `renv::restore()` to get started after cloning.
+    
+### File structure
+
+`data/` 
+   - `raw/` contains data layers used by the app. Each file is numbered from 0-21, indicating thousands of years before present and contains a 431 by 313 matrix
+     - `alt/` contains 22 .txt files of  
+     - `amp/` contains 22 .txt files of tidal amplitude of M2 constituent
+     - `bss/` contains 42 .txt files of bed shear stress
+       - 22 files of the V component (positive eastward)
+       - 22 files of the U component (positive northward)
+     - `ice/` contains 22 .txt files of the ice mask
+     - `str/` contains 22 .txt files of stratification using M2 constituent
+     - `vel/` contains 22 .txt files of tidal velocity of M2 constituent
+     
+`R/`
+   - `mod_about_tab.R`
+   - `mod_card.R`
+   - `mod_example.R`
+   
+`server.R`
+
+`ui.R`
 
 ### Deployed App
 
