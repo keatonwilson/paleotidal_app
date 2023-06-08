@@ -24,8 +24,8 @@ about_tab_ui <- function(id) {
         heights_equal = "row",
         
         # re-uses modules like above
-        card_ui("awk", 
-                "awknowledgements",
+        card_ui("ack", 
+                "Acknowledgements",
                 lapply(
                   lorem::ipsum(paragraphs = 3, sentences = c(5, 5, 5)),
                   tags$p
