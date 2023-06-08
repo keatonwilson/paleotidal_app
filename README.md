@@ -1,9 +1,3 @@
----
-editor_options: 
-  markdown: 
-    wrap: 72
----
-
 # Paleotidal Visualization Shiny Application
 
 A tool built in shiny to explore ocean-based models going back 21k
