@@ -1,5 +1,6 @@
 # these module functions could have better documentation via roxygen2
 about_tab_ui <- function(id) {
+  ns <- NS(id)
 
 # Main Content for Tab ----------------------------------------------------
   shiny::tagList(
@@ -10,7 +11,7 @@ about_tab_ui <- function(id) {
       height = 300,
       
       # calls other module from mod_card.R
-      card_ui("how_to_use_card", 
+      card_ui(ns("how_to_use_card"), 
               "How to Use", 
               lapply(
                 lorem::ipsum(paragraphs = 3, sentences = c(5, 5, 5)),
@@ -24,13 +25,13 @@ about_tab_ui <- function(id) {
         heights_equal = "row",
         
         # re-uses modules like above
-        card_ui("ack", 
+        card_ui(ns("ack"), 
                 "Acknowledgements",
                 lapply(
                   lorem::ipsum(paragraphs = 3, sentences = c(5, 5, 5)),
                   tags$p
                 )), 
-        card_ui("fun_image", 
+        card_ui(ns("fun_image"), 
                 "", 
                 lapply(
                   lorem::ipsum(paragraphs = 3, sentences = c(5, 5, 5)),
