@@ -5,13 +5,13 @@ bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
                    bslib::nav_panel("About", 
                                     about_tab_ui("about_tab_content")), 
                    bslib::nav_panel("Explore Data Visualizations",
-                                    # map_ui("map") # module version, still not working
                                     bslib::layout_column_wrap(
-                                      width = 1/2, 
-                                      bslib::card(full_screen = TRUE,
-                                           bslib::card_header("Map"),
-                                           plotOutput("map"))
-                                    )
+                                        width = 1/2, map_ui("map"),
+                                        bslib::layout_column_wrap(
+                                          width = 1, 
+                                          heights_equal = "row",
+                                          input_ui("inputs")
+                                        ))
                    ), 
                    bslib::nav_spacer(), 
                    bslib::nav_menu("Supporting Entities", 
