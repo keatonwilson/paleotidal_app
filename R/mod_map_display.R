@@ -4,18 +4,19 @@ library(tidyverse)
 
 map_ui <- function(id) {
   shiny::tagList(
-    plotOutput(NS(id, "map"))
-    # card(full_screen = TRUE,
-    #      card_header("Map"),
-    #      plotOutput(NS(id, "map")))
+    bslib::card(full_screen = TRUE,
+                bslib::card_header("Map"),
+                plotOutput(NS(id, "map")))
     
   )
 }
 
 map_server <- function(id) {
-  moduleServer(id, function(input, output, session) {
+  moduleServer(id, function(input, output, session) { # input_server
     
     ice_matrix_long <- reactive({
+      # fn <- paste0("data/raw/ice/ice[", input_server$year, "].txt")
+      # ice <- read_tsv(fn, skip = 5, col_names = FALSE)
       ice <- read_tsv("data/raw/ice/ice[21].txt", skip = 5, col_names = FALSE)
       
       foo <- data.frame(ice) %>%
@@ -35,7 +36,7 @@ map_server <- function(id) {
       ggplot(aes(x = long, y = lat2)) +
         geom_raster(aes(fill = value)) +
         scale_fill_manual(values = c("non-ice" = "gray",
-                                     "ice" = 'blue')) +
+                                     "ice" = 'darkcyan')) +
         coord_fixed() +
         theme_bw() +
         theme(panel.grid = element_blank())
