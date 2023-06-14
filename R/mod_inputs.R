@@ -2,22 +2,25 @@
 
 input_ui <- function(id) {
   tagList(
-    navset_card_tab(
+    bslib::navset_card_tab(
       full_screen = TRUE,
       title = "Select inputs",
-      nav_panel("Time",
-                card_title("Years BP"),
+      bslib::nav_panel("Time",
+                bslib::card_title("Years BP"),
                 sliderInput(NS(id, "year"), "Select", 
                             min = 0, max = 21,
                             value = 0)),
-      nav_panel("View",
-                card_title("Stratification"))
+      bslib::nav_panel("View",
+                bslib::card_title("Stratification"))
     )
   )
 }
 
 input_server <- function(id) {
   moduleServer(id, function(input, output, session){
-    return(input)
+    reactive({
+      input$year
+    })
+
   })
 }
