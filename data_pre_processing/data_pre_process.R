@@ -88,7 +88,9 @@ amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
 rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
 mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
-bss
+
+#TODO bss is different - there are multiple designations - need to build this 
+# into function logic
 
 
 
