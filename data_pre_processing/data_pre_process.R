@@ -37,6 +37,23 @@ leaflet() |>
 
 # Combining All Years -----------------------------------------------------
 
+
+#' Combine multiple data files for separate years
+#'
+#' This function takes a directory path and a datatype label and combines all of
+#' the files within the directory into a single dataframe that is tidy, and 
+#' includes columns designating the year (0-21) and datatype. These dataframes 
+#' are typically large (~11.8 million rows) and may need to be modified/saved 
+#' in a different file format for quick access in the app. 
+#' 
+#' @param data_dir character string denoting the directory containing the files
+#' to be combined
+#' @param datatype character string denoting the data type being combined 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 combine_all_years = function(data_dir, 
                              datatype
                              ) {
@@ -63,8 +80,15 @@ combine_all_years = function(data_dir,
 
 }
 
-amp_test = combine_all_years("./data/raw_lat_lon/ampM2/", 
-                  "amplitude")
+
+
+## Combining Data ----------------------------------------------------------
+
+amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
+rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
+mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
+water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
+bss
 
 
 
