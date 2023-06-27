@@ -1,7 +1,7 @@
 # Data Pre-Processing
 # Keaton Wilson
 # keatonwilson@me.com 
-# 2023-06-25
+# 2023-06-27
 
 
 # Packages ----------------------------------------------------------------
@@ -60,23 +60,65 @@ combine_all_years = function(data_dir,
   # files to read in
   files_to_read = list.files(data_dir, full.names = TRUE)
   
-  purrr::map(files_to_read, function(file) {
-    # extracting year
-    year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
-      as.numeric()
+  # bss requires special processing
+  is_bss = all(stringr::str_detect(files_to_read, "bss"))
+  
+  if (!is_bss) {
+    purrr::map(files_to_read, function(file) {
+      # extracting year
+      year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
+        as.numeric()
+      
+      # reading file and appending 
+      data = readr::read_tsv(file, 
+                             col_names = c("x", "y", "value"), 
+                             show_col_types = FALSE, 
+                             progress = FALSE) |> 
+        dplyr::mutate(year = year, 
+                      datatype = datatype)
+      
+      # return
+      return(data)
+      
+    }, .progress = list(name = "Spatial Data Pre-Processing")) |> 
+      dplyr::bind_rows()
     
-    # reading file and appending 
-    data = readr::read_tsv(file, 
-                           col_names = c("x", "y", "value"), 
-                           show_col_types = FALSE) |> 
-      dplyr::mutate(year = year, 
-                    datatype = datatype)
+  } else {
     
-    # return
-    return(data)
+    # group split
+    files_df = tibble::tibble(filename = files_to_read) |> 
+      dplyr::mutate(type = dplyr::case_when(stringr::str_detect(filename, "_v_") ~ "v", 
+                                            stringr::str_detect(filename, "_u_") ~ "u", 
+                                            stringr::str_detect(filename, "_uv_") ~ "uv")) |> 
+      group_split(type)
     
-  }) |> 
-    dplyr::bind_rows()
+      purrr::map(files_df, function(file_group) {
+        purrr::map2(file_group$filename, 
+                    file_group$type, function(file, type) {
+          # extracting year
+          year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
+            as.numeric()
+          
+          # reading file and appending 
+          data = readr::read_tsv(file, 
+                                 col_names = c("x", "y", "value"), 
+                                 show_col_types = FALSE, 
+                                 progress = FALSE) |> 
+            dplyr::mutate(year = year, 
+                          datatype = datatype, 
+                          type = type)
+          
+          # return
+          return(data)
+          
+        }) |> 
+          dplyr::bind_rows()
+      }, .progress = list(name = "Spatial Data Pre-Processing")) |>
+        dplyr::bind_rows()
+    
+  }
+  
+
 
 }
 
@@ -84,13 +126,17 @@ combine_all_years = function(data_dir,
 
 ## Combining Data ----------------------------------------------------------
 
+# creating objects
 amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
 rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
 mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
+bss = combine_all_years("./data/raw_lat_lon/bss/", "bss")
 
-#TODO bss is different - there are multiple designations - need to build this 
-# into function logic
-
-
+# writing to rds files
+arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
+arrow::write_feather(rsl, "./data/processed_data/rsl.feather")
+arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
+arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
+arrow::write_feather(bss, "./data/processed_data/bss.feather")
 
