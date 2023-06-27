@@ -9,7 +9,7 @@ bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
                                       col_widths = c(7, 5),
                                       bslib::layout_columns(
                                         col_widths = 12,
-                                        row_heights = c(1,5),
+                                        row_heights = c(2,5),
                                         bslib::card(
                                           bslib::card_title("Overview"),
                                           data_summary_ui("data_summary")
