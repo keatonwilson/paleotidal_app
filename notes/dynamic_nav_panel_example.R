@@ -22,7 +22,8 @@ if (can_browse()) {
   ui <- page_fluid(
     actionButton("add", "Add 'Dynamic' tab"),
     actionButton("remove", "Remove 'Foo' tab"),
-    checkboxInput("hide", "Hide Bar tab"),
+    selectInput("hide", "Hide Bar tab",
+                choices = c("hide", "don't hide", "I don't know")),
     navset_tab(
       id = "tabs",
       nav_panel("Hello", "hello"),
@@ -44,7 +45,7 @@ if (can_browse()) {
     })
     observe({
       print(input$hide)
-      if(input$hide == TRUE) {
+      if(input$hide == "hide") {
       nav_hide("tabs", target = "Bar")
       } else{
         nav_show("tabs", target = "Bar")
