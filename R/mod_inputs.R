@@ -30,7 +30,7 @@ input_ui <- function(id) {
                                   width = "100%",
                                   animate = animationOptions(interval = 500,
                                                              loop = FALSE)),
-    shinyjs::hidden(
+    # shinyjs::hidden(
       div(id = "strat_card",
           bslib::card(bslib::card_title("Stratification"),
                       bslib::layout_column_wrap(
@@ -56,7 +56,7 @@ input_ui <- function(id) {
                                     checkboxInput(NS(id, "gradient"), "Show gradient",
                                                   value = FALSE))))
       )
-    )
+    # )
   )
                             # )
                 # )
@@ -107,9 +107,9 @@ input_server <- function(id) {
     # Set Custom card depending on data product
     observe({
       if(input$dataproduct == "Stratification") {
-        shinyjs::showElement(id = "strat_card", anim = TRUE)
+        shinyjs::showElement(id = "boundaryrange", anim = TRUE)
       } else {
-        shinyjs::hideElement(id = "strat_card", anim = TRUE)
+        shinyjs::hideElement(id = "boundaryrange", anim = TRUE)
       }
     })
     
