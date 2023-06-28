@@ -10,7 +10,13 @@ bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
                                         bslib::layout_column_wrap(
                                           width = 1, 
                                           heights_equal = "row",
-                                          input_ui("inputs")
+                                          input_ui("inputs"),
+                                          card_ui(ns("timeseries_fig"), 
+                                                  "", 
+                                                  lapply(
+                                                    lorem::ipsum(paragraphs = 1, sentences = c(4)),
+                                                    tags$p
+                                                  ))
                                         ))
                    ), 
                    bslib::nav_spacer(), 
