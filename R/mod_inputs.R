@@ -55,9 +55,10 @@ input_ui <- function(id) {
                                                                     min = 0.01, max = 1,
                                                                     step = 0.01)
                                            ))
-                                         )
+                             )
                          )
                        ),
+
                        bslib::card(bslib::card_title("Peak Bed Stress"),
                                    bslib::layout_column_wrap(
                                      width = 1/2,
@@ -104,10 +105,13 @@ input_server <- function(id) {
     })
     
     # WIP Set Custom card depending on data product
-    observeEvent(input$dataproduct, {
-      # is_strat <- ifelse(input$dataproduct == "Stratification", TRUE, FALSE)
-      shinyjs::toggle(id = "strat_card", 
-                      condition = input$dataproduct == "Stratification")
+    observe({
+      if(input$dataproduct == "Stratification") {
+        shinyjs::show(id = "yearBP", anim = TRUE)
+      } else {
+        shinyjs::hide(id = "yearBP", anim = TRUE)
+      }
+      
     })
     
     # Grays out frontvalue and frontradius UIs if front == FALSE
