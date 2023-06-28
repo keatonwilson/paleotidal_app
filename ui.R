@@ -20,10 +20,8 @@ bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
                                       ),
                                       
                                       # dummy input card
-                                      bslib::card(bslib::card_title("User inputs"), 
-                                                  id = "ui_card",
-                                                  full_screen = TRUE,
-                                                  input_ui("inputs")
+                                      bslib::card(
+                                        input_ui("inputs")
                                       )
                                     )
                                     ), 

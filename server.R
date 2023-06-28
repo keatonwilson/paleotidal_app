@@ -13,7 +13,7 @@ function(input, output, session) {
   # need to wrap in a reactive context (observe), and also call the object with 
   # the ()
   observe({
-    print(test_input())
+    print(test_input[["gradient"]]())
   })
   
 }
