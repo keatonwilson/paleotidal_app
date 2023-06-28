@@ -21,7 +21,7 @@ bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
                                       
                                       # dummy input card
                                       bslib::card(
-                                        
+                                        input_ui("inputs")
                                       )
                                     )
                                     ), 
