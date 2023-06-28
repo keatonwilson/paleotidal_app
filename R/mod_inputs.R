@@ -32,8 +32,8 @@ input_ui <- function(id) {
                               selected = 0,
                               width = '60%')))),
       bslib::nav_panel("Custom",
-                       # shinyjs::hidden(
-                         # div(id = "strat_card",
+                       shinyjs::hidden(
+                         div(id = "strat_card",
                              bslib::card(bslib::card_title("Stratification"),
                                          bslib::layout_column_wrap(
                                            width = 1/2,
@@ -55,8 +55,8 @@ input_ui <- function(id) {
                                                                     min = 0.01, max = 1,
                                                                     step = 0.01)
                                            ))
-                                         # )
-                         # )
+                                         )
+                         )
                        ),
                        bslib::card(bslib::card_title("Peak Bed Stress"),
                                    bslib::layout_column_wrap(
@@ -96,14 +96,14 @@ input_server <- function(id) {
                            condition = input$coast)
     })
     
-    # Attempt to remove Custom tab for two Tidal dataproducts
+    # WIP remove Custom tab for two Tidal dataproducts
     observeEvent(input$dataproduct, {
       if(input$dataproduct %in% c("Tidal Amplitude", "Tidal Current")) {
         bslib::nav_remove(id = "tabs", target = "Custom")
       }
     })
     
-    # Set Custom card depending on data product
+    # WIP Set Custom card depending on data product
     observeEvent(input$dataproduct, {
       # is_strat <- ifelse(input$dataproduct == "Stratification", TRUE, FALSE)
       shinyjs::toggle(id = "strat_card", 
@@ -118,7 +118,7 @@ input_server <- function(id) {
                            condition = input$front)
     })
     
-    # Updates frontvalues range based on boundaryvalues
+    # WIP Updates frontvalues range based on boundaryvalues
     output$dyn_frontvalue <- renderUI({
       req(input$boundaryrange) # Not sure if this is necessary
       
