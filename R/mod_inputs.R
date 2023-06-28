@@ -9,29 +9,28 @@ input_ui <- function(id) {
       title = "User inputs",
       bslib::nav_panel("General",
                 # bslib::card_title("Time"),
-                bslib::card(bslib::layout_column_wrap(
-                  width = 1/2,
-                  selectInput(NS(id, "dataproduct"), "Select data product:",
-                              choices = c("Tidal Amplitude",
-                                          "Stratification",
-                                          "Peak Bed Stress",
-                                          "Tidal Current"),
-                              selected = "Tidal Amplitude"),
-                  br(),
-                  checkboxInput(NS(id, "ghostcoast"), "Show coastline?",
-                                value = TRUE,
-                                width = '30%'),
-                  selectInput(NS(id, "coastyear"), "Select coastline  year:",
-                              choices = 0:21,
-                              selected = 0,
-                              width = '70%'))),
-                shinyWidgets::sliderTextInput(NS(id, "animateyear"), "Animate through time:",
+                selectInput(NS(id, "dataproduct"), "Select data product:",
+                            choices = c("Tidal Amplitude",
+                                        "Stratification",
+                                        "Peak Bed Stress",
+                                        "Tidal Current"),
+                            selected = "Tidal Amplitude"),
+                shinyWidgets::sliderTextInput(NS(id, "yearBP"), "Years BP(*1000):",
                             choices = 21:0,
                             selected = 21, 
                             grid = TRUE,
                             width = "100%",
                             animate = animationOptions(interval = 500,
-                                                       loop = FALSE))),
+                                                       loop = FALSE)),
+                bslib::card(bslib::layout_column_wrap(
+                  width = 1/2,
+                  checkboxInput(NS(id, "coast"), "Show coastline?",
+                                value = TRUE,
+                                width = '40%'),
+                  selectInput(NS(id, "coastyear"), "Select coastline  year:",
+                              choices = 0:21,
+                              selected = 0,
+                              width = '60%')))),
       bslib::nav_panel("Custom",
                        shinyjs::hidden(
                          div(id = "strat_card",
@@ -46,33 +45,39 @@ input_ui <- function(id) {
                                                        checkboxInput(NS(id, "contrast"), "Show contrast",
                                                                      value = FALSE)),
                                            bslib::card(bslib::card_title("Front values"),
+                                                       checkboxInput(NS(id, "front"), "Show front",
+                                                                     value = TRUE),
+                                                       checkboxInput(NS(id, "gradient"), "Show gradient",
+                                                                     value = FALSE),
                                                        numericInput(NS(id, "frontvalue"), "Set front value:",
                                                                     value = 2.1,
                                                                     min = 1.9, max = 2.9, # dynamic, updated with range from boundary values
                                                                     step = 0.1),
-                                                       numericInput(NS(id, "radius"), "Set radius of front:",
+                                                       numericInput(NS(id, "frontradius"), "Set front radius:",
                                                                     value = 0.08,
                                                                     min = 0.01, max = 1,
-                                                                    step = 0.01),
-                                                       checkboxInput(NS(id, "front"), "Show front",
-                                                                     value = TRUE),
-                                                       checkboxInput(NS(id, "gradient"), "Show gradient",
-                                                                     value = FALSE))))
-                         )),
-                       bslib::card(bslib::card_title("Peak Stress Vectors"),
+                                                                    step = 0.01)
+                                           )))
+                         )
+                       ),
+                       bslib::card(bslib::card_title("Peak Bed Stress"),
                                    bslib::layout_column_wrap(
                                      width = 1/2,
                                      bslib::card(bslib::card_title("Vector Spacing"),
-                                                 numericInput(NS(id, "X"), "X",
-                                                              value = 5,
-                                                              min = 1, max = 50,
-                                                              step = 1),
-                                                 numericInput(NS(id, "Y"), "Y",
-                                                              value = 3,
-                                                              min = 1, max = 50,
-                                                              step = 1)),
+                                                 bslib::layout_column_wrap(
+                                                   width = 1/2,
+                                                   numericInput(NS(id, "X"), "X",
+                                                                value = 5,
+                                                                min = 1, max = 50,
+                                                                step = 1,
+                                                                width  = '40%'),
+                                                   numericInput(NS(id, "Y"), "Y",
+                                                                value = 3,
+                                                                min = 1, max = 50,
+                                                                step = 1,
+                                                                width  = '40%'))),
                                      bslib::card(bslib::card_title("Vector appearance"),
-                                                 numericInput(NS(id, "minvec"), "Minimum vector magnitude (N/m2):",
+                                                 numericInput(NS(id, "minvec"), "Min. vector magnitude (N/m2):",
                                                               value = 1.0,
                                                               min = 0.0, max = 30.0,
                                                               step = 0.01),
@@ -87,10 +92,10 @@ input_ui <- function(id) {
 input_server <- function(id) {
   moduleServer(id, function(input, output, session){
     
-    # Grays out coastyear UI if ghostcoast == FALSE
-    observeEvent(input$ghostcoast, {
+    # Grays out coastyear UI if coast == FALSE
+    observeEvent(input$coast, {
       shinyjs::toggleState(id = "coastyear", 
-                           condition = input$ghostcoast)
+                           condition = input$coast)
     })
     
     # Attempt to remove Custom tab for two Tidal dataproducts
@@ -104,9 +109,16 @@ input_server <- function(id) {
     observeEvent(input$dataproduct, {
       # is_strat <- ifelse(input$dataproduct == "Stratification", TRUE, FALSE)
       if(input$dataproduct == "Stratification") {
-        shinyjs::show(id = "strat_card", 
-                      anim = TRUE)
+        shinyjs::toggleElement(id = "strat_card")
       }
+    })
+    
+    # Grays out frontvalue and frontradius UIs if front == FALSE
+    observeEvent(input$front, {
+      shinyjs::toggleState(id = "frontvalue", 
+                           condition = input$front)
+      shinyjs::toggleState(id = "frontradius", 
+                           condition = input$front)
     })
     
     # General inputs (applicable to all datasets)
@@ -124,13 +136,10 @@ input_server <- function(id) {
     
 
     reactive({
-      input$year
+      input$yearBP
     })
     
-    reactive({
-      input$animateyear
-    })
-    
+
     # Stratification inputs (applicable to Stratification dataset)
     reactive({
       input$boundaryrange
@@ -145,7 +154,7 @@ input_server <- function(id) {
     })
     
     reactive({
-      input$radius
+      input$frontradius
     })
     
     reactive({
