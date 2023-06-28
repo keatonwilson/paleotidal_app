@@ -32,8 +32,8 @@ input_ui <- function(id) {
                               selected = 0,
                               width = '60%')))),
       bslib::nav_panel("Custom",
-                       shinyjs::hidden(
-                         div(id = "strat_card",
+                       # shinyjs::hidden(
+                         # div(id = "strat_card",
                              bslib::card(bslib::card_title("Stratification"),
                                          bslib::layout_column_wrap(
                                            width = 1/2,
@@ -49,16 +49,14 @@ input_ui <- function(id) {
                                                                      value = TRUE),
                                                        checkboxInput(NS(id, "gradient"), "Show gradient",
                                                                      value = FALSE),
-                                                       numericInput(NS(id, "frontvalue"), "Set front value:",
-                                                                    value = 2.1,
-                                                                    min = 1.9, max = 2.9, # dynamic, updated with range from boundary values
-                                                                    step = 0.1),
+                                                       uiOutput("dyn_frontvalue"),
                                                        numericInput(NS(id, "frontradius"), "Set front radius:",
                                                                     value = 0.08,
                                                                     min = 0.01, max = 1,
                                                                     step = 0.01)
-                                           )))
-                         )
+                                           ))
+                                         # )
+                         # )
                        ),
                        bslib::card(bslib::card_title("Peak Bed Stress"),
                                    bslib::layout_column_wrap(
@@ -108,9 +106,8 @@ input_server <- function(id) {
     # Set Custom card depending on data product
     observeEvent(input$dataproduct, {
       # is_strat <- ifelse(input$dataproduct == "Stratification", TRUE, FALSE)
-      if(input$dataproduct == "Stratification") {
-        shinyjs::toggleElement(id = "strat_card")
-      }
+      shinyjs::toggle(id = "strat_card", 
+                      condition = input$dataproduct == "Stratification")
     })
     
     # Grays out frontvalue and frontradius UIs if front == FALSE
@@ -121,67 +118,82 @@ input_server <- function(id) {
                            condition = input$front)
     })
     
+    # Updates frontvalues range based on boundaryvalues
+    output$dyn_frontvalue <- renderUI({
+      req(input$boundaryrange) # Not sure if this is necessary
+      
+      numericInput(NS(id, "frontvalue"), "Set front value:",
+                   value = 2.1,
+                   min = input$boundaryrange[1], max = input$boundaryrange[2], 
+                   step = 0.1)
+    })
+    
     # General inputs (applicable to all datasets)
-    reactive({
+    r1 <- reactive({
       input$dataproduct
     })
     
-    reactive({
-      input$ghostcoast
+    r2 <- reactive({
+      input$yearBP
     })
     
-    reactive({
+    r3 <- reactive({
+      input$coast
+    })
+    
+    r4 <- reactive({
       input$coastyear
     })
     
 
-    reactive({
-      input$yearBP
-    })
-    
-
     # Stratification inputs (applicable to Stratification dataset)
-    reactive({
+    r5 <- reactive({
       input$boundaryrange
     })
     
-    reactive({
+    r6 <- reactive({
       input$contrast
     })
     
-    reactive({
-      input$frontvalue
-    })
-    
-    reactive({
-      input$frontradius
-    })
-    
-    reactive({
+    r7 <- reactive({
       input$front
     })
     
-    reactive({
+    r8 <- reactive({
       input$gradient
     })
     
+    r9 <- reactive({
+      input$frontvalue
+    })
+    
+    r10 <- reactive({
+      input$frontradius
+    })
+    
+
     # Peak Stress Vectors inputs (applicable to Peak Bed Stress dataset)
-    reactive({
+    r11 <- reactive({
       input$X
     })
     
-    reactive({
+    r12 <- reactive({
       input$Y
     })
     
-    reactive({
+    r13 <- reactive({
       input$minvec
     })
     
-    reactive({
+    r14 <- reactive({
       input$arrow
     })
     
+    # Make named list of reactive objects and return
+    rlist <- list(dataproduct = r1, yearBP = r2, coast = r3, coastyear = r4, 
+                  boundaryrange = r5, contrast = r6, front = r7, gradient = r8, frontvalue = r9, frontradius = r10,
+                  X = r11, Y = r12, minvec = r13, arrow = r14)
+    return(rlist)
 
   })
 }
