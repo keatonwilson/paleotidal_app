@@ -4,11 +4,11 @@ card_ui <- function(id,
                   header, 
                   content) {
   
-  bslib::card(
-  bslib::card_header(header),
-  content
+    bslib::card(
+      bslib::card_header(header),
+      content
+  )
 
-)
   
 }
 
