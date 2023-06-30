@@ -1,6 +1,8 @@
 
 # Define UI for application that draws a histogram
-bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
+bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "solar",
+                                           # base_font = bslib::font_google("Cormorant Garamond"),
+                                           base_font = bslib::font_google("Yanone Kaffeesatz")),
                    title = "Paleotidal Visualization", 
                    bslib::nav_panel("About", 
                                     about_tab_ui("about_tab_content")), 
