@@ -59,8 +59,7 @@ input_ui <- function(id) {
                          )
                        # )
       ,
-                       
-                       bslib::card(bslib::card_title("Peak Bed Stress"),
+                   bslib::card(bslib::card_title("Peak Bed Stress"),
                                    bslib::layout_column_wrap(
                                      width = 1/2,
                                      bslib::card(bslib::card_title("Vector Spacing"),
@@ -136,9 +135,7 @@ input_server <- function(id) {
         shinyjs::hide(id = "boundaryrange", anim = TRUE)
       }
       
-    })
-    
-    
+    })    
     
     # General inputs (applicable to all datasets)
     r1 <- reactive({
@@ -157,7 +154,7 @@ input_server <- function(id) {
       input$coastyear
     })
     
-    
+
     # Stratification inputs (applicable to Stratification dataset)
     r5 <- reactive({
       input$boundaryrange
@@ -183,6 +180,7 @@ input_server <- function(id) {
       input$gradient
     })
     
+
     # Peak Stress Vectors inputs (applicable to Peak Bed Stress dataset)
     r11 <- reactive({
       input$X
