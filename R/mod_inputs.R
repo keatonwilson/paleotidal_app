@@ -3,18 +3,18 @@
 input_ui <- function(id) {
   tagList(
     shinyjs::useShinyjs(),
+    selectInput(NS(id, "dataproduct"), label = NULL,
+                choices = c("Tidal Amplitude",
+                            "Stratification",
+                            "Peak Bed Stress",
+                            "Tidal Current"),
+                selected = "Tidal Amplitude"),
     bslib::navset_card_tab(
       id = "tabs",
-      full_screen = TRUE,
-      title = "User inputs",
+      full_screen = FALSE,
+      # title = "User inputs",
       bslib::nav_panel("General",
                        # bslib::card_title("Time"),
-                       selectInput(NS(id, "dataproduct"), "Select data product:",
-                                   choices = c("Tidal Amplitude",
-                                               "Stratification",
-                                               "Peak Bed Stress",
-                                               "Tidal Current"),
-                                   selected = "Tidal Amplitude"),
                        shinyWidgets::sliderTextInput(NS(id, "yearBP"), "Years BP(*1000):",
                                                      choices = 21:0,
                                                      selected = 21, 
@@ -22,7 +22,7 @@ input_ui <- function(id) {
                                                      width = "100%",
                                                      animate = animationOptions(interval = 500,
                                                                                 loop = FALSE)),
-                       bslib::card(bslib::layout_column_wrap(
+                       bslib::layout_column_wrap(
                          width = 1/2,
                          checkboxInput(NS(id, "coast"), "Show coastline?",
                                        value = TRUE,
@@ -30,7 +30,7 @@ input_ui <- function(id) {
                          selectInput(NS(id, "coastyear"), "Select coastline  year:",
                                      choices = 0:21,
                                      selected = 0,
-                                     width = '60%')))),
+                                     width = '60%'))),
       bslib::nav_panel("Custom",
                        # shinyjs::hidden(
                          div(id = "strat_card",
