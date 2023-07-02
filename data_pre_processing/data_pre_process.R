@@ -195,12 +195,11 @@ mask_water_raster = make_raster_list(mask_water, year)
 water_depth_raster = make_raster_list(water_depth, year)
 bss_raster = make_raster_list(bss, year, type)
 
+# writing raster stacks to rds files
+readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
+readr::write_rds(rsl_raster, "./data/processed_data/rsl_raster.rds")
+readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds")
+readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
+readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
 
-
-# writing to rds files
-arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
-arrow::write_feather(rsl, "./data/processed_data/rsl.feather")
-arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
-arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
-arrow::write_feather(bss, "./data/processed_data/bss.feather")
 
