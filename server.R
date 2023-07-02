@@ -6,8 +6,7 @@ function(input, output, session) {
  # callModule(map_server, "map", years)
   
   # needs to be moved out at some point
-  data = arrow::read_feather("./data/processed_data/amp_data.feather")
-  map_server("map", data = data)
+  # map_server("map", data = data)
   
   # this is reactive
   test_input = input_server("inputs")
