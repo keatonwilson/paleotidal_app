@@ -133,10 +133,73 @@ mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss")
 
-# writing to rds files
-arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
-arrow::write_feather(rsl, "./data/processed_data/rsl.feather")
-arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
-arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
-arrow::write_feather(bss, "./data/processed_data/bss.feather")
+
+# Make a list of raster objects by year -----------------------------------
+
+make_raster_list = function(data, ...) {
+  
+  # split data by year (or more) vars
+  data_split = data |> 
+    dplyr::group_by(...) |> 
+    dplyr::group_split()
+  
+  # setting names
+  names = data_split |> 
+    purrr::map(function(list_item) {
+
+      one_row = list_item |> 
+        dplyr::select(..., datatype) |> 
+        dplyr::distinct() |> 
+        dplyr::slice(1) |> 
+        as.character()
+      
+      out = paste(one_row, collapse = "_")
+      return(out)
+      
+    })
+  
+  setNames(data_split, names)
+  
+  # make raster out of each list-component
+  raster_list = data_split |>
+    purrr::map(function(list_item) {
+
+      # getting dims for raster transformation
+      ncol = length(unique(list_item$x))
+      nrow = length(unique(list_item$y))
+
+      extent = extent(list_item[,(1:2)])
+      r = raster(extent, ncol = ncol, nrow = nrow)
+
+      # rasterize
+      r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=mean)
+      crs(r_new) = "+proj=longlat +datum=WGS84"
+
+      return(r_new)
+    }, .progress = list(name = "Building Rasters"))
+  
+  # turn into a stack
+  stack_out = raster::stack(raster_list)
+  
+  names(stack_out) = names
+  
+  return(stack_out)
+  
+}
+
+
+# generating raster stacks for each data type
+amp_raster = make_raster_list(amp_data, year)
+rsl_raster = make_raster_list(rsl, year)
+mask_water_raster = make_raster_list(mask_water, year)
+water_depth_raster = make_raster_list(water_depth, year)
+bss_raster = make_raster_list(bss, year, type)
+
+# writing raster stacks to rds files
+readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
+readr::write_rds(rsl_raster, "./data/processed_data/rsl_raster.rds")
+readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds")
+readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
+readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
+
 

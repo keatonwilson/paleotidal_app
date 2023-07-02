@@ -2,10 +2,9 @@
 # Define server logic required to draw a histogram
 function(input, output, session) {
 
- # years <- callModule(input_server, "inputs")
- # callModule(map_server, "map", years)
-  
-  map_server("map")
+  # hard code amplitude for now because it's easy
+  map_server("map", data = amp_raster)
+
   
   # this is reactive
   test_input = input_server("inputs")

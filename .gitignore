@@ -52,3 +52,5 @@ po/*~
 rsconnect/
 
 .DS_Store
+
+*.icloud
