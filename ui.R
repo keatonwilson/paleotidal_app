@@ -2,6 +2,7 @@
 # Define UI for application that draws a histogram
 bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
                    title = "Paleotidal Visualization", 
+                   shinyjs::useShinyjs(),
                    bslib::nav_panel("About", 
                                     about_tab_ui("about_tab_content")), 
                    bslib::nav_panel("Explore Data Visualizations", 
@@ -20,8 +21,16 @@ bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
                                       ),
                                       
                                       # dummy input card
-                                      bslib::card(
-                                        input_ui("inputs")
+                                      bslib::layout_columns(
+                                        col_widths = 12,
+                                        row_heights = c(5,2),
+                                        bslib::card(
+                                          bslib::card_title("Inputs"),
+                                          input_ui("inputs")
+                                        ),
+                                        bslib::card(
+                                          "Placeholder Text"
+                                        )
                                       )
                                     )
                                     ), 
