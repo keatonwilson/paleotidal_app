@@ -10,27 +10,19 @@ map_server <- function(id,
                        data, 
                        time_step) {
   moduleServer(id, function(input, output, session) {
-    
-    # render a single datatype for now
+        # render a single datatype for now
     datatype = "amplitude"
-    time_step = "00"
+    time_step = "0"
     
-    to_map = data |> 
-      dplyr::filter(year == as.numeric(time_step))
+    to_map = names(data)[stringr::str_detect(names(data), glue::glue("^X{time_step}"))]
     
-    extent = raster::extent(-15, 11, 45, 65.0125)
-    ncol = 626
-    nrow = 861
+    # filter by time_step
+    data_to_map = data[[to_map]]
     
-    r = raster(extent, ncol = ncol, nrow = nrow)
-    
-    # rasterize
-    r_to_map = rasterize(to_map[,1:2], r, to_map[,3], fun=mean)
-    crs(r_to_map) = "+proj=longlat +datum=WGS84"
     
     output$map = leaflet::renderLeaflet({
       leaflet::leaflet() |> 
-        leaflet::addRasterImage(r_to_map)
+        leaflet::addRasterImage(data_to_map)
     })
   })
 }
