@@ -15,7 +15,7 @@ bslib::page_navbar(theme = bslib::bs_theme(bootswatch = "yeti"),
                                           data_summary_ui("data_summary")
                                         ),
                                         bslib::card(
-                                          "Placeholder Text"
+                                          map_ui("map")
                                         )
                                       ),
                                       

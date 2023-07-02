@@ -5,7 +5,9 @@ function(input, output, session) {
  # years <- callModule(input_server, "inputs")
  # callModule(map_server, "map", years)
   
-  map_server("map")
+  # needs to be moved out at some point
+  data = arrow::read_feather("./data/processed_data/amp_data.feather")
+  map_server("map", data = data)
   
   # this is reactive
   test_input = input_server("inputs")
