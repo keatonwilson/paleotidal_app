@@ -3,38 +3,38 @@
 input_ui <- function(id) {
   tagList(
     shinyjs::useShinyjs(),
+    selectInput(NS(id, "dataproduct"), label = NULL,
+                choices = c("Tidal Amplitude",
+                            "Stratification",
+                            "Peak Bed Stress",
+                            "Tidal Current"),
+                selected = "Tidal Amplitude"),
     bslib::navset_card_tab(
       id = "tabs",
-      full_screen = TRUE,
-      title = "User inputs",
+      full_screen = FALSE,
+      # title = "User inputs",
       bslib::nav_panel("General",
-                # bslib::card_title("Time"),
-                selectInput(NS(id, "dataproduct"), "Select data product:",
-                            choices = c("Tidal Amplitude",
-                                        "Stratification",
-                                        "Peak Bed Stress",
-                                        "Tidal Current"),
-                            selected = "Tidal Amplitude"),
-                shinyWidgets::sliderTextInput(NS(id, "yearBP"), "Years BP(*1000):",
-                            choices = 21:0,
-                            selected = 21, 
-                            grid = TRUE,
-                            width = "100%",
-                            animate = animationOptions(interval = 500,
-                                                       loop = FALSE)),
-                bslib::card(bslib::layout_column_wrap(
-                  width = 1/2,
-                  checkboxInput(NS(id, "coast"), "Show coastline?",
-                                value = TRUE,
-                                width = '40%'),
-                  selectInput(NS(id, "coastyear"), "Select coastline  year:",
-                              choices = 0:21,
-                              selected = 0,
-                              width = '60%')))),
+                       # bslib::card_title("Time"),
+                       shinyWidgets::sliderTextInput(NS(id, "yearBP"), "Years BP(*1000):",
+                                                     choices = 21:0,
+                                                     selected = 21, 
+                                                     grid = TRUE,
+                                                     width = "100%",
+                                                     animate = animationOptions(interval = 500,
+                                                                                loop = FALSE)),
+                       bslib::layout_column_wrap(
+                         width = 1/2,
+                         checkboxInput(NS(id, "coast"), "Show coastline?",
+                                       value = TRUE,
+                                       width = '40%'),
+                         selectInput(NS(id, "coastyear"), "Select coastline  year:",
+                                     choices = 0:21,
+                                     selected = 0,
+                                     width = '60%'))),
       bslib::nav_panel("Custom",
-                       shinyjs::hidden(
+                       # shinyjs::hidden(
                          div(id = "strat_card",
-                             bslib::card(bslib::card_title("Stratification"),
+                             bslib::nav_panel(bslib::card_title("Stratification"),
                                          bslib::layout_column_wrap(
                                            width = 1/2,
                                            bslib::card(bslib::card_title("Boundary values"),
@@ -49,7 +49,7 @@ input_ui <- function(id) {
                                                                      value = TRUE),
                                                        checkboxInput(NS(id, "gradient"), "Show gradient",
                                                                      value = FALSE),
-                                                       uiOutput("dyn_frontvalue"),
+                                                       uiOutput(NS(id, "dyn_frontvalue")),
                                                        numericInput(NS(id, "frontradius"), "Set front radius:",
                                                                     value = 0.08,
                                                                     min = 0.01, max = 1,
@@ -57,9 +57,9 @@ input_ui <- function(id) {
                                            ))
                              )
                          )
-                       ),
-
-                       bslib::card(bslib::card_title("Peak Bed Stress"),
+                       # )
+      ,
+                   bslib::card(bslib::card_title("Peak Bed Stress"),
                                    bslib::layout_column_wrap(
                                      width = 1/2,
                                      bslib::card(bslib::card_title("Vector Spacing"),
@@ -69,12 +69,12 @@ input_ui <- function(id) {
                                                                 value = 5,
                                                                 min = 1, max = 50,
                                                                 step = 1,
-                                                                width  = '40%'),
+                                                                width  = '50%'),
                                                    numericInput(NS(id, "Y"), "Y",
                                                                 value = 3,
                                                                 min = 1, max = 50,
                                                                 step = 1,
-                                                                width  = '40%'))),
+                                                                width  = '50%'))),
                                      bslib::card(bslib::card_title("Vector appearance"),
                                                  numericInput(NS(id, "minvec"), "Min. vector magnitude (N/m2):",
                                                               value = 1.0,
@@ -89,7 +89,7 @@ input_ui <- function(id) {
 }
 
 input_server <- function(id) {
-  moduleServer(id, function(input, output, session){
+  moduleServer(id, function(input, output, session) {
     
     # Grays out coastyear UI if coast == FALSE
     observeEvent(input$coast, {
@@ -97,40 +97,45 @@ input_server <- function(id) {
                            condition = input$coast)
     })
     
-    # WIP remove Custom tab for two Tidal dataproducts
-    observeEvent(input$dataproduct, {
-      if(input$dataproduct %in% c("Tidal Amplitude", "Tidal Current")) {
-        bslib::nav_remove(id = "tabs", target = "Custom")
-      }
-    })
-    
-    # WIP Set Custom card depending on data product
-    observe({
-      if(input$dataproduct == "Stratification") {
-        shinyjs::show(id = "yearBP", anim = TRUE)
-      } else {
-        shinyjs::hide(id = "yearBP", anim = TRUE)
-      }
-      
-    })
-    
-    # Grays out frontvalue and frontradius UIs if front == FALSE
+    # Grays out frontvalue and frontradius UI's if front == FALSE
     observeEvent(input$front, {
       shinyjs::toggleState(id = "frontvalue", 
                            condition = input$front)
+      
       shinyjs::toggleState(id = "frontradius", 
                            condition = input$front)
+      
     })
     
-    # WIP Updates frontvalues range based on boundaryvalues
+    # Renders reactive UI for frontvalue based on input$boundaryrange
     output$dyn_frontvalue <- renderUI({
-      req(input$boundaryrange) # Not sure if this is necessary
-      
-      numericInput(NS(id, "frontvalue"), "Set front value:",
+      numericInput("frontvalue", "Set front value:",
                    value = 2.1,
-                   min = input$boundaryrange[1], max = input$boundaryrange[2], 
+                   min = req(input$boundaryrange[1]), max = req(input$boundaryrange[2]), 
                    step = 0.1)
     })
+    
+    # WIP hide nav_panel depending on dataproduct selected
+    # Works in notes/test.R
+    observe({
+      print(input$dataproduct)
+      if(input$dataproduct %in% c("Tidal Amplitude", "Tidal Current")) {
+        bslib::nav_hide("tabs", target = "Custom")
+      } else {
+        bslib::nav_show("tabs", target = "Custom")
+      }
+    })
+    
+    # WIP Set custom card depending on data product
+    # works for the id of the UI widget, but not the div
+    observe({
+      if(input$dataproduct == "Stratification") {
+        shinyjs::show(id = "boundaryrange", anim = TRUE)
+      } else {
+        shinyjs::hide(id = "boundaryrange", anim = TRUE)
+      }
+      
+    })    
     
     # General inputs (applicable to all datasets)
     r1 <- reactive({
@@ -164,15 +169,15 @@ input_server <- function(id) {
     })
     
     r8 <- reactive({
-      input$gradient
-    })
-    
-    r9 <- reactive({
       input$frontvalue
     })
     
-    r10 <- reactive({
+    r9 <- reactive({
       input$frontradius
+    })
+    
+    r10 <- reactive({
+      input$gradient
     })
     
 
@@ -195,7 +200,7 @@ input_server <- function(id) {
     
     # Make named list of reactive objects and return
     rlist <- list(dataproduct = r1, yearBP = r2, coast = r3, coastyear = r4, 
-                  boundaryrange = r5, contrast = r6, front = r7, gradient = r8, frontvalue = r9, frontradius = r10,
+                  boundaryrange = r5, contrast = r6, front = r7, frontvalue = r8,  frontradius = r9,  gradient = r10,
                   X = r11, Y = r12, minvec = r13, arrow = r14)
     return(rlist)
 
