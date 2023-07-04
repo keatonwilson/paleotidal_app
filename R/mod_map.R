@@ -31,7 +31,8 @@ map_server <- function(id,
       
       output$map = leaflet::renderLeaflet({
         leaflet::leaflet() |> 
-          leaflet::addRasterImage(raster)
+          leaflet::addRasterImage(raster, 
+                                  colors = "viridis")
       })
       
     })
