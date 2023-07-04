@@ -23,37 +23,40 @@ data_summary_ui <- function(id){
 }
 
 data_summary_server <- function(id, 
-                                year, 
-                                dataset, 
-                                legend) {
+                                inputs) {
   moduleServer(
     id,
     function(input, output, session) {
       
-
-# Year --------------------------------------------------------------------
-
-      year_to_print = prettyNum(year,
-                                big.mark=",",
-                                scientific=FALSE)
-      # rendering
-      output$year_bp = shiny::renderText({
-        glue::glue("{year_to_print} BP")
+      observe({
+        
+        # Year --------------------------------------------------------------------
+        year = as.numeric(inputs$yearBP * 1000)
+        year_to_print = prettyNum(year,
+                                  big.mark=",",
+                                  scientific=FALSE)
+        # rendering
+        output$year_bp = shiny::renderText({
+          glue::glue("{year_to_print} BP")
+        })
+        
+        # Dataset -----------------------------------------------------------------
+        
+        
+        output$dataset = shiny::renderText({
+          inputs$datatype
+        }) 
+        
+        
+        # Legend ------------------------------------------------------------------
+        
+        output$legend = shiny::renderUI({
+          # might need more complex html here - hence the different output
+          shiny::HTML("Legend Placeholder Text")
+        })      
       })
 
-# Dataset -----------------------------------------------------------------
 
-      output$dataset = shiny::renderText({
-        dataset
-      }) 
-      
-
-# Legend ------------------------------------------------------------------
-
-      output$legend = shiny::renderUI({
-        # might need more complex html here - hence the different output
-        shiny::HTML(legend)
-      })      
       
       
     }
