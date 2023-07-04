@@ -6,23 +6,37 @@ map_ui <- function(id) {
 }
 
 map_server <- function(id, 
-                       datatype, 
-                       data, 
-                       time_step) {
+                       inputs,
+                       rasters) {
   moduleServer(id, function(input, output, session) {
-        # render a single datatype for now
-    datatype = "amplitude"
-    time_step = "0"
-    
-    to_map = names(data)[stringr::str_detect(names(data), glue::glue("^X{time_step}"))]
-    
-    # filter by time_step
-    data_to_map = data[[to_map]]
     
     
-    output$map = leaflet::renderLeaflet({
-      leaflet::leaflet() |> 
-        leaflet::addRasterImage(data_to_map)
+    observe({
+      # data mapping
+      #TODO This will need to eventually be mapped to different rasters
+      # for now, just tidal amplitude
+      raster_to_map = switch(inputs$datatype, 
+                             `Tidal Amplitude` = rasters$amp_raster, 
+                             `Stratification` = rasters$amp_raster,
+                             `Peak Bed Stress` = rasters$amp_raster,
+                             `Tidal Current` = rasters$amp_raster
+      )
+      
+      to_map = names(raster_to_map)[stringr::str_detect(names(raster_to_map), 
+                                                        glue::glue("^X{inputs$yearBP}_"))]
+      
+      # filter by time_step
+      raster = raster_to_map[[to_map]]
+      
+      
+      output$map = leaflet::renderLeaflet({
+        leaflet::leaflet() |> 
+          leaflet::addRasterImage(raster)
+      })
+      
     })
+    
+    
+
   })
 }

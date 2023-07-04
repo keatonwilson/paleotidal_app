@@ -2,17 +2,20 @@
 # Define server logic required to draw a histogram
 function(input, output, session) {
 
-  # hard code amplitude for now because it's easy
-  map_server("map", data = amp_raster)
-
-  
   # this is reactive
-  test_input = input_server("inputs")
+  input_list = input_server("inputs")
   
-  # need to wrap in a reactive context (observe), and also call the object with 
-  # the ()
-  observe({
-    print(test_input[["gradient"]]())
-  })
+  print(input_list)
+
+  # hard code amplitude for now because it's easy
+  map_server("map",
+             inputs = input_list,
+             rasters = list(amp_raster = amp_raster,
+                            bss_raster = bss_raster,
+                            mask_water_raster = mask_water_raster,
+                            rsl_raster = rsl_raster,
+                            water_depth_raster = water_depth_raster))
+  
+
   
 }
