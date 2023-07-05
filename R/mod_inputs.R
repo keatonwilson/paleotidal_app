@@ -20,7 +20,7 @@ input_ui <- function(id) {
                                                      selected = 21, 
                                                      grid = TRUE,
                                                      width = "100%",
-                                                     animate = animationOptions(interval = 500,
+                                                     animate = animationOptions(interval = 1000,
                                                                                 loop = FALSE)),
                        bslib::layout_column_wrap(
                          width = 1/2,

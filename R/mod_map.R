@@ -7,9 +7,9 @@ map_ui <- function(id) {
 
 map_server <- function(id, 
                        inputs,
-                       rasters) {
+                       rasters, 
+                       map_proxy) {
   moduleServer(id, function(input, output, session) {
-    
     
     observe({
       # data mapping
@@ -28,16 +28,12 @@ map_server <- function(id,
       # filter by time_step
       raster = raster_to_map[[to_map]]
       
+      map_proxy() |> 
+        leaflet::addRasterImage(raster, 
+                                colors = "viridis")
       
-      output$map = leaflet::renderLeaflet({
-        leaflet::leaflet() |> 
-          leaflet::addRasterImage(raster, 
-                                  colors = "viridis")
       })
       
     })
     
-    
-
-  })
-}
+  }

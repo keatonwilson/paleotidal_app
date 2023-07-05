@@ -23,7 +23,7 @@ bslib::page_navbar(
                                           data_summary_ui("data_summary")
                                         ),
                                         bslib::card(
-                                          map_ui("map")
+                                          leaflet::leafletOutput("map")
                                         )
                                       ),
                                       
