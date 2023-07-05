@@ -30,6 +30,15 @@ function(input, output, session) {
              map_proxy = map_proxy
              )
   
+  
+  # Click Events
+  observe({
+    click = input$map_click
+    print(click)
+    
+    #TODO Need function that grabs nearest points and plots time series
+    
+  })
 
   
 }
