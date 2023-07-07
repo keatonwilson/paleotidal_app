@@ -3,7 +3,7 @@
 input_ui <- function(id) {
   tagList(
     shinyjs::useShinyjs(),
-    selectInput(NS(id, "dataproduct"), label = NULL,
+    selectInput(NS(id, "datatype"), label = NULL,
                 choices = c("Tidal Amplitude",
                             "Stratification",
                             "Peak Bed Stress",
@@ -118,10 +118,10 @@ input_server <- function(id) {
                    step = 0.1)
     })
     
-    # WIP hide nav_panel depending on dataproduct selected
+    # WIP hide nav_panel depending on datatype selected
     # Works in notes/test.R
     observe({
-      if(input$dataproduct %in% c("Tidal Amplitude", "Tidal Current")) {
+      if(input$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
         bslib::nav_hide("tabs", target = "Custom")
       } else {
         bslib::nav_show("tabs", target = "Custom")
@@ -131,7 +131,7 @@ input_server <- function(id) {
     # WIP Set custom card depending on data product
     # works for the id of the UI widget, but not the div
     observe({
-      if(input$dataproduct == "Stratification") {
+      if(input$datatype == "Stratification") {
         shinyjs::show(id = "boundaryrange", anim = TRUE)
       } else {
         shinyjs::hide(id = "boundaryrange", anim = TRUE)
@@ -147,7 +147,7 @@ input_server <- function(id) {
     
     # writing
     observe({
-      input_vals$datatype = input$dataproduct
+      input_vals$datatype = input$datatype
       input_vals$yearBP = input$yearBP
       input_vals$coast = input$coast
       input_vals$coastyear = input$coastyear
