@@ -36,7 +36,7 @@ bslib::page_navbar(
                                           input_ui("inputs")
                                         ),
                                         bslib::card(
-                                          "Placeholder Text"
+                                          time_series_ui("time_series")
                                         )
                                       )
                                     )
