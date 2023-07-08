@@ -90,7 +90,7 @@ combine_all_years = function(data_dir,
       dplyr::mutate(type = dplyr::case_when(stringr::str_detect(filename, "_v_") ~ "v", 
                                             stringr::str_detect(filename, "_u_") ~ "u", 
                                             stringr::str_detect(filename, "_uv_") ~ "uv")) |> 
-      group_split(type)
+      dplyr::group_split(type)
     
       purrr::map(files_df, function(file_group) {
         purrr::map2(file_group$filename, 
@@ -133,6 +133,12 @@ mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss")
 
+# write feather files
+arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
+arrow::write_feather(rsl, "./data/processed_data/rsl.feather")
+arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
+arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
+arrow::write_feather(bss, "./data/processed_data/bss.feather")
 
 # Make a list of raster objects by year -----------------------------------
 
@@ -201,5 +207,6 @@ readr::write_rds(rsl_raster, "./data/processed_data/rsl_raster.rds")
 readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds")
 readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
 readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
+
 
 

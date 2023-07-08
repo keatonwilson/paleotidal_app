@@ -5,8 +5,10 @@ bslib::page_navbar(
   # base_font = bslib::font_google("Cormorant Garamond"),
   # base_font = bslib::font_google("Yanone Kaffeesatz"),
   # base_font = bslib::font_google("Playfair Display")),
-                   theme = bslib::bs_theme(bootswatch = "lux",
-                                           base_font = bslib::font_google("Cormorant Garamond")),
+                   theme = bslib::bs_theme(bootswatch = "cosmo",
+                                           version = 5,
+                                           # base_font = bslib::font_google("Cormorant Garamond")
+                                           ),
                    title = "Paleotidal Visualization", 
                    shinyjs::useShinyjs(),
                    bslib::nav_panel("About", 
@@ -16,13 +18,12 @@ bslib::page_navbar(
                                       col_widths = c(7, 5),
                                       bslib::layout_columns(
                                         col_widths = 12,
-                                        row_heights = c(2,5),
+                                        row_heights = c(1,5),
                                         bslib::card(
-                                          bslib::card_title("Overview"),
                                           data_summary_ui("data_summary")
                                         ),
                                         bslib::card(
-                                          map_ui("map")
+                                          leaflet::leafletOutput("map")
                                         )
                                       ),
                                       

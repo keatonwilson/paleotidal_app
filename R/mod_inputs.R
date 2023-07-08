@@ -3,7 +3,7 @@
 input_ui <- function(id) {
   tagList(
     shinyjs::useShinyjs(),
-    selectInput(NS(id, "dataproduct"), label = NULL,
+    selectInput(NS(id, "datatype"), label = NULL,
                 choices = c("Tidal Amplitude",
                             "Stratification",
                             "Peak Bed Stress",
@@ -20,7 +20,7 @@ input_ui <- function(id) {
                                                      selected = 21, 
                                                      grid = TRUE,
                                                      width = "100%",
-                                                     animate = animationOptions(interval = 500,
+                                                     animate = animationOptions(interval = 1000,
                                                                                 loop = FALSE)),
                        bslib::layout_column_wrap(
                          width = 1/2,
@@ -91,6 +91,9 @@ input_ui <- function(id) {
 input_server <- function(id) {
   moduleServer(id, function(input, output, session) {
     
+
+# Within-Panel Reactivity -------------------------------------------------
+
     # Grays out coastyear UI if coast == FALSE
     observeEvent(input$coast, {
       shinyjs::toggleState(id = "coastyear", 
@@ -115,11 +118,10 @@ input_server <- function(id) {
                    step = 0.1)
     })
     
-    # WIP hide nav_panel depending on dataproduct selected
+    # WIP hide nav_panel depending on datatype selected
     # Works in notes/test.R
     observe({
-      print(input$dataproduct)
-      if(input$dataproduct %in% c("Tidal Amplitude", "Tidal Current")) {
+      if(input$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
         bslib::nav_hide("tabs", target = "Custom")
       } else {
         bslib::nav_show("tabs", target = "Custom")
@@ -129,7 +131,7 @@ input_server <- function(id) {
     # WIP Set custom card depending on data product
     # works for the id of the UI widget, but not the div
     observe({
-      if(input$dataproduct == "Stratification") {
+      if(input$datatype == "Stratification") {
         shinyjs::show(id = "boundaryrange", anim = TRUE)
       } else {
         shinyjs::hide(id = "boundaryrange", anim = TRUE)
@@ -137,72 +139,31 @@ input_server <- function(id) {
       
     })    
     
-    # General inputs (applicable to all datasets)
-    r1 <- reactive({
-      input$dataproduct
-    })
-    
-    r2 <- reactive({
-      input$yearBP
-    })
-    
-    r3 <- reactive({
-      input$coast
-    })
-    
-    r4 <- reactive({
-      input$coastyear
-    })
-    
 
-    # Stratification inputs (applicable to Stratification dataset)
-    r5 <- reactive({
-      input$boundaryrange
+# Passing Inputs out to Main Server Env -----------------------------------
+    
+    # init reactive Values
+    input_vals = reactiveValues()
+    
+    # writing
+    observe({
+      input_vals$datatype = input$datatype
+      input_vals$yearBP = input$yearBP
+      input_vals$coast = input$coast
+      input_vals$coastyear = input$coastyear
+      input_vals$boundary_range = input$boundaryrange
+      input_vals$contrast = input$contrast
+      input_vals$front = input$front
+      input_vals$front_radius = input$frontradius
+      input_vals$front_value = input$frontvalue
+      input_vals$gradient = input$gradient
+      input_vals$X = input$X
+      input_vals$Y = input$Y
+      input_vals$minvec = input$minvec
+      input_vals$arrow = input$arrow
     })
     
-    r6 <- reactive({
-      input$contrast
-    })
-    
-    r7 <- reactive({
-      input$front
-    })
-    
-    r8 <- reactive({
-      input$frontvalue
-    })
-    
-    r9 <- reactive({
-      input$frontradius
-    })
-    
-    r10 <- reactive({
-      input$gradient
-    })
-    
-
-    # Peak Stress Vectors inputs (applicable to Peak Bed Stress dataset)
-    r11 <- reactive({
-      input$X
-    })
-    
-    r12 <- reactive({
-      input$Y
-    })
-    
-    r13 <- reactive({
-      input$minvec
-    })
-    
-    r14 <- reactive({
-      input$arrow
-    })
-    
-    # Make named list of reactive objects and return
-    rlist <- list(dataproduct = r1, yearBP = r2, coast = r3, coastyear = r4, 
-                  boundaryrange = r5, contrast = r6, front = r7, frontvalue = r8,  frontradius = r9,  gradient = r10,
-                  X = r11, Y = r12, minvec = r13, arrow = r14)
-    return(rlist)
+    return(input_vals)
 
   })
 }
