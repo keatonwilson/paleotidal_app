@@ -2,6 +2,7 @@
 
 input_ui <- function(id) {
   tagList(
+    waiter::autoWaiter(),
     shinyjs::useShinyjs(),
     selectInput(NS(id, "dataproduct"), label = NULL,
                 choices = c("Tidal Amplitude",
@@ -32,9 +33,8 @@ input_ui <- function(id) {
                                      selected = 0,
                                      width = '60%'))),
       bslib::nav_panel("Custom",
-                       # shinyjs::hidden(
-                         div(id = "strat_card",
-                             bslib::nav_panel(bslib::card_title("Stratification"),
+                       bslib::layout_columns(row_heights = c(3,5), 
+                                                        bslib::nav_panel(bslib::card_title("Stratification"),
                                          bslib::layout_column_wrap(
                                            width = 1/2,
                                            bslib::card(bslib::card_title("Boundary values"),
@@ -45,20 +45,23 @@ input_ui <- function(id) {
                                                        checkboxInput(NS(id, "contrast"), "Show contrast",
                                                                      value = FALSE)),
                                            bslib::card(bslib::card_title("Front values"),
-                                                       checkboxInput(NS(id, "front"), "Show front",
-                                                                     value = TRUE),
-                                                       checkboxInput(NS(id, "gradient"), "Show gradient",
-                                                                     value = FALSE),
-                                                       uiOutput(NS(id, "dyn_frontvalue")),
-                                                       numericInput(NS(id, "frontradius"), "Set front radius:",
-                                                                    value = 0.08,
-                                                                    min = 0.01, max = 1,
-                                                                    step = 0.01)
+                                                       bslib::card_body(
+                                                         bslib::layout_columns(col_widths = c(6,6), 
+                                                                               checkboxInput(NS(id, "front"), "Show front",
+                                                                                             value = TRUE),
+                                                                               checkboxInput(NS(id, "gradient"), "Show gradient",
+                                                                                             value = FALSE),
+                                                                               uiOutput(NS(id, "dyn_frontvalue")),
+                                                                               numericInput(NS(id, "frontradius"), "Set front radius:",
+                                                                                            value = 0.08,
+                                                                                            min = 0.01, max = 1,
+                                                                                            step = 0.01)                    
+                                                                               )
+                                                       ),
+
                                            ))
                              )
-                         )
-                       # )
-      ,
+                         ),
                    bslib::card(bslib::card_title("Peak Bed Stress"),
                                    bslib::layout_column_wrap(
                                      width = 1/2,
@@ -82,10 +85,11 @@ input_ui <- function(id) {
                                                               step = 0.01),
                                                  checkboxInput(NS(id, "arrow"), "Show arrow",
                                                                value = TRUE))
-                                   ))
+                                   ))                  
+                                             )
+
       )
     )
-  )
 }
 
 input_server <- function(id) {
