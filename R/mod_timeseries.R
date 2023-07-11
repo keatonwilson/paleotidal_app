@@ -27,10 +27,11 @@ time_series_server <- function(id,
       dplyr::filter(y == closest_lat & x == closest_lon)
     
     ay <- list(
-      tickfont = list(color = "red"),
+      tickfont = list(color = "black"),
       overlaying = "y",
       side = "right",
-      title = "Tidal Amplitude")
+      title = list(text = "Tidal Amplitude",
+                   font = list(color = "#33a02c")))
     
     # title w lat/lon
     title = glue::glue("Relative Sea Level & Tidal Amplitude @ {closest_lat}, {closest_lon}")
@@ -43,18 +44,24 @@ time_series_server <- function(id,
                           name = "Relative Sea Level", 
                           yaxis = "y1", 
                           mode = "lines+markers", 
-                          type = "scatter") |> 
+                          type = "scatter",
+                          line = list(color = "#1f77b4"),
+                          marker = list(color = "#1f77b4")) |> 
         plotly::add_trace(x = ~amp_filtered$year, 
                           y = ~amp_filtered$value, 
                           name = "Tidal Amplitude", 
                           yaxis = "y2", 
                           mode = "lines+markers", 
-                          type = "scatter") |> 
+                          type = "scatter",
+                          line = list(color = "#33a02c"),
+                          marker = list(color = "#33a02c")) |> 
         plotly::layout(
           title = title, yaxis2 = ay,
-          xaxis = list(title="Thousand Years BP", 
+          xaxis = list(title = "Thousand Years BP", 
                        autorange = "reversed"),
-          yaxis = list(title="Relative Sea Level")
+          yaxis = list(title = list(text = "Relative Sea Level",
+                                    font = list(color = "#1f77b4"))),
+          showlegend = FALSE
         )
     })
     
