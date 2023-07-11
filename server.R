@@ -33,10 +33,30 @@ function(input, output, session) {
   
   # Click Events
   observe({
+    req(input$map_click)
+    # click input on map
     click = input$map_click
-    print(click)
     
-    #TODO Need function that grabs nearest points and plots time series
+    # create time-series based on click and return the closest lat lon
+    # in the dataset
+    closest_lat_lon = time_series_server("time_series", 
+                       map_click_obj = click, 
+                       inputs = input_list, 
+                       rsl_data = rsl, 
+                       amp_data = amp_data
+                       )
+    
+    print(click)
+    print(closest_lat_lon)
+    # make map marker via proxy 
+    #TODO trying this with static points
+    map_proxy() |> 
+      leaflet::removeMarker(layerId = "click_mark") |>
+      leaflet::addMarkers(lng = closest_lat_lon$lon, 
+                          lat = closest_lat_lon$lat, 
+                          layerId = "click_mark")
+    
+
     
   })
 
