@@ -19,7 +19,7 @@ map_server <- function(id,
                              `Tidal Amplitude` = rasters$amp_raster, 
                              `Stratification` = rasters$amp_raster,
                              `Peak Bed Stress` = rasters$amp_raster,
-                             `Tidal Current` = rasters$amp_raster
+                             `Tidal Current` = rasters$vel_raster
       )
       
       to_map = names(raster_to_map)[stringr::str_detect(names(raster_to_map), 

@@ -27,6 +27,8 @@ function(input, output, session) {
                             bss_raster = bss_raster,
                             mask_water_raster = mask_water_raster,
                             rsl_raster = rsl_raster,
+                            strat_raster = strat_raster,
+                            vel_raster = vel_raster,
                             water_depth_raster = water_depth_raster), 
              map_proxy = map_proxy
              )
