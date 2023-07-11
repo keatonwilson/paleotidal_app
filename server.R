@@ -14,7 +14,8 @@ function(input, output, session) {
     leaflet::leaflet() |> 
       leaflet::setView(lng = -4, lat = 56, zoom = 5.25) |> 
       leaflet::addRasterImage(amp_raster$X21_elevation_amplitude, 
-                              colors = "viridis")
+                              colors = "viridis") |> 
+      leaflet::addPolygons(data = shape_1, weight = 0.5)
   })
   
   map_proxy = reactive(leaflet::leafletProxy("map"))
