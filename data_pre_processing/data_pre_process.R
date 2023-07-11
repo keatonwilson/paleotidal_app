@@ -16,6 +16,13 @@ library(leaflet)
 
 test = read_tsv("./data/raw_lat_lon/ampM2/amp_M2_00.ascii", 
                 col_names = c("x", "y", "value"))
+test = read_tsv("./data/raw_lat_lon/stratification/log10_strat_10.ascii", 
+                col_names = c("x", "y", "value")) %>%
+  mutate(value = if_else(is.nan(value), NA, value),
+         value = if_else(is.infinite(value), NA, value))
+test = read_tsv("./data/raw_lat_lon/stratification/strat_00.ascii", 
+                col_names = c("x", "y", "value"))
+
 
 # getting dims for raster transformation
 ncol = length(unique(test$x))
