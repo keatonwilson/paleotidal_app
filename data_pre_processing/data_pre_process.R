@@ -70,10 +70,7 @@ combine_all_years = function(data_dir,
   # bss requires special processing
   is_bss = all(stringr::str_detect(files_to_read, "bss"))
   
-  # strat requires special processing
-  is_strat = all(stringr::str_detect(files_to_read, "strat"))
-  
-  if (!is_bss & !is_strat) {
+  if (!is_bss) {
     purrr::map(files_to_read, function(file) {
       # extracting year
       year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
@@ -126,40 +123,7 @@ combine_all_years = function(data_dir,
       }, .progress = list(name = "Spatial Data Pre-Processing")) |>
         dplyr::bind_rows()
     
-  } else if(is_strat) {
-    
-    # group split
-    files_df = tibble::tibble(filename = files_to_read) |> 
-      dplyr::mutate(type = dplyr::case_when(stringr::str_detect(filename, "log10") ~ "log10", 
-                                            stringr::str_detect(filename, "/strat") ~ "absolute")) |> 
-      dplyr::group_split(type)
-    
-    purrr::map(files_df, function(file_group) {
-      purrr::map2(file_group$filename, 
-                  file_group$type, function(file, type) {
-                    # extracting year
-                    year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
-                      as.numeric()
-                    
-                    # reading file and appending 
-                    data = readr::read_tsv(file, 
-                                           col_names = c("x", "y", "value"), 
-                                           show_col_types = FALSE, 
-                                           progress = FALSE) |> 
-                      dplyr::mutate(year = year, 
-                                    datatype = datatype, 
-                                    type = type)
-                    
-                    # return
-                    return(data)
-                    
-                  }) |> 
-        dplyr::bind_rows()
-    }, .progress = list(name = "Spatial Data Pre-Processing")) |>
-      dplyr::bind_rows()
-    
-  }
-  
+  } 
 
 
 }
