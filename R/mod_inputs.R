@@ -215,7 +215,7 @@ input_server <- function(id) {
     })
     
     # WIP Set custom card depending on data product
-    # works for the id of the UI widget, but not the div
+    # Now works when div is namespaced appropriately
     observe({
  
       if(input$datatype == "Stratification") {
