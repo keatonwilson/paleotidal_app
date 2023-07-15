@@ -24,7 +24,7 @@ input_ui <- function(id) {
 # General and Custom Tab Panels -------------------------------------------
 
     bslib::navset_card_tab(
-      id = "tabs",
+      id = NS(id, "tabs"),
       full_screen = FALSE,
       # title = "User inputs",
   ## General Panel ----------------------------------------------------------
@@ -202,8 +202,7 @@ input_server <- function(id) {
     })
     
     
-    # WIP hide nav_panel depending on datatype selected
-    # Works in notes/test.R
+    # works great when navset cardtab id is namespaced in UI above
     observe({
       if(input$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
         bslib::nav_hide("tabs", target = "Custom")
