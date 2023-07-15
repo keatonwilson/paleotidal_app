@@ -67,19 +67,22 @@ input_ui <- function(id) {
             bslib::card_title("Stratification"),
             bslib::layout_column_wrap(
               width = 1 / 2,
-              bslib::card(
-                bslib::card_title("Boundary values"),
-                shinyWidgets::numericRangeInput(
-                  NS(id, "boundaryrange"),
-                  "Set min and max:",
-                  value = c(1.9, 2.9),
-                  min = 0,
-                  max = 12,
-                  step = 0.1
-                ),
-                checkboxInput(NS(id, "contrast"), "Show contrast",
-                              value = FALSE)
-              ),
+              shiny::div(
+                id = NS(id, "boundary_inputs"),
+                bslib::card(
+                  bslib::card_title("Boundary values"),
+                  shinyWidgets::numericRangeInput(
+                    NS(id, "boundaryrange"),
+                    "Set min and max:",
+                    value = c(1.9, 2.9),
+                    min = 0,
+                    max = 12,
+                    step = 0.1
+                  ),
+                  checkboxInput(NS(id, "contrast"), "Show contrast",
+                                value = FALSE)
+                )
+              ), 
               bslib::card(
                 bslib::card_title("Front values"),
                 bslib::card_body(
@@ -214,10 +217,11 @@ input_server <- function(id) {
     # WIP Set custom card depending on data product
     # works for the id of the UI widget, but not the div
     observe({
+ 
       if(input$datatype == "Stratification") {
-        shinyjs::show(id = "boundaryrange", anim = TRUE)
+        shinyjs::show(id = "boundary_inputs", anim = TRUE)
       } else {
-        shinyjs::hide(id = "boundaryrange", anim = TRUE)
+        shinyjs::hide(id = "boundary_inputs", anim = TRUE)
       }
       
     })    
