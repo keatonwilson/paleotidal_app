@@ -2,13 +2,13 @@
 
 input_ui <- function(id) {
   tagList(
-
-# Waiter and shinyJS Set --------------------------------------------------
+    
+    # Waiter and shinyJS Set --------------------------------------------------
     waiter::autoWaiter(),
     shinyjs::useShinyjs(),
-
-# Datatype Dropdown -------------------------------------------------------
-
+    
+    # Datatype Dropdown -------------------------------------------------------
+    
     selectInput(
       NS(id, "datatype"),
       label = NULL,
@@ -20,14 +20,14 @@ input_ui <- function(id) {
       ),
       selected = "Tidal Amplitude"
     ),
-
-# General and Custom Tab Panels -------------------------------------------
-
+    
+    # General and Custom Tab Panels -------------------------------------------
+    
     bslib::navset_card_tab(
       id = NS(id, "tabs"),
       full_screen = FALSE,
       # title = "User inputs",
-  ## General Panel ----------------------------------------------------------
+      ## General Panel ----------------------------------------------------------
       bslib::nav_panel(
         "General",
         # bslib::card_title("Time"),
@@ -47,73 +47,63 @@ input_ui <- function(id) {
             NS(id, "coast"),
             "Show coastline?",
             value = TRUE,
-            width = '40%'
+            width = '100%'
           ),
           selectInput(
             NS(id, "coastyear"),
             "Select coastline  year:",
             choices = 0:21,
             selected = 0,
-            width = '60%'
+            width = '100%'
           )
         )
       ),
-  ## Custom Panel ----------------------------------------------------------
+      ## Custom Panel ----------------------------------------------------------
       bslib::nav_panel(
         "Custom",
-        bslib::layout_columns(
-          row_heights = c(3, 5),
-          bslib::nav_panel(
-            bslib::card_title("Stratification"),
-            bslib::layout_column_wrap(
-              width = 1 / 2,
-              shiny::div(
-                id = NS(id, "boundary_inputs"),
-                bslib::card(
-                  bslib::card_title("Boundary values"),
-                  shinyWidgets::numericRangeInput(
-                    NS(id, "boundaryrange"),
-                    "Set min and max:",
-                    value = c(1.9, 2.9),
-                    min = 0,
-                    max = 12,
-                    step = 0.1
-                  ),
-                  checkboxInput(NS(id, "contrast"), "Show contrast",
-                                value = FALSE)
-                )
-              ), 
-              bslib::card(
-                bslib::card_title("Front values"),
-                bslib::card_body(
-                  bslib::layout_columns(
-                    col_widths = c(6, 6),
-                    checkboxInput(NS(id, "front"), "Show front",
-                                  value = TRUE),
-                    checkboxInput(NS(id, "gradient"), "Show gradient",
-                                  value = FALSE),
-                    uiOutput(NS(id, "dyn_frontvalue")),
-                    numericInput(
-                      NS(id, "frontradius"),
-                      "Set front radius:",
-                      value = 0.08,
-                      min = 0.01,
-                      max = 1,
-                      step = 0.01
-                    )
-                  )
-                ),
-                
+        shiny::div(
+          id = NS(id, "strat_inputs"),
+          bslib::layout_column_wrap(
+            width = 1 / 2,
+            bslib::card(
+              bslib::card_title("Boundary values"),
+              shinyWidgets::numericRangeInput(
+                NS(id, "boundaryrange"),
+                "Set min and max:",
+                value = c(1.9, 2.9),
+                min = 0,
+                max = 12,
+                step = 0.1
+              ),
+              checkboxInput(NS(id, "contrast"), "Show contrast",
+                            value = FALSE)
+            ), 
+            # shiny::div(
+            #   id = NS(id, "front_inputs"),
+            bslib::card(
+              bslib::card_title("Front values"),
+              checkboxInput(NS(id, "front"), "Show front",
+                            value = TRUE),
+              checkboxInput(NS(id, "gradient"), "Show gradient",
+                            value = FALSE),
+              uiOutput(NS(id, "dyn_frontvalue")),
+              numericInput(
+                NS(id, "frontradius"),
+                "Set front radius:",
+                value = 0.08,
+                min = 0.01,
+                max = 1,
+                step = 0.01
               )
             )
           )
         ),
-        bslib::card(
-          bslib::card_title("Peak Bed Stress"),
+        shiny::div(
+          id = NS(id, "vector_inputs"),
           bslib::layout_column_wrap(
             width = 1 / 2,
             bslib::card(
-              bslib::card_title("Vector Spacing"),
+              bslib::card_title("Vector spacing"),
               bslib::layout_column_wrap(
                 width = 1 / 2,
                 numericInput(
@@ -123,7 +113,7 @@ input_ui <- function(id) {
                   min = 1,
                   max = 50,
                   step = 1,
-                  width  = '50%'
+                  width  = '100%'
                 ),
                 numericInput(
                   NS(id, "Y"),
@@ -132,7 +122,7 @@ input_ui <- function(id) {
                   min = 1,
                   max = 50,
                   step = 1,
-                  width  = '50%'
+                  width  = '100%'
                 )
               )
             ),
@@ -140,7 +130,7 @@ input_ui <- function(id) {
               bslib::card_title("Vector appearance"),
               numericInput(
                 NS(id, "minvec"),
-                "Min. vector magnitude (N/m2):",
+                "Min. magnitude (N/m2):",
                 value = 1.0,
                 min = 0.0,
                 max = 30.0,
@@ -152,7 +142,6 @@ input_ui <- function(id) {
           )
         )
       )
-      
     )
   )
 }
@@ -169,14 +158,15 @@ input_server <- function(id) {
                            condition = input$coast)
     })
     
-    # gray out front radius
+    # gray out front radius if "Show front" is unchecked
     observeEvent(input$front, {
     
       shinyjs::toggleState(id = "frontradius", 
                            condition = input$front)
     })
     
-    # Have to grey out frontvalue differently because of dynamic rendering
+    # Dynamically update front value min/max depending on boundary range
+    # Disable if "Show front" is unchecked
     output$dyn_frontvalue <- renderUI({
       
       # initial UI to render
@@ -205,6 +195,7 @@ input_server <- function(id) {
     })
     
     
+    # Hide "Custom" tab if either Tidal product is selected
     # works great when navset cardtab id is namespaced in UI above
     observe({
       if(input$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
@@ -214,14 +205,17 @@ input_server <- function(id) {
       }
     })
     
-    # WIP Set custom card depending on data product
     # Now works when div is namespaced appropriately
     observe({
  
       if(input$datatype == "Stratification") {
-        shinyjs::show(id = "boundary_inputs", anim = TRUE)
+        shinyjs::show(id = "strat_inputs", anim = TRUE)
+        # shinyjs::show(id = "front_inputs", anim = TRUE)
+        shinyjs::hide(id = "vector_inputs", anim = TRUE)
       } else {
-        shinyjs::hide(id = "boundary_inputs", anim = TRUE)
+        shinyjs::hide(id = "strat_inputs", anim = TRUE)
+        # shinyjs::hide(id = "front_inputs", anim = TRUE)
+        shinyjs::show(id = "vector_inputs", anim = TRUE)
       }
       
     })    
