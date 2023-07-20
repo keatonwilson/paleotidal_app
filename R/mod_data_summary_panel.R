@@ -2,17 +2,17 @@ data_summary_ui <- function(id){
   ns <- NS(id)
 
     bslib::layout_columns(
-      col_widths = c(4, 4, 4),
+      col_widths = c(6, 6),
       bslib::value_box(
         "Year",
         showcase = bsicons::bs_icon("hourglass-split"),
         value = shiny::textOutput(ns("year_bp"))
       ),
-      bslib::value_box(
-        "Dataset",
-        showcase = bsicons::bs_icon("database"),
-        value = shiny::textOutput(ns("dataset"))
-      ),
+      # bslib::value_box(
+      #   "Dataset",
+      #   showcase = bsicons::bs_icon("database"),
+      #   value = shiny::textOutput(ns("dataset"))
+      # ),
       bslib::value_box(
         "Legend",
         showcase = bsicons::bs_icon("compass-fill"),
@@ -24,9 +24,7 @@ data_summary_ui <- function(id){
 
 data_summary_server <- function(id, 
                                 inputs) {
-  moduleServer(
-    id,
-    function(input, output, session) {
+  moduleServer(id, function(input, output, session) {
       
       observe({
         
@@ -42,10 +40,10 @@ data_summary_server <- function(id,
         
         # Dataset -----------------------------------------------------------------
         
-        
-        output$dataset = shiny::renderText({
-          inputs$datatype
-        }) 
+        # 
+        # output$dataset = shiny::renderText({
+        #   inputs$datatype
+        # }) 
         
         
         # Legend ------------------------------------------------------------------
@@ -56,9 +54,6 @@ data_summary_server <- function(id,
         })      
       })
 
-
-      
-      
     }
   )
 }

@@ -7,6 +7,7 @@ map_ui <- function(id) {
 
 map_server <- function(id, 
                        inputs,
+                       data, 
                        rasters, 
                        map_proxy) {
   moduleServer(id, function(input, output, session) {
@@ -15,7 +16,7 @@ map_server <- function(id,
       # data mapping
       #TODO This will need to eventually be mapped to different rasters
       # for now, just tidal amplitude
-      raster_to_map = switch(inputs$datatype, 
+      raster_to_map = switch(data$datatype, 
                              `Tidal Amplitude` = rasters$amp_raster, 
                              `Stratification` = rasters$amp_raster,
                              `Peak Bed Stress` = rasters$amp_raster,
