@@ -1,10 +1,14 @@
 
 # Define server logic required to draw a histogram
 function(input, output, session) {
+  
+  # Data Selection Module
+  data_list = data_select_server("data_type")
 
   # Inputs Module
-  input_list = input_server("inputs")
-  
+  input_list = input_server("inputs",
+                            inputs = data_list)
+
   # Data Summary Module
   data_summary_server("data_summary", 
                       inputs = input_list)
@@ -23,6 +27,7 @@ function(input, output, session) {
   # Map Module
   map_server("map_raster",
              inputs = input_list,
+             data = data_list,
              rasters = list(amp_raster = amp_raster,
                             bss_raster = bss_raster,
                             mask_water_raster = mask_water_raster,

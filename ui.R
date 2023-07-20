@@ -18,9 +18,19 @@ ui = bslib::page_navbar(
                        bslib::layout_columns(
                          col_widths = 12,
                          row_heights = c(1,5),
-                         bslib::card(
+                         bslib::layout_columns(
+                           col_widths = c(4, 8),
+                           data_select_ui("data_type"),
                            data_summary_ui("data_summary")
-                         ),
+                         )
+                         # bslib::card(
+                         #   bslib::layout_column_wrap(
+                         #     width = 1 / 3,
+                         #     data_select_ui("data_type"),
+                         #     data_summary_ui("data_summary")
+                         #   )
+                         # )
+                         ,
                          bslib::card(
                            leaflet::leafletOutput("map")
                          )
@@ -29,7 +39,7 @@ ui = bslib::page_navbar(
                        # dummy input card
                        bslib::layout_columns(
                          col_widths = 12,
-                         row_heights = c(5,2),
+                         row_heights = c(4,2),
                          bslib::card(
                            bslib::card_title("Inputs"),
                            input_ui("inputs")
