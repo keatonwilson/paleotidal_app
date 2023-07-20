@@ -1,5 +1,6 @@
 data_select_ui <- function(id) {
   tagList(
+    shiny::h4("Data Selection"),
     selectInput(
       NS(id, "datatype"),
       label = NULL,
