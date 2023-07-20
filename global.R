@@ -7,6 +7,7 @@ bss_raster = readr::read_rds("./data/processed_data/bss_raster.rds")
 mask_water_raster = readr::read_rds("./data/processed_data/mask_water_raster.rds")
 rsl_raster = readr::read_rds("./data/processed_data/rsl_raster.rds")
 water_depth_raster = readr::read_rds("./data/processed_data/water_depth_raster.rds")
+ice_raster = readr::read_rds("./data/processed_data/ice_raster.rds")
 
 # tidy data
 amp_data = arrow::read_feather("./data/processed_data/amp_data.feather")

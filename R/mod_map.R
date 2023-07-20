@@ -8,6 +8,7 @@ map_ui <- function(id) {
 map_server <- function(id, 
                        inputs,
                        rasters, 
+                       ice_raster,
                        map_proxy) {
   moduleServer(id, function(input, output, session) {
     
@@ -24,13 +25,17 @@ map_server <- function(id,
       
       to_map = names(raster_to_map)[stringr::str_detect(names(raster_to_map), 
                                                         glue::glue("^X{inputs$yearBP}_"))]
+      ice_to_map = names(ice_raster)[stringr::str_detect(names(ice_raster), 
+                                                         glue::glue("^X{inputs$yearBP}_"))]
       
       # filter by time_step
       raster = raster_to_map[[to_map]]
+      ice_raster = ice_raster[[ice_to_map]]
       
       map_proxy() |> 
         leaflet::addRasterImage(raster, 
-                                colors = "viridis")
+                                colors = "viridis") |> 
+        leaflet::addRasterImage(ice_raster)
       
       })
       

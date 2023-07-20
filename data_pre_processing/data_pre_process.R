@@ -14,9 +14,11 @@ library(leaflet)
 
 # Testing Sandbox ---------------------------------------------------------
 
-test = read_tsv("./data/raw_lat_lon/vel/velM2_00.ascii", 
+test = read_tsv("./data/raw_lat_lon/mask_water/mask_water_21.ascii", 
                 col_names = c("x", "y", "value")) |> 
-  dplyr::arrange(x)
+  dplyr::arrange(x) |> 
+  dplyr::mutate(value = dplyr::case_when(value == 0 ~ NA, 
+                                         .default = 2))
 
 # getting dims for raster transformation
 ncol = length(unique(test$x))
@@ -32,7 +34,7 @@ crs(r_new) = "+proj=longlat +datum=WGS84"
 # testing on map
 leaflet() |> 
   addTiles() |> 
-  addRasterImage(r_new, opacity = 0.8)
+  addRasterImage(r_new, opacity = 0.8, )
 
 
 
@@ -65,7 +67,7 @@ combine_all_years = function(data_dir,
   is_bss = all(stringr::str_detect(files_to_read, "bss"))
   
   if (!is_bss) {
-    purrr::map(files_to_read, function(file) {
+    out = purrr::map(files_to_read, function(file) {
       # extracting year
       year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
         as.numeric()
@@ -93,7 +95,7 @@ combine_all_years = function(data_dir,
                                             stringr::str_detect(filename, "_uv_") ~ "uv")) |> 
       dplyr::group_split(type)
     
-      purrr::map(files_df, function(file_group) {
+      out = purrr::map(files_df, function(file_group) {
         purrr::map2(file_group$filename, 
                     file_group$type, function(file, type) {
           # extracting year
@@ -119,7 +121,18 @@ combine_all_years = function(data_dir,
     
   }
   
-
+  # ice requires special processing
+  is_ice = all(stringr::str_detect(files_to_read, "ice"))
+    out = out |> 
+      dplyr::mutate(value = dplyr::case_when(value == 0 ~ NA, 
+                                             .default = 1))
+  # water mask special processing
+  is_water = all(stringr::str_detect(files_to_read, "mask_water"))
+    out = out |> 
+      dplyr::mutate(value = dplyr::case_when(value == 0 ~ NA, 
+                                             .default = 2))
+  # return 
+  return(out)
 
 }
 
@@ -145,7 +158,8 @@ arrow::write_feather(ice, "./data/processed_data/ice.feather")
 
 # Make a list of raster objects by year -----------------------------------
 
-make_raster_list = function(data, ...) {
+make_raster_list = function(data, 
+                            ...) {
   
   # split data by year (or more) vars
   data_split = data |> 
