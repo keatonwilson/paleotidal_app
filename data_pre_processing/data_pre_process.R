@@ -16,6 +16,13 @@ library(leaflet)
 
 test = read_tsv("./data/raw_lat_lon/ampM2/amp_M2_00.ascii", 
                 col_names = c("x", "y", "value"))
+test = read_tsv("./data/raw_lat_lon/stratification/log10_strat_10.ascii", 
+                col_names = c("x", "y", "value")) %>%
+  mutate(value = if_else(is.nan(value), NA, value),
+         value = if_else(is.infinite(value), NA, value))
+test = read_tsv("./data/raw_lat_lon/stratification/strat_00.ascii", 
+                col_names = c("x", "y", "value"))
+
 
 # getting dims for raster transformation
 ncol = length(unique(test$x))
@@ -83,7 +90,7 @@ combine_all_years = function(data_dir,
     }, .progress = list(name = "Spatial Data Pre-Processing")) |> 
       dplyr::bind_rows()
     
-  } else {
+  } else if(is_bss) {
     
     # group split
     files_df = tibble::tibble(filename = files_to_read) |> 
@@ -116,8 +123,7 @@ combine_all_years = function(data_dir,
       }, .progress = list(name = "Spatial Data Pre-Processing")) |>
         dplyr::bind_rows()
     
-  }
-  
+  } 
 
 
 }
@@ -132,6 +138,8 @@ rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
 mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss")
+strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
+vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
 
 # write feather files
 arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
@@ -139,6 +147,8 @@ arrow::write_feather(rsl, "./data/processed_data/rsl.feather")
 arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
 arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
 arrow::write_feather(bss, "./data/processed_data/bss.feather")
+arrow::write_feather(strat, "./data/processed_data/strat.feather")
+arrow::write_feather(vel, "./data/processed_data/vel.feather")
 
 # Make a list of raster objects by year -----------------------------------
 
@@ -200,6 +210,8 @@ rsl_raster = make_raster_list(rsl, year)
 mask_water_raster = make_raster_list(mask_water, year)
 water_depth_raster = make_raster_list(water_depth, year)
 bss_raster = make_raster_list(bss, year, type)
+strat_raster = make_raster_list(strat, year, type)
+vel_raster = make_raster_list(vel, year)
 
 # writing raster stacks to rds files
 readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
@@ -207,6 +219,6 @@ readr::write_rds(rsl_raster, "./data/processed_data/rsl_raster.rds")
 readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds")
 readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
 readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
-
-
+readr::write_rds(strat_raster, "./data/processed_data/strat_raster.rds")
+readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
 
