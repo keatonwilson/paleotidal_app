@@ -9,17 +9,17 @@ input_ui <- function(id) {
     
     # Datatype Dropdown -------------------------------------------------------
     
-    selectInput(
-      NS(id, "datatype"),
-      label = NULL,
-      choices = c(
-        "Tidal Amplitude",
-        "Stratification",
-        "Peak Bed Stress",
-        "Tidal Current"
-      ),
-      selected = "Tidal Amplitude"
-    ),
+    # selectInput(
+    #   NS(id, "datatype"),
+    #   label = NULL,
+    #   choices = c(
+    #     "Tidal Amplitude",
+    #     "Stratification",
+    #     "Peak Bed Stress",
+    #     "Tidal Current"
+    #   ),
+    #   selected = "Tidal Amplitude"
+    # ),
     
     # General and Custom Tab Panels -------------------------------------------
     
@@ -146,7 +146,7 @@ input_ui <- function(id) {
   )
 }
 
-input_server <- function(id) {
+input_server <- function(id, inputs) {
   moduleServer(id, function(input, output, session) {
     
     ns <- session$ns
@@ -198,7 +198,7 @@ input_server <- function(id) {
     # Hide "Custom" tab if either Tidal product is selected
     # works great when navset cardtab id is namespaced in UI above
     observe({
-      if(input$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
+      if(inputs$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
         bslib::nav_hide("tabs", target = "Custom")
       } else {
         bslib::nav_show("tabs", target = "Custom")
@@ -208,7 +208,7 @@ input_server <- function(id) {
     # Now works when div is namespaced appropriately
     observe({
  
-      if(input$datatype == "Stratification") {
+      if(inputs$datatype == "Stratification") {
         shinyjs::show(id = "strat_inputs", anim = TRUE)
         # shinyjs::show(id = "front_inputs", anim = TRUE)
         shinyjs::hide(id = "vector_inputs", anim = TRUE)
@@ -228,7 +228,7 @@ input_server <- function(id) {
     
     # writing
     observe({
-      input_vals$datatype = input$datatype
+      # input_vals$datatype = inputs$datatype
       input_vals$yearBP = input$yearBP
       input_vals$coast = input$coast
       input_vals$coastyear = input$coastyear
