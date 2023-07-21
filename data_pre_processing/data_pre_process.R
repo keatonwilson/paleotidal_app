@@ -23,7 +23,6 @@ test = read_tsv("./data/raw_lat_lon/stratification/log10_strat_10.ascii",
 test = read_tsv("./data/raw_lat_lon/stratification/strat_00.ascii", 
                 col_names = c("x", "y", "value"))
 
-
 # getting dims for raster transformation
 ncol = length(unique(test$x))
 nrow = length(unique(test$y))
@@ -38,7 +37,7 @@ crs(r_new) = "+proj=longlat +datum=WGS84"
 # testing on map
 leaflet() |> 
   addTiles() |> 
-  addRasterImage(r_new, opacity = 0.8)
+  addRasterImage(r_new, opacity = 0.8, )
 
 
 
@@ -71,7 +70,7 @@ combine_all_years = function(data_dir,
   is_bss = all(stringr::str_detect(files_to_read, "bss"))
   
   if (!is_bss) {
-    purrr::map(files_to_read, function(file) {
+    out = purrr::map(files_to_read, function(file) {
       # extracting year
       year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
         as.numeric()
@@ -99,7 +98,7 @@ combine_all_years = function(data_dir,
                                             stringr::str_detect(filename, "_uv_") ~ "uv")) |> 
       dplyr::group_split(type)
     
-      purrr::map(files_df, function(file_group) {
+      out = purrr::map(files_df, function(file_group) {
         purrr::map2(file_group$filename, 
                     file_group$type, function(file, type) {
           # extracting year
@@ -123,9 +122,20 @@ combine_all_years = function(data_dir,
       }, .progress = list(name = "Spatial Data Pre-Processing")) |>
         dplyr::bind_rows()
     
-  } 
-
-
+  }
+  
+  # ice requires special processing
+  is_ice = all(stringr::str_detect(files_to_read, "ice"))
+    out = out |> 
+      dplyr::mutate(value = dplyr::case_when(value == 0 ~ NA, 
+                                             .default = 1))
+  # water mask special processing
+  is_water = all(stringr::str_detect(files_to_read, "mask_water"))
+    out = out |> 
+      dplyr::mutate(value = dplyr::case_when(value == 0 ~ NA, 
+                                             .default = 2))
+  # return 
+  return(out)
 }
 
 
@@ -138,6 +148,7 @@ rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
 mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss")
+ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
 strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
 vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
 
@@ -147,12 +158,14 @@ arrow::write_feather(rsl, "./data/processed_data/rsl.feather")
 arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
 arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
 arrow::write_feather(bss, "./data/processed_data/bss.feather")
+arrow::write_feather(ice, "./data/processed_data/ice.feather")
 arrow::write_feather(strat, "./data/processed_data/strat.feather")
 arrow::write_feather(vel, "./data/processed_data/vel.feather")
 
 # Make a list of raster objects by year -----------------------------------
 
-make_raster_list = function(data, ...) {
+make_raster_list = function(data, 
+                            ...) {
   
   # split data by year (or more) vars
   data_split = data |> 
@@ -210,6 +223,7 @@ rsl_raster = make_raster_list(rsl, year)
 mask_water_raster = make_raster_list(mask_water, year)
 water_depth_raster = make_raster_list(water_depth, year)
 bss_raster = make_raster_list(bss, year, type)
+ice_raster = make_raster_list(ice, year)
 strat_raster = make_raster_list(strat, year, type)
 vel_raster = make_raster_list(vel, year)
 
@@ -219,6 +233,8 @@ readr::write_rds(rsl_raster, "./data/processed_data/rsl_raster.rds")
 readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds")
 readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
 readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
+readr::write_rds(ice_raster, "./data/processed_data/ice_raster.rds")
 readr::write_rds(strat_raster, "./data/processed_data/strat_raster.rds")
 readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
+
 

@@ -13,8 +13,14 @@ function(input, output, session) {
   output$map = leaflet::renderLeaflet({
     leaflet::leaflet() |> 
       leaflet::setView(lng = -4, lat = 56, zoom = 5.25) |> 
+      # Base amp raster
       leaflet::addRasterImage(amp_raster$X21_elevation_amplitude, 
                               colors = "viridis") |> 
+      # # base water
+      # leaflet::addRasterImage(mask_water_raster$X21_mask_water) |> 
+      # base ice
+      leaflet::addRasterImage(ice_raster$X21_ice) |> 
+      # base current shoreline
       leaflet::addPolygons(data = shape_1, weight = 0.5)
   })
   
@@ -30,6 +36,7 @@ function(input, output, session) {
                             strat_raster = strat_raster,
                             vel_raster = vel_raster,
                             water_depth_raster = water_depth_raster), 
+             ice_raster = ice_raster,
              map_proxy = map_proxy
              )
   
