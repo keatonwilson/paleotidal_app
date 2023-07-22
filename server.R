@@ -23,9 +23,13 @@ function(input, output, session) {
       # # base water
       # leaflet::addRasterImage(mask_water_raster$X21_mask_water) |> 
       # base ice
-      leaflet::addRasterImage(ice_raster$X21_ice) |> 
+      leaflet::addRasterImage(ice_raster$X21_ice, colors = "aliceblue") |> 
       # base current shoreline
-      leaflet::addPolygons(data = shape_1, weight = 0.5)
+      leaflet::addPolygons(data = shape_1, 
+                           weight = 0.5, 
+                           opacity = 1,
+                           color = "black",
+                           fillOpacity = 0)
   })
   
   map_proxy = reactive(leaflet::leafletProxy("map"))
