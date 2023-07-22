@@ -1,43 +1,39 @@
 library(raster)
-# library(terra)
+library(terra)
 library(tidyverse)
 # library(sp)
 library(leaflet)
 
 # Sandbox to make leaflet plots locally before connecting to app
 
+ice_raster = readr::read_rds("./data/processed_data/ice_raster.rds")
+
 # Start with veolocity
+vel_raster = readr::read_rds("./data/processed_data/vel_raster.rds")
+shape_1 = sf::st_read("./data/raw_shape/coastline/GSHHS_l_L1.shp")
+
+leaflet() |> 
+  leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
+  addTiles() |> 
+  addRasterImage(vel_raster[[21]], opacity = 0.8, colors = "viridis") |> 
+  addRasterImage(ice_raster[[21]]) |>
+  addPolygons(data = shape_1, color = "black", weight = 1,
+              opacity = 1, fillOpacity = 0) |> 
+  clearShapes()
+
+# Test strat
 strat_raster = readr::read_rds("./data/processed_data/strat_raster.rds")
 
-vel_raster = readr::read_rds("./data/processed_data/vel_raster.rds")
+color_vec <- rev(RColorBrewer::brewer.pal(3, "GnBu"))
+RColorBrewer::display.brewer.pal(3, "GnBu")
+
+pal <- colorFactor(palette = "GnBu",
+                   domain = values(strat_raster[[1]]),
+                   na.color = "black")
+
 leaflet() |> 
   addTiles() |> 
-  addRasterImage(strat_raster[[22]], opacity = 0.8)
+  addRasterImage(strat_raster[[5]], opacity = 0.8, colors = pal) |> 
+  addPolygons(data = shape_1, color = "black", weight = 1,
+              opacity = 1, fillOpacity = 0)
 
-test = read_tsv("./data/raw_lat_lon/ampM2/amp_M2_00.ascii", 
-                col_names = c("x", "y", "value"))
-test = read_tsv("./data/raw_lat_lon/stratification/log10_strat_123_00.ascii", 
-                col_names = c("x", "y", "value")) %>%
-  mutate(value = if_else(is.nan(value), NA, value),
-         value = if_else(is.infinite(value), NA, value))
-test = read_tsv("./data/raw_lat_lon/stratification/strat_00.ascii", 
-                col_names = c("x", "y", "value"))
-
-test = read_tsv("./data/raw_lat_lon/vel/velM2_00.ascii", 
-                col_names = c("x", "y", "value"))
-
-# getting dims for raster transformation
-ncol = length(unique(test$x))
-nrow = length(unique(test$y))
-
-extent = extent(test[,(1:2)])
-r = raster(extent, ncol = ncol, nrow = nrow)
-
-# rasterize
-r_new = rasterize(test[,1:2], r, test[,3], fun=mean)
-crs(r_new) = "+proj=longlat +datum=WGS84"
-
-# testing on map
-leaflet() |> 
-  addTiles() |> 
-  addRasterImage(r_new, opacity = 0.8, )
