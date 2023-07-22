@@ -22,6 +22,8 @@ test = read_tsv("./data/raw_lat_lon/stratification/log10_strat_10.ascii",
          value = if_else(is.infinite(value), NA, value))
 test = read_tsv("./data/raw_lat_lon/stratification/strat_00.ascii", 
                 col_names = c("x", "y", "value"))
+test = read_tsv("./data/raw_lat_lon/vel/velM2_00.ascii", 
+                col_names = c("x", "y", "value"))
 
 # getting dims for raster transformation
 ncol = length(unique(test$x))
@@ -37,7 +39,7 @@ crs(r_new) = "+proj=longlat +datum=WGS84"
 # testing on map
 leaflet() |> 
   addTiles() |> 
-  addRasterImage(r_new, opacity = 0.8, )
+  addRasterImage(r_new, opacity = 0.8)
 
 
 
@@ -126,14 +128,20 @@ combine_all_years = function(data_dir,
   
   # ice requires special processing
   is_ice = all(stringr::str_detect(files_to_read, "ice"))
+  if(is_ice) {
     out = out |> 
       dplyr::mutate(value = dplyr::case_when(value == 0 ~ NA, 
                                              .default = 1))
+  }
+    
   # water mask special processing
   is_water = all(stringr::str_detect(files_to_read, "mask_water"))
+  if(is_water) {
     out = out |> 
       dplyr::mutate(value = dplyr::case_when(value == 0 ~ NA, 
                                              .default = 2))
+  }
+  
   # return 
   return(out)
 }
@@ -224,7 +232,7 @@ mask_water_raster = make_raster_list(mask_water, year)
 water_depth_raster = make_raster_list(water_depth, year)
 bss_raster = make_raster_list(bss, year, type)
 ice_raster = make_raster_list(ice, year)
-strat_raster = make_raster_list(strat, year, type)
+strat_raster = make_raster_list(strat, year)
 vel_raster = make_raster_list(vel, year)
 
 # writing raster stacks to rds files
@@ -236,5 +244,3 @@ readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
 readr::write_rds(ice_raster, "./data/processed_data/ice_raster.rds")
 readr::write_rds(strat_raster, "./data/processed_data/strat_raster.rds")
 readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
-
-
