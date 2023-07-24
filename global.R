@@ -32,10 +32,94 @@ if (is_deployment == FALSE) {
   })
 
 } else {
-  bucketfiles = aws.s3::get_bucket('paleotidal-data-storage')
+  
+  # load files from bucket into memory
   amp_raster = aws.s3::s3readRDS("processed_data/amp_raster.rds", 
                                  bucket = "paleotidal-data-storage")
+  bss_raster = aws.s3::s3readRDS("processed_data/bss_raster.rds", 
+                                 bucket = "paleotidal-data-storage")
+  mask_water_raster = aws.s3::s3readRDS("processed_data/mask_water_raster.rds", 
+                                        bucket = "paleotidal-data-storage")
+  rsl_raster = aws.s3::s3readRDS("processed_data/rsl_raster.rds", 
+                                 bucket = "paleotidal-data-storage")
+  strat_raster = aws.s3::s3readRDS("processed_data/strat_raster.rds", 
+                                   bucket = "paleotidal-data-storage")
+  vel_raster = aws.s3::s3readRDS("processed_data/vel_raster.rds", 
+                                 bucket = "paleotidal-data-storage")
+  water_depth_raster = aws.s3::s3readRDS("processed_data/water_depth_raster.rds", 
+                                         bucket = "paleotidal-data-storage")
+  ice_raster = aws.s3::s3readRDS("processed_data/ice_raster.rds", 
+                                 bucket = "paleotidal-data-storage")
+  
+  # raw data
   amp_data = aws.s3::get_object("processed_data/amp_data.feather", 
                                 bucket = "paleotidal-data-storage") |> 
     arrow::read_feather()
+  
+  bss = aws.s3::get_object("processed_data/bss.feather", 
+                           bucket = "paleotidal-data-storage") |> 
+    arrow::read_feather()
+  
+  mask_water = aws.s3::get_object("processed_data/mask_water.feather", 
+                                  bucket = "paleotidal-data-storage") |> 
+    arrow::read_feather()
+  
+  rsl = aws.s3::get_object("processed_data/rsl.feather", 
+                           bucket = "paleotidal-data-storage") |> 
+    arrow::read_feather()
+  
+  strat = aws.s3::get_object("processed_data/strat.feather", 
+                             bucket = "paleotidal-data-storage") |> 
+    arrow::read_feather()
+  
+  vel = aws.s3::get_object("processed_data/vel.feather", 
+                           bucket = "paleotidal-data-storage") |> 
+    arrow::read_feather()
+  
+  water_depth = aws.s3::get_object("processed_data/water_depth.feather", 
+                                   bucket = "paleotidal-data-storage") |> 
+    arrow::read_feather()
+  
+  
+  # shape files
+  bucketfiles = aws.s3::get_bucket_df("paleotidal-data-storage")
+  
+  # coastline objects to save
+  coastline_objs = bucketfiles |> 
+    dplyr::filter(stringr::str_detect(Key, "coastline")) |> 
+    dplyr::pull(Key)
+  
+  # saving
+  coastline_objs |> 
+    purrr::map(function(coastline_file) {
+      name = glue::glue("./data/{stringr::str_remove(coastline_file, 'coastline/')}")
+      aws.s3::save_object(coastline_file, 
+                          bucket = "paleotidal-data-storage", 
+                          file = name)
+    })
+  
+  # loading from save
+  shape_1 = sf::st_read("./data/GSHHS_l_L1.shp")
+  
+  strat_files = bucketfiles |> 
+    dplyr::filter(stringr::str_detect(Key, "strat/")) |> 
+    dplyr::pull(Key)
+  
+  # saving
+  strat_files |> 
+    purrr::map(function(strat_file) {
+      name = glue::glue("./data/{stringr::str_remove(strat_file, 'strat/')}")
+      aws.s3::save_object(strat_file, 
+                          bucket = "paleotidal-data-storage", 
+                          file = name)
+    })
+  
+  # loading from file
+  nums = seq(from = 0, to = 21) |> stringr::str_pad(width = 2, side = "left", pad = "0")
+  strat_objects = glue::glue("./data/log10_strat_contour_{nums}.shp")
+  
+  strat_contours = strat_objects |> 
+    purrr::map(function(shapefile) {
+      sf::st_read(shapefile)
+    })
 }
