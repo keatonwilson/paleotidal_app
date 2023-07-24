@@ -1,5 +1,5 @@
 # Set local or deloyment mode --------------------------------------------
-is_deployment = FALSE
+is_deployment = TRUE
 
 
 # Data load ---------------------------------------------------------------
