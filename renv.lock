@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.3.0",
+    "Version": "4.2.3",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -29,14 +29,14 @@
     },
     "KernSmooth": {
       "Package": "KernSmooth",
-      "Version": "2.23-21",
+      "Version": "2.23-20",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "stats"
       ],
-      "Hash": "6314fc110e09548ba889491db6ae67fb"
+      "Hash": "8dcfa99b14c296bc9f1fd64d52fd3ce7"
     },
     "MASS": {
       "Package": "MASS",
