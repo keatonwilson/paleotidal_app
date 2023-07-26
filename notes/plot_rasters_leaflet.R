@@ -13,48 +13,68 @@ amp_raster = readr::read_rds("./data/processed_data/amp_raster.rds")
 
 pal <- colorNumeric(palette = "viridis",
                     domain = c(0, 4),
-                    na.color = "gray20")
+                    na.color = "gray30")
 
 leaflet() |> 
   leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
   addRasterImage(amp_raster[[21]], opacity = 0.8, colors = pal) |> 
-  # addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
+  addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
   addPolygons(data = shape_1, color = "black", weight = 1,
-              opacity = 1, fillOpacity = 0) 
+              opacity = 1, fillOpacity = 0) |> 
+  addLegend("topright", colors = c("gray", "aliceblue"),
+            labels = c("land", "ice"),
+            opacity = 1) |> 
+  addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
+            title = "Tidal Amplitude",
+            labFormat = labelFormat(suffix = " m"), 
+            opacity = 1)
+
 
 # Try with veolocity
 vel_raster = readr::read_rds("./data/processed_data/vel_raster.rds")
-maxes <- c()
-for(i in 1:22) {
-  maxes[i] <- min(vel_raster[[i]]@data@values, na.rm = T)
-}
 
 pal <- colorNumeric(palette = "viridis",
                     domain = c(0, 1.6),
-                   na.color = "gray20")
+                   na.color = "gray30")
 
 leaflet() |> 
   leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
-  addRasterImage(vel_raster[[21]], opacity = 0.8, colors = pal) |> 
-  # addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
+  addRasterImage(vel_raster[[15]], opacity = 0.8, colors = pal) |> 
+  addRasterImage(ice_raster[[15]], colors = "aliceblue") |>
   addPolygons(data = shape_1, color = "black", weight = 1,
-              opacity = 1, fillOpacity = 0) 
+              opacity = 1, fillOpacity = 0) |> 
+  addLegend("topright", colors = c("gray", "aliceblue"),
+            labels = c("land", "ice"),
+            opacity = 1) |> 
+  addLegend("bottomright", pal = pal, values = c(0, 1.6), bins = 4,
+            title = "Tidal Current",
+            labFormat = labelFormat(suffix = " m/s"), 
+            opacity = 1)
 
 # Test strat
 strat_raster = readr::read_rds("./data/processed_data/strat_raster.rds")
 
-# color_vec <- rev(RColorBrewer::brewer.pal(3, "GnBu"))
-# RColorBrewer::display.brewer.pal(3, "GnBu")
-
 pal <- colorFactor(palette = "GnBu",
-                   domain = 1:3,
-                   na.color = "gray20", 
+                   domain = values(strat_raster[[21]]),
+                   na.color = "gray30", 
                    reverse = TRUE)
+
+strat_vec <- c("mixed", "frontal", "stratified")
 
 leaflet() |> 
   leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
   addRasterImage(strat_raster[[21]], opacity = 0.8, colors = pal) |> 
   addPolygons(data = shape_1, color = "black", weight = 1,
               opacity = 1, fillOpacity = 0) |>
-  addRasterImage(ice_raster[[21]], colors = "aliceblue")
+  addRasterImage(ice_raster[[21]], colors = "aliceblue") |> 
+  addLegend("topright", colors = c("gray", "aliceblue"),
+            labels = c("land", "ice"),
+            opacity = 1)
+  addLegend("bottomright", pal = pal, values = 1:3, 
+            labFormat = labelFormat(transform = function(x) {
+              # see https://stackoverflow.com/questions/59110756/failed-to-add-a-categorical-legend-in-leaflet-in-r-using-addlegendlabels
+            }),
+            title = "Stratification", 
+            opacity = 1)
+
 
