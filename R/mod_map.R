@@ -34,10 +34,15 @@ map_server <- function(id,
       raster = raster_to_map[[to_map]]
       ice_raster = ice_raster[[ice_to_map]]
       
-      if(data$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
+      if(data$datatype == "Tidal Amplitude") {
+        
+        pal <- colorNumeric(palette = "viridis",
+                            domain = c(0, 4),
+                            na.color = "gray30")
+        
         mp <- map_proxy() |> 
           leaflet::addRasterImage(raster, 
-                                  colors = "viridis") |> 
+                                  colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
           leaflet::addPolygons(data = shape_1, 
                                weight = 0.5, 
@@ -50,13 +55,37 @@ map_server <- function(id,
             clearShapes()
           mp2
         }
-      }
-      else if(data$datatype == "Stratification") {
-        color_vec <- rev(RColorBrewer::brewer.pal(3, "GnBu"))
+      } else if (data$datatype == "Tidal Current") {
+        
+        pal <- colorNumeric(palette = "viridis",
+                            domain = c(0, 1.6),
+                            na.color = "gray30")
         
         mp <- map_proxy() |> 
           leaflet::addRasterImage(raster, 
-                                  colors = color_vec) |> 
+                                  colors = pal) |> 
+          leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
+          leaflet::addPolygons(data = shape_1, 
+                               weight = 0.5, 
+                               opacity = 1,
+                               color = "black",
+                               fillOpacity = 0)
+        mp
+        if(inputs$coast == FALSE) {
+          mp2<- mp |> 
+            clearShapes()
+          mp2
+        }
+      } else if(data$datatype == "Stratification") {
+        
+        pal <- colorFactor(palette = "GnBu",
+                           domain = values(raster),
+                           na.color = "gray30", 
+                           reverse = TRUE)
+        
+        mp <- map_proxy() |> 
+          leaflet::addRasterImage(raster, 
+                                  colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
           leaflet::addPolygons(data = shape_1, 
                                weight = 0.5, 
