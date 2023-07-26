@@ -34,6 +34,7 @@ map_server <- function(id,
       raster = raster_to_map[[to_map]]
       ice_raster = ice_raster[[ice_to_map]]
       
+      # Tidal Amplitude Map
       if(data$datatype == "Tidal Amplitude") {
         
         pal <- colorNumeric(palette = "viridis",
@@ -41,6 +42,7 @@ map_server <- function(id,
                             na.color = "gray30")
         
         mp <- map_proxy() |> 
+          leaflet::clearControls() |> 
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
@@ -48,13 +50,23 @@ map_server <- function(id,
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
-                               fillOpacity = 0)
+                               fillOpacity = 0) |> 
+          addLegend("topright", colors = c("gray", "aliceblue"),
+                    labels = c("land", "ice"),
+                    opacity = 1) |> 
+          addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
+                    title = "Tidal Amplitude",
+                    labFormat = labelFormat(suffix = " m"), 
+                    opacity = 1)
         mp
+        
         if(inputs$coast == FALSE) {
           mp2<- mp |> 
             clearShapes()
           mp2
         }
+        
+        # Tidal Current Map
       } else if (data$datatype == "Tidal Current") {
         
         pal <- colorNumeric(palette = "viridis",
@@ -62,6 +74,7 @@ map_server <- function(id,
                             na.color = "gray30")
         
         mp <- map_proxy() |> 
+          leaflet::clearControls() |> 
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
@@ -76,6 +89,7 @@ map_server <- function(id,
             clearShapes()
           mp2
         }
+        # Strat Map
       } else if(data$datatype == "Stratification") {
         
         pal <- colorFactor(palette = "GnBu",
@@ -84,6 +98,7 @@ map_server <- function(id,
                            reverse = TRUE)
         
         mp <- map_proxy() |> 
+          leaflet::clearControls() |> 
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 

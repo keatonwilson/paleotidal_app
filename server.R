@@ -29,7 +29,15 @@ function(input, output, session) {
                            weight = 0.5, 
                            opacity = 1,
                            color = "black",
-                           fillOpacity = 0)
+                           fillOpacity = 0) |> 
+      # add basemap legend
+      addLegend("topright", colors = c("gray", "aliceblue"),
+                labels = c("land", "ice"),
+                opacity = 1) |> 
+      addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
+                title = "Tidal Amplitude",
+                labFormat = labelFormat(suffix = " m"), 
+                opacity = 1)
   })
   
   map_proxy = reactive(leaflet::leafletProxy("map"))
