@@ -20,6 +20,33 @@ bss_wide = bss |>
                                      .default = 4)) |> 
   filter(year == 0)
 
+# polyline calculations
+mag_mult = 0.05
+polylines_df_base = bss_wide |> 
+  filter(!is.na(quadrant) & uv > 8 & uv < 11) |> 
+  mutate(id = row_number())
+
+polylines_end = bss_wide |> 
+  filter(!is.na(quadrant) & uv > 8 & uv < 11) |>
+  mutate(x = x+(u*mag_mult), 
+         y = y+(v*mag_mult)) |> 
+  mutate(id = row_number())
+
+to_plot = bind_rows(polylines_df_base, polylines_end) |> 
+  mutate(id = factor(id))
+
+map = leaflet() |> 
+  addTiles()
+
+for(group in levels(to_plot$id)){
+  map = leaflet.extras2::addArrowhead(map,
+                       lng= ~x,
+                       lat= ~y,
+                       data = to_plot[to_plot$id==group,],
+                       weight = 1)
+}
+
+
 # getting dims for raster transformation
 ncol = length(unique(bss_wide$x))
 nrow = length(unique(bss_wide$y))

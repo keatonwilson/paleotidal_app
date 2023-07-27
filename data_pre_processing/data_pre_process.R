@@ -155,7 +155,17 @@ amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
 rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
 mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
-bss = combine_all_years("./data/raw_lat_lon/bss/", "bss")
+
+# bss pre-processing is special
+bss = combine_all_years("./data/raw_lat_lon/bss/", "bss") |> 
+  tidyr::pivot_wider(names_from = type, values_from = value) |>
+  mutate(quadrant = dplyr::case_when(u > 1 & v > 1 ~ 1, 
+                                     u > 1 & v < 1 ~ 2, 
+                                     u < 1 & v > 1 ~ 3,
+                                     u == 0 | v == 0 ~ NA,
+                                     .default = 4)) |> 
+  filter(year == 0)
+
 ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
 strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
 vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
@@ -200,17 +210,33 @@ make_raster_list = function(data,
   # make raster out of each list-component
   raster_list = data_split |>
     purrr::map(function(list_item) {
-
-      # getting dims for raster transformation
-      ncol = length(unique(list_item$x))
-      nrow = length(unique(list_item$y))
-
-      extent = extent(list_item[,(1:2)])
-      r = raster(extent, ncol = ncol, nrow = nrow)
-
-      # rasterize
-      r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=mean)
-      crs(r_new) = "+proj=longlat +datum=WGS84"
+      
+      if (all(list_item$datatype != "bss")) {
+        # getting dims for raster transformation
+        ncol = length(unique(list_item$x))
+        nrow = length(unique(list_item$y))
+  
+        extent = extent(list_item[,(1:2)])
+        r = raster(extent, ncol = ncol, nrow = nrow)
+  
+        # rasterize
+        r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=mean)
+        crs(r_new) = "+proj=longlat +datum=WGS84"
+      
+      } else {
+        # bss is special
+        # getting dims for raster transformation
+        ncol = length(unique(list_item$x))
+        nrow = length(unique(list_item$y))
+        
+        extent = extent(list_item[,(1:2)])
+        r = raster(extent, ncol = ncol, nrow = nrow)
+        
+        # rasterize
+        r_new = rasterize(list_item[,1:2], r, list_item[,8], fun=mean)
+        crs(r_new) = "+proj=longlat +datum=WGS84"
+        
+      }
 
       return(r_new)
     }, .progress = list(name = "Building Rasters"))
@@ -230,7 +256,7 @@ amp_raster = make_raster_list(amp_data, year)
 rsl_raster = make_raster_list(rsl, year)
 mask_water_raster = make_raster_list(mask_water, year)
 water_depth_raster = make_raster_list(water_depth, year)
-bss_raster = make_raster_list(bss, year, type)
+bss_raster = make_raster_list(bss, year)
 ice_raster = make_raster_list(ice, year)
 strat_raster = make_raster_list(strat, year)
 vel_raster = make_raster_list(vel, year)
