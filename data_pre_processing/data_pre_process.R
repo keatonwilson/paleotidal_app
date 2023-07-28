@@ -172,8 +172,7 @@ bss = combine_all_years("./data/raw_lat_lon/bss/", "bss") |>
                                      u > 1 & v < 1 ~ 2, 
                                      u < 1 & v > 1 ~ 3,
                                      u == 0 | v == 0 ~ NA,
-                                     .default = 4)) |> 
-  filter(year == 0)
+                                     .default = 4))
 
 ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
 strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
