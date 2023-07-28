@@ -142,6 +142,15 @@ combine_all_years = function(data_dir,
                                              .default = 2))
   }
   
+  # amp and vel require special processing
+  is_amp_vel = all(stringr::str_detect(files_to_read, "amp") |
+                     stringr::str_detect(files_to_read, "vel"))
+  if(is_amp_vel) {
+    out = out |> 
+      dplyr::mutate(value = dplyr::if_else(value == 0, NA, value))
+  }
+  
+  
   # return 
   return(out)
 }

@@ -41,21 +41,21 @@ input_ui <- function(id) {
           animate = animationOptions(interval = 1000,
                                      loop = FALSE)
         ),
-        bslib::layout_column_wrap(
-          width = 1 / 2,
+        # bslib::layout_column_wrap(
+        #   width = 1 / 2,
           checkboxInput(
             NS(id, "coast"),
             "Show coastline?",
             value = TRUE,
             width = '100%'
-          ),
-          selectInput(
-            NS(id, "coastyear"),
-            "Select coastline  year:",
-            choices = 0:21,
-            selected = 0,
-            width = '100%'
-          )
+          # ),
+          # selectInput(
+          #   NS(id, "coastyear"),
+          #   "Select coastline year:",
+          #   choices = 0:21,
+          #   selected = 0,
+          #   width = '100%'
+          # )
         )
       ),
       ## Custom Panel ----------------------------------------------------------
