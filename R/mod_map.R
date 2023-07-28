@@ -37,7 +37,7 @@ map_server <- function(id,
       # Tidal Amplitude Map
       if(data$datatype == "Tidal Amplitude") {
         
-        pal <- colorNumeric(palette = "viridis",
+        pal <- leaflet::colorNumeric(palette = "viridis",
                             domain = c(0, 4),
                             na.color = "gray30")
         
@@ -51,10 +51,10 @@ map_server <- function(id,
                                opacity = 1,
                                color = "black",
                                fillOpacity = 0) |> 
-          addLegend("topright", colors = c("gray", "aliceblue"),
+          leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
                     labels = c("land", "ice"),
                     opacity = 1) |> 
-          addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
+          leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
                     title = "Tidal Amplitude",
                     labFormat = labelFormat(suffix = " m"), 
                     opacity = 1)
@@ -62,7 +62,7 @@ map_server <- function(id,
         
         if(inputs$coast == FALSE) {
           mp2<- mp |> 
-            clearShapes()
+            leaflet::clearShapes()
           mp2
         }
         
@@ -82,11 +82,20 @@ map_server <- function(id,
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
-                               fillOpacity = 0)
+                               fillOpacity = 0) |> 
+          leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
+                    labels = c("land", "ice"),
+                    opacity = 1) |> 
+          leaflet::addLegend("bottomright", pal = pal, values = c(0, 1.6), bins = 4,
+                    title = "Tidal Current",
+                    labFormat = labelFormat(suffix = " m/s"), 
+                    opacity = 1)
+        
         mp
+        
         if(inputs$coast == FALSE) {
           mp2<- mp |> 
-            clearShapes()
+            leaflet::clearShapes()
           mp2
         }
         # Strat Map
@@ -106,12 +115,16 @@ map_server <- function(id,
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
-                               fillOpacity = 0)
+                               fillOpacity = 0) |> 
+          leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
+                             labels = c("land", "ice"),
+                             opacity = 1) 
+        
         mp
         
         if(inputs$coast == FALSE) {
          mp2<- mp |> 
-            clearShapes()
+           leaflet::clearShapes()
          mp2
         }
       }

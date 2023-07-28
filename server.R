@@ -14,6 +14,12 @@ function(input, output, session) {
                       inputs = input_list)
   
   # base map and proxy
+  
+  # set color legend for proxy map
+  pal <- leaflet::colorNumeric(palette = "viridis",
+                               domain = c(0, 4),
+                               na.color = "gray30") 
+  
   output$map = leaflet::renderLeaflet({
     leaflet::leaflet() |> 
       leaflet::setView(lng = -4, lat = 56, zoom = 5.25) |> 
@@ -31,10 +37,10 @@ function(input, output, session) {
                            color = "black",
                            fillOpacity = 0) |> 
       # add basemap legend
-      addLegend("topright", colors = c("gray", "aliceblue"),
+      leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
                 labels = c("land", "ice"),
                 opacity = 1) |> 
-      addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
+      leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
                 title = "Tidal Amplitude",
                 labFormat = labelFormat(suffix = " m"), 
                 opacity = 1)
