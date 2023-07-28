@@ -14,6 +14,12 @@ function(input, output, session) {
                       inputs = input_list)
   
   # base map and proxy
+  
+  # set color legend for proxy map
+  pal <- leaflet::colorNumeric(palette = "viridis",
+                               domain = c(0, 4),
+                               na.color = "gray30") 
+  
   output$map = leaflet::renderLeaflet({
     leaflet::leaflet() |> 
       leaflet::setView(lng = -4, lat = 56, zoom = 5.25) |> 
@@ -23,9 +29,21 @@ function(input, output, session) {
       # # base water
       # leaflet::addRasterImage(mask_water_raster$X21_mask_water) |> 
       # base ice
-      leaflet::addRasterImage(ice_raster$X21_ice) |> 
+      leaflet::addRasterImage(ice_raster$X21_ice, colors = "aliceblue") |> 
       # base current shoreline
-      leaflet::addPolygons(data = shape_1, weight = 0.5)
+      leaflet::addPolygons(data = shape_1, 
+                           weight = 0.5, 
+                           opacity = 1,
+                           color = "black",
+                           fillOpacity = 0) |> 
+      # add basemap legend
+      leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
+                labels = c("land", "ice"),
+                opacity = 1) |> 
+      leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
+                title = "Tidal Amplitude",
+                labFormat = labelFormat(suffix = " m"), 
+                opacity = 1)
   })
   
   map_proxy = reactive(leaflet::leafletProxy("map"))
