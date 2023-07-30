@@ -52,7 +52,44 @@ leaflet() |>
             opacity = 1)
 
 # Test strat
-strat_raster = readr::read_rds("./data/processed_data/strat_raster.rds")
+# strat_raster = readr::read_rds("./data/processed_data/stratlog10_raster.rds")
+
+strat = arrow::read_feather("./data/processed_data/stratlog10.feather")
+
+#  min 1.9, max 2.9, front 2.1, radius 0.08
+
+# Function to return statistical mode
+Mode <- function(x, ...) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+raster_list <- strat |> 
+  mutate(cat = case_when(value < 1.9 ~ "mixed",
+                         value >= 1.9 & value <= 2.9 ~ "frontal",
+                         value > 2.9 ~ "stratified"),
+         cat = factor(cat, levels = c("mixed", "frontal", "stratified"))) |> 
+  dplyr::group_by(year) |> 
+  dplyr::group_split() |> 
+  purrr::map(function(list_item) {
+    
+    # getting dims for raster transformation
+    ncol = length(unique(list_item$x))
+    nrow = length(unique(list_item$y))
+    
+    extent = extent(list_item[,(1:2)])
+    r = raster(extent, ncol = ncol, nrow = nrow)
+    
+    # rasterize
+    r_new = terra::rasterize(list_item[,1:2], r, list_item$cat, fun = Mode)
+    crs(r_new) = "+proj=longlat +datum=WGS84"
+    
+    return(r_new)
+  }, .progress = list(name = "Building Rasters"))
+
+# turn into a stack
+stack_out = raster::stack(raster_list)
+  
 
 pal <- colorFactor(palette = "GnBu",
                    domain = values(strat_raster[[21]]),

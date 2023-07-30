@@ -208,6 +208,7 @@ arrow::write_feather(ice, "./data/processed_data/ice.feather")
 arrow::write_feather(vel, "./data/processed_data/vel.feather")
 arrow::write_feather(strat, "./data/processed_data/strat.feather")
 arrow::write_feather(stratlog10, "./data/processed_data/stratlog10.feather")
+
 # Make a list of raster objects by year -----------------------------------
 
 make_raster_list = function(data, 
@@ -270,8 +271,9 @@ mask_water_raster = make_raster_list(mask_water, year)
 water_depth_raster = make_raster_list(water_depth, year)
 bss_raster = make_raster_list(bss, year, type)
 ice_raster = make_raster_list(ice, year)
-strat_raster = make_raster_list(strat, year)
 vel_raster = make_raster_list(vel, year)
+strat_raster = make_raster_list(strat, year)
+stratlog10_raster = make_raster_list(stratlog10, year)
 
 # writing raster stacks to rds files
 readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
@@ -280,5 +282,6 @@ readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds
 readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
 readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
 readr::write_rds(ice_raster, "./data/processed_data/ice_raster.rds")
-readr::write_rds(strat_raster, "./data/processed_data/strat_raster.rds")
 readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
+readr::write_rds(strat_raster, "./data/processed_data/strat_raster.rds")
+readr::write_rds(stratlog10_raster, "./data/processed_data/stratlog10_raster.rds")
