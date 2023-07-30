@@ -62,6 +62,8 @@ leaflet() |>
 #' @export
 #'
 #' @examples
+#' 
+#' 
 combine_all_years = function(data_dir, 
                              datatype
                              ) {
@@ -71,7 +73,10 @@ combine_all_years = function(data_dir,
   # bss requires special processing
   is_bss = all(stringr::str_detect(files_to_read, "bss"))
   
-  if (!is_bss) {
+  # stratification_absolute requires special processing
+  is_strat = all(stringr::str_detect(files_to_read, regex("stratification_absolute/strat_")))
+  
+  if (!is_bss & !is_strat) {
     out = purrr::map(files_to_read, function(file) {
       # extracting year
       year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
@@ -84,6 +89,27 @@ combine_all_years = function(data_dir,
                              progress = FALSE) |> 
         dplyr::mutate(year = year, 
                       datatype = datatype)
+      
+      # return
+      return(data)
+      
+    }, .progress = list(name = "Spatial Data Pre-Processing")) |> 
+      dplyr::bind_rows()
+    
+  } else if (is_strat) {
+    out = purrr::map(files_to_read, function(file) {
+      # extracting year
+      year = stringr::str_extract(file, "(\\d{2})(?=\\.[^.]+$)") |> 
+        as.numeric()
+      
+      # reading file and appending 
+      data = readr::read_tsv(file, 
+                             col_names = c("x", "y", "value"), 
+                             show_col_types = FALSE, 
+                             progress = FALSE) |> 
+        dplyr::mutate(year = year, 
+                      datatype = datatype, 
+                      value = log(value, base = 10))
       
       # return
       return(data)
@@ -166,8 +192,11 @@ mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss")
 ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
-strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
 vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
+# categorical
+strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
+# continuous, convert to log10 scale
+stratlog10 = combine_all_years("./data/raw_lat_lon/stratification_absolute/", "stratlog10")
 
 # write feather files
 arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
@@ -176,9 +205,9 @@ arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
 arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
 arrow::write_feather(bss, "./data/processed_data/bss.feather")
 arrow::write_feather(ice, "./data/processed_data/ice.feather")
-arrow::write_feather(strat, "./data/processed_data/strat.feather")
 arrow::write_feather(vel, "./data/processed_data/vel.feather")
-
+arrow::write_feather(strat, "./data/processed_data/strat.feather")
+arrow::write_feather(stratlog10, "./data/processed_data/stratlog10.feather")
 # Make a list of raster objects by year -----------------------------------
 
 make_raster_list = function(data, 
