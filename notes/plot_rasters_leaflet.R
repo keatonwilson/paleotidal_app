@@ -81,7 +81,7 @@ raster_list <- strat |>
     r = raster(extent, ncol = ncol, nrow = nrow)
     
     # rasterize
-    r_new = terra::rasterize(list_item[,1:2], r, list_item$cat, fun = Mode)
+    r_new = terra::rasterize(list_item[,1:2], r, list_item[,6], fun = Mode)
     crs(r_new) = "+proj=longlat +datum=WGS84"
     
     return(r_new)
