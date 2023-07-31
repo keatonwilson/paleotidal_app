@@ -162,7 +162,7 @@ combine_all_years = function(data_dir,
 # creating objects
 amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
 rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
-mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
+# mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 
 # bss pre-processing is special
@@ -181,7 +181,7 @@ vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
 # write feather files
 arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
 arrow::write_feather(rsl, "./data/processed_data/rsl.feather")
-arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
+# arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
 arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
 arrow::write_feather(bss, "./data/processed_data/bss.feather")
 arrow::write_feather(ice, "./data/processed_data/ice.feather")
@@ -228,7 +228,7 @@ make_raster_list = function(data,
         r = raster(extent, ncol = ncol, nrow = nrow)
   
         # rasterize
-        r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=mean)
+        r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=min)
         crs(r_new) = "+proj=longlat +datum=WGS84"
       
       } else {
@@ -241,7 +241,7 @@ make_raster_list = function(data,
         r = raster(extent, ncol = ncol, nrow = nrow)
         
         # rasterize
-        r_new = rasterize(list_item[,1:2], r, list_item[,8], fun=mean)
+        r_new = rasterize(list_item[,1:2], r, list_item[,8], fun=min)
         crs(r_new) = "+proj=longlat +datum=WGS84"
         
       }
@@ -262,7 +262,7 @@ make_raster_list = function(data,
 # generating raster stacks for each data type
 amp_raster = make_raster_list(amp_data, year)
 rsl_raster = make_raster_list(rsl, year)
-mask_water_raster = make_raster_list(mask_water, year)
+# mask_water_raster = make_raster_list(mask_water, year)
 water_depth_raster = make_raster_list(water_depth, year)
 bss_raster = make_raster_list(bss, year)
 ice_raster = make_raster_list(ice, year)
@@ -272,7 +272,7 @@ vel_raster = make_raster_list(vel, year)
 # writing raster stacks to rds files
 readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
 readr::write_rds(rsl_raster, "./data/processed_data/rsl_raster.rds")
-readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds")
+# readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds")
 readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
 readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
 readr::write_rds(ice_raster, "./data/processed_data/ice_raster.rds")
