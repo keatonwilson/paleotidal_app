@@ -168,9 +168,9 @@ water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 # bss pre-processing is special
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss") |> 
   tidyr::pivot_wider(names_from = type, values_from = value) |>
-  mutate(quadrant = dplyr::case_when(u > 1 & v > 1 ~ 1, 
-                                     u > 1 & v < 1 ~ 2, 
-                                     u < 1 & v > 1 ~ 3,
+  mutate(quadrant = dplyr::case_when(u > 0 & v > 0 ~ 1, 
+                                     u > 0 & v < 0 ~ 2, 
+                                     u < 0 & v > 0 ~ 3,
                                      u == 0 | v == 0 ~ NA,
                                      .default = 4))
 
@@ -228,7 +228,7 @@ make_raster_list = function(data,
         r = raster(extent, ncol = ncol, nrow = nrow)
   
         # rasterize
-        r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=min)
+        r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=mean)
         crs(r_new) = "+proj=longlat +datum=WGS84"
       
       } else {
@@ -241,7 +241,8 @@ make_raster_list = function(data,
         r = raster(extent, ncol = ncol, nrow = nrow)
         
         # rasterize
-        r_new = rasterize(list_item[,1:2], r, list_item[,8], fun=min)
+        r_new = rasterize(list_item[,1:2], r, list_item[,8], fun=max)
+        r_new[r_new == -Inf] = NA
         crs(r_new) = "+proj=longlat +datum=WGS84"
         
       }

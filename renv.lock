@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.2.3",
+    "Version": "4.3.0",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -29,14 +29,14 @@
     },
     "KernSmooth": {
       "Package": "KernSmooth",
-      "Version": "2.23-20",
+      "Version": "2.23-21",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
         "R",
         "stats"
       ],
-      "Hash": "8dcfa99b14c296bc9f1fd64d52fd3ce7"
+      "Hash": "6314fc110e09548ba889491db6ae67fb"
     },
     "MASS": {
       "Package": "MASS",
@@ -1007,6 +1007,20 @@
         "viridis"
       ],
       "Hash": "ac2c7f21c2a6d2579eed8aaae4c42610"
+    },
+    "leaflet.extras2": {
+      "Package": "leaflet.extras2",
+      "Version": "1.2.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "htmltools",
+        "leaflet",
+        "magrittr",
+        "utils"
+      ],
+      "Hash": "a9df7df1f60ec42656a62e247ce57094"
     },
     "leaflet.providers": {
       "Package": "leaflet.providers",
