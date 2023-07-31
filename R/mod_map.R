@@ -30,7 +30,7 @@ map_server <- function(id,
       
       # inputs$coast returns T or F for showing shapefile
       
-      browser()
+      
       # filter by time_step
       raster = raster_to_map[[to_map]]
       ice_raster = ice_raster[[ice_to_map]]
@@ -129,7 +129,7 @@ map_server <- function(id,
          mp2
         }
       } else if(data$datatype == "Peak Bed Stress") {
-        
+        browser()
         pal <- colorFactor(palette = "GnBu",
                            domain = values(raster),
                            na.color = "gray30", 
@@ -147,7 +147,11 @@ map_server <- function(id,
                                fillOpacity = 0) |> 
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
                              labels = c("land", "ice"),
-                             opacity = 1) 
+                             opacity = 1)  |> 
+          leaflet::addLegend("bottomright", pal = pal, values = 1:4, bins = 4,
+                             title = "Peak Bed Stress",
+                             labFormat = labelFormat(suffix = " m/s"), 
+                             opacity = 1)
         
         mp
         
