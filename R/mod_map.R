@@ -44,6 +44,7 @@ map_server <- function(id,
         
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
+          leaflet::clearShapes() |> 
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
@@ -76,6 +77,7 @@ map_server <- function(id,
         
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
+          leaflet::clearShapes() |>  
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
@@ -109,6 +111,7 @@ map_server <- function(id,
         
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
+          leaflet::clearShapes() |> 
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
@@ -129,15 +132,14 @@ map_server <- function(id,
          mp2
         }
       } else if(data$datatype == "Peak Bed Stress") {
-        
-        browser()
+       
         pal <- colorFactor(palette = "GnBu",
                            domain = values(raster),
-                           na.color = "gray30", 
-                           reverse = TRUE)
+                           na.color = "gray30")
         
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
+          leaflet::clearShapes() |> 
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
@@ -150,10 +152,43 @@ map_server <- function(id,
                              labels = c("land", "ice"),
                              opacity = 1)  |> 
           leaflet::addLegend("bottomright", 
-                             colors = c("#F0F9E8", "#BAE4BC", "#7BCCC4", "#2B8CBE"),
-                             labels = c("NW", "SW", "NE", "SE"),
+                             colors = c("#F0F9E8", 
+                                        "#BAE4BC", 
+                                        "#7BCCC4", 
+                                        "#2B8CBE", 
+                                        "#4d4d4d"),
+                             labels = c("NW", "SW", "NE", "SE", "No Direction"),
                              title = "Peak Bed Stress",
                              opacity = 1)
+        
+
+        bss_filt = bss |> 
+          dplyr::filter(year == inputs$yearBP) |> 
+          dplyr::filter(!is.na(quadrant)) |> 
+          dplyr::filter(uv > 1) |> 
+          dplyr::slice_max(order_by = uv, n = 500)
+        
+        # mag multiplier
+        mag_mult = 0.05
+        polylines_df_base = bss_filt |> 
+          mutate(id = row_number())
+        
+        polylines_end = bss_filt |> 
+          mutate(x = x+(u*mag_mult), 
+                 y = y+(v*mag_mult)) |> 
+          mutate(id = row_number())
+        
+        to_plot = bind_rows(polylines_df_base, polylines_end) |> 
+          mutate(id = factor(id))
+        
+        for(group in levels(to_plot$id)){
+          mp = leaflet.extras2::addArrowhead(mp,
+                                              lng= ~x,
+                                              lat= ~y,
+                                              data = to_plot[to_plot$id==group,],
+                                              weight = 2)
+        }
+        
         
         mp
         

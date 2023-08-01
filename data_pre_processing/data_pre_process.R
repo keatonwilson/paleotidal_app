@@ -171,7 +171,9 @@ bss = combine_all_years("./data/raw_lat_lon/bss/", "bss") |>
   mutate(quadrant = dplyr::case_when(u > 0 & v > 0 ~ 1, 
                                      u > 0 & v < 0 ~ 2, 
                                      u < 0 & v > 0 ~ 3,
-                                     u == 0 | v == 0 ~ NA,
+                                     u == 0 & v == 0 ~ NA,
+                                     u == 0 & v != 0 ~ 0, 
+                                     u != 0 & v == 0 ~ 0,
                                      .default = 4))
 
 ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
@@ -241,8 +243,8 @@ make_raster_list = function(data,
         r = raster(extent, ncol = ncol, nrow = nrow)
         
         # rasterize
-        r_new = rasterize(list_item[,1:2], r, list_item[,8], fun=max)
-        r_new[r_new == -Inf] = NA
+        r_new = rasterize(list_item[,1:2], r, list_item[,8], fun='first')
+        r_new[r_new == Inf] = NA
         crs(r_new) = "+proj=longlat +datum=WGS84"
         
       }
@@ -269,6 +271,16 @@ bss_raster = make_raster_list(bss, year)
 ice_raster = make_raster_list(ice, year)
 strat_raster = make_raster_list(strat, year)
 vel_raster = make_raster_list(vel, year)
+
+
+# bss testing
+pal = colorFactor(palette = "GnBu",
+                  domain = values(bss_raster$X0_bss),
+                  na.color = "gray30", 
+                  reverse = TRUE)
+leaflet() |> 
+  addRasterImage(bss_raster$X0_bss, 
+                 colors = pal) 
 
 # writing raster stacks to rds files
 readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
