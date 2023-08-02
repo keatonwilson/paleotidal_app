@@ -5,6 +5,9 @@ ui = bslib::page_navbar(
     # base_font = bslib::font_google("Cormorant Garamond"),
     # base_font = bslib::font_google("Yanone Kaffeesatz"),
     # base_font = bslib::font_google("Playfair Display")),
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+      ),
     theme = bslib::bs_theme(bootswatch = "cosmo",
                             version = 5,
                             # base_font = bslib::font_google("Cormorant Garamond")
@@ -20,7 +23,9 @@ ui = bslib::page_navbar(
                          row_heights = c(1,5),
                          bslib::layout_columns(
                            col_widths = c(4, 8),
-                           data_select_ui("data_type"),
+                           bslib::card(
+                            data_select_ui("data_type")
+                           ),
                            data_summary_ui("data_summary")
                          )
                          # bslib::card(

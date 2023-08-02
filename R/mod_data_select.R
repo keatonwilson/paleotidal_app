@@ -1,7 +1,7 @@
 data_select_ui <- function(id) {
   tagList(
     shiny::h4("Data Selection"),
-    selectInput(
+    selectizeInput(
       NS(id, "datatype"),
       label = NULL,
       choices = c(
@@ -10,7 +10,8 @@ data_select_ui <- function(id) {
         "Peak Bed Stress",
         "Tidal Current"
       ),
-      selected = "Tidal Amplitude"
+      selected = "Tidal Amplitude", 
+      options = list(dropdownParent = "body")
     )
   )
 }
