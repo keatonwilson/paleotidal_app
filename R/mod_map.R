@@ -58,7 +58,7 @@ map_server <- function(id,
                     opacity = 1) |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
                     title = "Tidal Amplitude",
-                    labFormat = labelFormat(suffix = " m"), 
+                    labFormat = leaflet::labelFormat(suffix = " m"), 
                     opacity = 1)
         mp
         
@@ -71,7 +71,7 @@ map_server <- function(id,
         # Tidal Current Map
       } else if (data$datatype == "Tidal Current") {
         
-        pal <- colorNumeric(palette = "viridis",
+        pal <- leaflet::colorNumeric(palette = "viridis",
                             domain = c(0, 1.6),
                             na.color = "gray30")
         
@@ -91,7 +91,7 @@ map_server <- function(id,
                     opacity = 1) |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 1.6), bins = 4,
                     title = "Tidal Current",
-                    labFormat = labelFormat(suffix = " m/s"), 
+                    labFormat = leaflet::labelFormat(suffix = " m/s"), 
                     opacity = 1)
         
         mp
@@ -104,8 +104,8 @@ map_server <- function(id,
         # Strat Map
       } else if(data$datatype == "Stratification") {
         
-        pal <- colorFactor(palette = "GnBu",
-                           domain = values(raster),
+        pal <- leaflet::colorFactor(palette = "GnBu",
+                           domain = raster::values(raster),
                            na.color = "gray30", 
                            reverse = TRUE)
         
@@ -133,8 +133,8 @@ map_server <- function(id,
         }
       } else if(data$datatype == "Peak Bed Stress") {
        
-        pal <- colorFactor(palette = "GnBu",
-                           domain = values(raster),
+        pal <- leaflet::colorFactor(palette = "GnBu",
+                           domain = raster::values(raster),
                            na.color = "gray30")
         
         mp <- map_proxy() |> 
@@ -171,15 +171,15 @@ map_server <- function(id,
         # mag multiplier
         mag_mult = 0.05
         polylines_df_base = bss_filt |> 
-          mutate(id = row_number())
+          dplyr::mutate(id = dplyr::row_number())
         
         polylines_end = bss_filt |> 
-          mutate(x = x+(u*mag_mult), 
+          dplyr::mutate(x = x+(u*mag_mult), 
                  y = y+(v*mag_mult)) |> 
-          mutate(id = row_number())
+          dplyr::mutate(id = dplyr::row_number())
         
-        to_plot = bind_rows(polylines_df_base, polylines_end) |> 
-          mutate(id = factor(id))
+        to_plot = dplyr::bind_rows(polylines_df_base, polylines_end) |> 
+          dplyr::mutate(id = factor(id))
         
         for(group in levels(to_plot$id)){
           mp = leaflet.extras2::addArrowhead(mp,

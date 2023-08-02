@@ -42,7 +42,7 @@ function(input, output, session) {
                 opacity = 1) |> 
       leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
                 title = "Tidal Amplitude",
-                labFormat = labelFormat(suffix = " m"), 
+                labFormat = leaflet::labelFormat(suffix = " m"), 
                 opacity = 1)
   })
   
