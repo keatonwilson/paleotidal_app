@@ -59,7 +59,7 @@ pal <- colorFactor(palette = "GnBu",
                    na.color = "gray30", 
                    reverse = TRUE)
 
-strat_vec <- c("mixed", "frontal", "stratified")
+strat_vec <- c()
 
 leaflet() |> 
   leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
@@ -69,12 +69,12 @@ leaflet() |>
   addRasterImage(ice_raster[[21]], colors = "aliceblue") |> 
   addLegend("topright", colors = c("gray", "aliceblue"),
             labels = c("land", "ice"),
-            opacity = 1)
-  addLegend("bottomright", pal = pal, values = 1:3, 
-            labFormat = labelFormat(transform = function(x) {
-              # see https://stackoverflow.com/questions/59110756/failed-to-add-a-categorical-legend-in-leaflet-in-r-using-addlegendlabels
-            }),
-            title = "Stratification", 
+            opacity = 1) |> 
+  addLegend(colors = c("#43A2CA", 
+                       "#A8DDB5", 
+                       "#E0F3DB"),
+            labels = c("mixed", "frontal", "stratified"),
+            title = "Stratification",
             opacity = 1)
 
 
