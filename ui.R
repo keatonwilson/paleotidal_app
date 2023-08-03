@@ -28,13 +28,6 @@ ui = bslib::page_navbar(
                            ),
                            data_summary_ui("data_summary")
                          )
-                         # bslib::card(
-                         #   bslib::layout_column_wrap(
-                         #     width = 1 / 3,
-                         #     data_select_ui("data_type"),
-                         #     data_summary_ui("data_summary")
-                         #   )
-                         # )
                          ,
                          bslib::card(
                            leaflet::leafletOutput("map")
