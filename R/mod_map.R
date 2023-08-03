@@ -122,7 +122,15 @@ map_server <- function(id,
                                fillOpacity = 0) |> 
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
                              labels = c("land", "ice"),
-                             opacity = 1) 
+                             opacity = 1) |> 
+          addLegend("bottomright",
+                    colors = c("#43A2CA", 
+                               "#A8DDB5", 
+                               "#E0F3DB"),
+                    labels = c("mixed", "frontal", "stratified"),
+                    title = "Stratification",
+                    opacity = 1)
+        
         
         mp
         
