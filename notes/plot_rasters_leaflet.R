@@ -17,8 +17,9 @@ pal <- colorNumeric(palette = "viridis",
 
 leaflet() |> 
   leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
-  addRasterImage(amp_raster[[21]], opacity = 0.8, colors = pal) |> 
-  addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
+  # leaflet::setMaxBounds(-15, 45, 11, 65.0125) |> 
+  addRasterImage(amp_raster[[1]], opacity = 0.8, colors = pal) |> 
+  # addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
   addPolygons(data = shape_1, color = "black", weight = 1,
               opacity = 1, fillOpacity = 0) |> 
   addLegend("topright", colors = c("gray", "aliceblue"),
