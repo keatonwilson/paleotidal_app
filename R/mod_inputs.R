@@ -61,43 +61,43 @@ input_ui <- function(id) {
       ## Custom Panel ----------------------------------------------------------
       bslib::nav_panel(
         "Custom",
-        shiny::div(
-          id = NS(id, "strat_inputs"),
-          bslib::layout_column_wrap(
-            width = 1 / 2,
-            bslib::card(
-              bslib::card_title("Boundary values"),
-              shinyWidgets::numericRangeInput(
-                NS(id, "boundaryrange"),
-                "Set min and max:",
-                value = c(1.9, 2.9),
-                min = 0,
-                max = 12,
-                step = 0.1
-              ),
-              checkboxInput(NS(id, "contrast"), "Show contrast",
-                            value = FALSE)
-            ), 
-            # shiny::div(
-            #   id = NS(id, "front_inputs"),
-            bslib::card(
-              bslib::card_title("Front values"),
-              checkboxInput(NS(id, "front"), "Show front",
-                            value = TRUE),
-              checkboxInput(NS(id, "gradient"), "Show gradient",
-                            value = FALSE),
-              uiOutput(NS(id, "dyn_frontvalue")),
-              numericInput(
-                NS(id, "frontradius"),
-                "Set front radius:",
-                value = 0.08,
-                min = 0.01,
-                max = 1,
-                step = 0.01
-              )
-            )
-          )
-        ),
+        # shiny::div(
+        #   id = NS(id, "strat_inputs"),
+        #   bslib::layout_column_wrap(
+        #     width = 1 / 2,
+        #     bslib::card(
+        #       bslib::card_title("Boundary values"),
+        #       shinyWidgets::numericRangeInput(
+        #         NS(id, "boundaryrange"),
+        #         "Set min and max:",
+        #         value = c(1.9, 2.9),
+        #         min = 0,
+        #         max = 12,
+        #         step = 0.1
+        #       ),
+        #       checkboxInput(NS(id, "contrast"), "Show contrast",
+        #                     value = FALSE)
+        #     ), 
+        #     # shiny::div(
+        #     #   id = NS(id, "front_inputs"),
+        #     bslib::card(
+        #       bslib::card_title("Front values"),
+        #       checkboxInput(NS(id, "front"), "Show front",
+        #                     value = TRUE),
+        #       checkboxInput(NS(id, "gradient"), "Show gradient",
+        #                     value = FALSE),
+        #       uiOutput(NS(id, "dyn_frontvalue")),
+        #       numericInput(
+        #         NS(id, "frontradius"),
+        #         "Set front radius:",
+        #         value = 0.08,
+        #         min = 0.01,
+        #         max = 1,
+        #         step = 0.01
+        #       )
+        #     )
+        #   )
+        # ),
         shiny::div(
           id = NS(id, "vector_inputs"),
           bslib::layout_column_wrap(
@@ -153,52 +153,52 @@ input_server <- function(id, inputs) {
 # Within-Panel Reactivity -------------------------------------------------
 
     # Grays out coastyear UI if coast == FALSE
-    observeEvent(input$coast, {
-      shinyjs::toggleState(id = "coastyear", 
-                           condition = input$coast)
-    })
+    # observeEvent(input$coast, {
+    #   shinyjs::toggleState(id = "coastyear", 
+    #                        condition = input$coast)
+    # })
     
     # gray out front radius if "Show front" is unchecked
-    observeEvent(input$front, {
-    
-      shinyjs::toggleState(id = "frontradius", 
-                           condition = input$front)
-    })
+    # observeEvent(input$front, {
+    # 
+    #   shinyjs::toggleState(id = "frontradius", 
+    #                        condition = input$front)
+    # })
     
     # Dynamically update front value min/max depending on boundary range
     # Disable if "Show front" is unchecked
-    output$dyn_frontvalue <- renderUI({
-      
-      # initial UI to render
-      init = shiny::tagList(dyn_input = numericInput(
-        ns("frontvalue"),
-        "Set front value:",
-        value = 2.1,
-        min = req(input$boundaryrange[1]),
-        max = req(input$boundaryrange[2]),
-        step = 0.1
-      ))
+    # output$dyn_frontvalue <- renderUI({
+    #   
+    #   # initial UI to render
+    #   init = shiny::tagList(dyn_input = numericInput(
+    #     ns("frontvalue"),
+    #     "Set front value:",
+    #     value = 2.1,
+    #     min = req(input$boundaryrange[1]),
+    #     max = req(input$boundaryrange[2]),
+    #     step = 0.1
+    #   ))
       
       # if checkbox is clicked, just render it normally
       # if it's unchecked, add a shinyjs disabled tag
-      if (input$front) {
-        
-        return(init$dyn_input)
-        
-      } else {
-        
-        disabled = shiny::tagAppendAttributes(init$dyn_input, class = "shinyjs-disabled")
-        
-        return(disabled)
-          
-      }
-    })
+    #   if (input$front) {
+    #     
+    #     return(init$dyn_input)
+    #     
+    #   } else {
+    #     
+    #     disabled = shiny::tagAppendAttributes(init$dyn_input, class = "shinyjs-disabled")
+    #     
+    #     return(disabled)
+    #       
+    #   }
+    # })
     
     
     # Hide "Custom" tab if either Tidal product is selected
     # works great when navset cardtab id is namespaced in UI above
     observe({
-      if(inputs$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
+      if(inputs$datatype %in% c("Tidal Amplitude", "Tidal Current", "Stratification")) {
         bslib::nav_hide("tabs", target = "Custom")
       } else {
         bslib::nav_show("tabs", target = "Custom")
@@ -206,19 +206,19 @@ input_server <- function(id, inputs) {
     })
     
     # Now works when div is namespaced appropriately
-    observe({
- 
-      if(inputs$datatype == "Stratification") {
-        shinyjs::show(id = "strat_inputs", anim = TRUE)
-        # shinyjs::show(id = "front_inputs", anim = TRUE)
-        shinyjs::hide(id = "vector_inputs", anim = TRUE)
-      } else {
-        shinyjs::hide(id = "strat_inputs", anim = TRUE)
-        # shinyjs::hide(id = "front_inputs", anim = TRUE)
-        shinyjs::show(id = "vector_inputs", anim = TRUE)
-      }
-      
-    })    
+    # observe({
+    # 
+    #   if(inputs$datatype == "Stratification") {
+    #     shinyjs::show(id = "strat_inputs", anim = TRUE)
+    #     # shinyjs::show(id = "front_inputs", anim = TRUE)
+    #     shinyjs::hide(id = "vector_inputs", anim = TRUE)
+    #   } else {
+    #     shinyjs::hide(id = "strat_inputs", anim = TRUE)
+    #     # shinyjs::hide(id = "front_inputs", anim = TRUE)
+    #     shinyjs::show(id = "vector_inputs", anim = TRUE)
+    #   }
+    #   
+    # })    
     
 
 # Passing Inputs out to Main Server Env -----------------------------------
