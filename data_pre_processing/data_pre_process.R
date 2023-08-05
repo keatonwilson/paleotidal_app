@@ -43,33 +43,35 @@ library(leaflet)
 
 # Read and re_calculate lat/lon to better match 
 
-test = readr::read_tsv("./data/raw_lat_lon/stratification/log10_strat_123_00.ascii", 
-                            col_names = c("x", "y", "value"), 
-                            show_col_types = FALSE, 
-                            progress = FALSE)
-
-x <- unique(test$x)
-y <- unique(test$y)
-xdiff <- c()
-ydiff <- c()
-for(i in 1:length(x)){
- xdiff[i] <- (x[i+1] - x[i])/2
-}
-xdiff[625] <- xdiff[624]
-for(i in 1:length(y)){
-  ydiff[i] <- (y[i+1] - y[i])/2
-}
-ydiff[861] <- ydiff[860]
-
-# create tables to match
-x_recal <- data.frame(x, xdiff) |> 
-  dplyr::mutate(x_new = x - xdiff)
-y_recal <- data.frame(y, ydiff) |> 
-  dplyr::mutate(y_new = y - ydiff)
-
-# write out
-readr::write_csv(x_recal, "./data/x_lon_recal.csv")
-readr::write_csv(y_recal, "./data/y_lat_recal.csv")
+# test = readr::read_tsv("./data/raw_lat_lon/stratification/log10_strat_123_00.ascii", 
+#                             col_names = c("x", "y", "value"), 
+#                             show_col_types = FALSE, 
+#                             progress = FALSE)
+# 
+# x <- unique(test$x)
+# y <- unique(test$y)
+# xdiff <- c()
+# ydiff <- c()
+# for(i in 1:length(x)){
+#  xdiff[i] <- (x[i+1] - x[i])/2
+# }
+# xdiff[625] <- xdiff[624]
+# for(i in 1:length(y)){
+#   ydiff[i] <- (y[i+1] - y[i])/2
+# }
+# ydiff[861] <- ydiff[860]
+# 
+# # create tables to match
+# x_recal <- data.frame(x, xdiff) |> 
+#   dplyr::mutate(x_new = x - xdiff) |> 
+#   dplyr::select(-xdiff)
+# y_recal <- data.frame(y, ydiff) |> 
+#   dplyr::mutate(y_new = y - ydiff) |> 
+#   dplyr::select(-ydiff)
+# 
+# # write out
+# readr::write_rds(x_recal, "./data/x_lon_recal.RDS")
+# readr::write_rds(y_recal, "./data/y_lat_recal.RDS")
 
 # Combining All Years -----------------------------------------------------
 
@@ -179,16 +181,25 @@ combine_all_years = function(data_dir,
   }
   
   
-  # Recalculate lat/lon
-  
+  # join with recalculate lat lon
+  out2 <- out |> 
+    dplyr::left_join(x_recal) |> 
+    dplyr::left_join(y_recal) |> 
+    dplyr::select(-x, -y) |> 
+    dplyr::rename(x = x_new, y = y_new) |> 
+    dplyr::relocate(x, y)
   
   # return 
-  return(out)
+  return(out2)
 }
 
 
 
 ## Combining Data ----------------------------------------------------------
+
+# load recalculated lat/lon
+x_recal <- readr::read_rds("./data/x_lon_recal.RDS")
+y_recal <- readr::read_rds("./data/y_lat_recal.RDS")
 
 # creating objects
 amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
@@ -253,7 +264,8 @@ make_raster_list = function(data,
   raster_list = data_split |>
     purrr::map(function(list_item) {
       
-      if (all(list_item$datatype != "bss")) {
+      if (all(list_item$datatype != "bss") &
+          all(list_item$datatype != "strat")) { # use mean to rasterize
         # getting dims for raster transformation
         ncol = length(unique(list_item$x))
         nrow = length(unique(list_item$y))
@@ -265,6 +277,18 @@ make_raster_list = function(data,
         r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=mean)
         crs(r_new) = "+proj=longlat +datum=WGS84"
       
+      } else if (all(list_item$datatype == "strat")) { # use first to rasterize
+        # getting dims for raster transformation
+        ncol = length(unique(list_item$x))
+        nrow = length(unique(list_item$y))
+        
+        extent = extent(list_item[,(1:2)])
+        r = raster(extent, ncol = ncol, nrow = nrow)
+        
+        # rasterize
+        r_new = rasterize(list_item[,1:2], r, list_item[,3], fun='first', na_rm = TRUE)
+        crs(r_new) = "+proj=longlat +datum=WGS84"
+        
       } else {
         # bss is special
         # getting dims for raster transformation
@@ -312,6 +336,15 @@ pal = colorFactor(palette = "GnBu",
                   reverse = TRUE)
 leaflet() |> 
   addRasterImage(bss_raster$X0_bss, 
+                 colors = pal) 
+
+# strat testing
+pal = colorFactor(palette = "GnBu",
+                  domain = values(strat_raster$X0_strat),
+                  na.color = "gray30", 
+                  reverse = TRUE)
+leaflet() |> 
+  addRasterImage(strat_raster$X0_strat, 
                  colors = pal) 
 
 # writing raster stacks to rds files
