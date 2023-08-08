@@ -42,10 +42,10 @@ library(leaflet)
 #   addRasterImage(r_new, opacity = 0.8)
 
 # Read and re_calculate lat/lon to better match 
-
-# test = readr::read_tsv("./data/raw_lat_lon/stratification/log10_strat_123_00.ascii", 
-#                             col_names = c("x", "y", "value"), 
-#                             show_col_types = FALSE, 
+# 
+# test = readr::read_tsv("./data/raw_lat_lon/stratification/log10_strat_123_00.ascii",
+#                             col_names = c("x", "y", "value"),
+#                             show_col_types = FALSE,
 #                             progress = FALSE)
 # 
 # x <- unique(test$x)
@@ -56,17 +56,18 @@ library(leaflet)
 #  xdiff[i] <- (x[i+1] - x[i])/2
 # }
 # xdiff[625] <- xdiff[624]
+# 
 # for(i in 1:length(y)){
 #   ydiff[i] <- (y[i+1] - y[i])/2
 # }
 # ydiff[861] <- ydiff[860]
 # 
 # # create tables to match
-# x_recal <- data.frame(x, xdiff) |> 
-#   dplyr::mutate(x_new = x - xdiff) |> 
+# x_recal <- data.frame(x, xdiff) |>
+#   dplyr::mutate(x_new = x + xdiff) |>
 #   dplyr::select(-xdiff)
-# y_recal <- data.frame(y, ydiff) |> 
-#   dplyr::mutate(y_new = y - ydiff) |> 
+# y_recal <- data.frame(y, ydiff) |>
+#   dplyr::mutate(y_new = y + ydiff) |>
 #   dplyr::select(-ydiff)
 # 
 # # write out
