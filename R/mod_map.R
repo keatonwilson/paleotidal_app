@@ -1,7 +1,7 @@
 map_ui <- function(id) {
   
-  ns <- NS(id)
-  leaflet::leafletOutput(ns("map"))
+  # ns <- NS(id)
+  # leaflet::leafletOutput(ns("map"))
   
 }
 
@@ -13,8 +13,18 @@ map_server <- function(id,
                        map_proxy) {
   moduleServer(id, function(input, output, session) {
     
+    # waiter loading animation
+    w = waiter::Waiter$new(
+      id = "map",
+      html = waiter::spin_3(), 
+      color = waiter::transparent(.5)
+    )
+    
     observe({
       # data mapping
+      
+      # show loading animation
+      w$show()
       
       raster_to_map = switch(data$datatype, 
                              `Tidal Amplitude` = rasters$amp_raster, 
@@ -42,6 +52,8 @@ map_server <- function(id,
                             domain = c(0, 4),
                             na.color = "gray30")
         
+
+        
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
           leaflet::clearShapes() |> 
@@ -67,6 +79,9 @@ map_server <- function(id,
             leaflet::clearShapes()
           mp2
         }
+        
+        # hide loading screen
+        w$hide()
         
         # Tidal Current Map
       } else if (data$datatype == "Tidal Current") {
@@ -123,7 +138,7 @@ map_server <- function(id,
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
                              labels = c("land", "ice"),
                              opacity = 1) |> 
-          addLegend("bottomright",
+          leaflet::addLegend("bottomright",
                     colors = c("#43A2CA", 
                                "#A8DDB5", 
                                "#E0F3DB"),

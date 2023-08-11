@@ -14,9 +14,9 @@ function(input, output, session) {
                       inputs = input_list)
   
   # setup waiter for loading animations
-  w = waiter::Waiter$new(
+  start_w = waiter::Waiter$new(
     id = "map",
-    html = waiter::spin_3(), 
+    html = waiter::spin_3(),
     color = waiter::transparent(.5)
   )
   
@@ -30,7 +30,7 @@ function(input, output, session) {
   output$map = leaflet::renderLeaflet({
     
     # show load screen on iniitial load
-    w$show()
+    start_w$show()
     
     leaflet::leaflet() |> 
       leaflet::setView(lng = -4, lat = 56, zoom = 5.25) |> 
