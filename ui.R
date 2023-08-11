@@ -22,19 +22,12 @@ ui = bslib::page_navbar(
                          col_widths = 12,
                          row_heights = c(1,5),
                          bslib::layout_columns(
-                           col_widths = c(4, 8),
+                           col_widths = c(6, 6),
                            bslib::card(
                             data_select_ui("data_type")
                            ),
                            data_summary_ui("data_summary")
                          )
-                         # bslib::card(
-                         #   bslib::layout_column_wrap(
-                         #     width = 1 / 3,
-                         #     data_select_ui("data_type"),
-                         #     data_summary_ui("data_summary")
-                         #   )
-                         # )
                          ,
                          bslib::card(
                            leaflet::leafletOutput("map")
