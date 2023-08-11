@@ -116,6 +116,10 @@ map_server <- function(id,
             leaflet::clearShapes()
           mp2
         }
+        
+        # hide loading screen
+        w$hide()
+        
         # Strat Map
       } else if(data$datatype == "Stratification") {
         
@@ -154,6 +158,10 @@ map_server <- function(id,
            leaflet::clearShapes()
          mp2
         }
+        
+        # hide loading screen
+        w$hide()
+        
       } else if(data$datatype == "Peak Bed Stress") {
        
         pal <- leaflet::colorFactor(palette = "GnBu",
@@ -220,6 +228,9 @@ map_server <- function(id,
             leaflet::clearShapes()
           mp2
         }
+        
+        # hide loading screen
+        w$hide()
       }
 
       
