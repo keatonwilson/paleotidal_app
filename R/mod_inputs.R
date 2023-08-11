@@ -3,8 +3,7 @@
 input_ui <- function(id) {
   tagList(
     
-    # Waiter and shinyJS Set --------------------------------------------------
-    waiter::autoWaiter(),
+    #shinyJS Set --------------------------------------------------
     shinyjs::useShinyjs(),
     
     # Datatype Dropdown -------------------------------------------------------
