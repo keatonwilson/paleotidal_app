@@ -14,7 +14,9 @@ time_series_server <- function(id,
                                map_click_obj, 
                                inputs, 
                                rsl_data, 
-                               amp_data
+                               amp_data,
+                               data, 
+                               tibbles
                                ) {
   moduleServer(id, function(input, output, session) {
 
@@ -33,7 +35,40 @@ time_series_server <- function(id,
       
       # show loading  
       timeseries_w$show()
-
+      
+# Prepare long data to download
+      tibble_selected = switch(data$datatype,
+                               `Tidal Amplitude` = tibbles$amp_data, 
+                               `Stratification` = tibbles$strat_data,
+                               `Peak Bed Stress` = tibbles$bss_data,
+                               `Tidal Current` = tibbles$vel_data
+      )
+     
+     if (data$datatype == `Stratification`) {
+       tibble_selected <- tibble_selected |> 
+         dplyr::rename(strat_log10 = value) |> 
+         dplyr::select(-datatype) 
+     } else if (data$datatype == `Peak Bed Stress`) {
+       tibble_selected <- tibble_selected |> 
+         dplyr::select(-datatype)
+     } else if (data$datatype == `Tidal Current`) {
+       tibble_selected <- tibble_selected |> 
+         dplyr::rename(vel_m2 = value) |> 
+         dplyr::select(-datatype) 
+     } else if (data$datatype == `Tidal Amplitude`) {
+       tibble_selected <- tibble_selected |> 
+         dplyr::select(-datatype, -value)
+     }
+     
+     to_download = rsl_data |> 
+       dplyr::rename(rsl_m = value) |> 
+       dplyr::select(-datatype) |> 
+       dplyr::relocate(year) |> 
+       dplyr::left_join(amp_data, by = c("x", "y", "year")) |> 
+       dplyr::rename(amp_m = value) |> 
+       dplyr::select(-datatype) |> 
+       dplyr::left_join(tibble_selected, by = c("x", "y", "year"))
+     
 # Calculations ------------------------------------------------------------
       # find closest lat/lon to clicked point
       closest_lat = unique(rsl_data$y)[which.min(abs(unique(rsl_data$y) - map_click_obj$lat))]
