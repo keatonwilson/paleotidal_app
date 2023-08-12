@@ -83,8 +83,9 @@ input_ui <- function(id) {
               bslib::card_title("Front values"),
               checkboxInput(NS(id, "front"), "Show front",
                             value = TRUE),
-              checkboxInput(NS(id, "gradient"), "Show gradient",
-                            value = FALSE),
+              # gradient not currently in development
+              # checkboxInput(NS(id, "gradient"), "Show gradient",
+              #               value = FALSE),
               uiOutput(NS(id, "dyn_frontvalue")),
               numericInput(
                 NS(id, "frontradius"),

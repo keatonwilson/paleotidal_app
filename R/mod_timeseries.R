@@ -57,7 +57,8 @@ time_series_server <- function(id,
             overlaying = "y",
             side = "right",
             title = list(text = "Tidal Amplitude",
-                         font = list(color = "#33a02c")))
+                         font = list(color = "#33a02c"),
+                         standoff = 10L))
           
           # title w lat/lon
           title = glue::glue("Relative Sea Level & Tidal Amplitude @ {closest_lat}, {closest_lon}")
@@ -80,13 +81,15 @@ time_series_server <- function(id,
                               line = list(color = "#33a02c"),
                               marker = list(color = "#33a02c")) |> 
             plotly::layout(
+              margin = list(r = 75),
               title = title, yaxis2 = ay,
               xaxis = list(title = "Thousand Years BP", 
                            autorange = "reversed"),
               yaxis = list(title = list(text = "Relative Sea Level",
                                         font = list(color = "#1f77b4"))),
               showlegend = FALSE
-            )
+            ) |> 
+            plotly::config(displayModeBar = FALSE)
       })
       
       # show loading  
