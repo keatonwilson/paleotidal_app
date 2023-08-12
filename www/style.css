@@ -1,6 +1,8 @@
 
-/*
-.data_select_card {
-  overflow: visible !important;
+/* waiter loading screen should fill leaflet window */
+#map > div.waiter-overlay.waiter-local {
+  z-index: 9999;
+  top: 0px !important;
+  left: 0px !important;
 }
-*/
+
