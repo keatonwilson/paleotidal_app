@@ -13,6 +13,8 @@ ui = bslib::page_navbar(
                             # base_font = bslib::font_google("Cormorant Garamond")
     ),
     title = "Paleotidal Visualization", 
+    header =  # waiter load animations
+      waiter::use_waiter(),
     bslib::nav_panel("About", 
                      about_tab_ui("about_tab_content")), 
     bslib::nav_panel("Explore Data Visualizations", 

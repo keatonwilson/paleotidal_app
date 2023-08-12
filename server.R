@@ -13,6 +13,13 @@ function(input, output, session) {
   data_summary_server("data_summary", 
                       inputs = input_list)
   
+  # setup waiter for loading animations
+  start_w = waiter::Waiter$new(
+    id = "map",
+    html = waiter::spin_3(),
+    color = waiter::transparent(.5)
+  )
+  
   # base map and proxy
   
   # set color legend for proxy map
@@ -21,6 +28,10 @@ function(input, output, session) {
                                na.color = "gray30") 
   
   output$map = leaflet::renderLeaflet({
+    
+    # show load screen on iniitial load
+    start_w$show()
+    
     leaflet::leaflet() |> 
       leaflet::setView(lng = -4, lat = 56, zoom = 5.25) |> 
       # Base amp raster
