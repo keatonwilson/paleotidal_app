@@ -60,7 +60,6 @@ input_ui <- function(id) {
       ## Custom Panel ----------------------------------------------------------
       bslib::nav_panel(
         "Custom",
-<<<<<<< HEAD
         # shiny::div(
         #   id = NS(id, "strat_inputs"),
         #   bslib::layout_column_wrap(
