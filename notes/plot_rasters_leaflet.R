@@ -9,7 +9,8 @@ shape_1 = sf::st_read("./data/raw_shape/coastline/GSHHS_l_L1.shp")
 ice_raster = readr::read_rds("./data/processed_data/ice_raster.rds")
 
 # Start with amp
-amp_raster = readr::read_rds("./data/processed_data/amp_raster.rds")
+amp_raster = readr::read_rds("./data/processed_data/amp_raster.rds") # recalculated
+amp_raster = readr::read_rds("./amp_raster.rds") # original
 
 pal <- colorNumeric(palette = "viridis",
                     domain = c(0, 4),
@@ -17,9 +18,10 @@ pal <- colorNumeric(palette = "viridis",
 
 leaflet() |> 
   leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
-  addRasterImage(amp_raster[[21]], opacity = 0.8, colors = pal) |> 
-  addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
-  addPolygons(data = shape_1, color = "black", weight = 1,
+  # leaflet::setMaxBounds(-15, 45, 11, 65.0125) |> 
+  addRasterImage(amp_raster[[1]], opacity = 0.8, colors = pal) |> 
+  # addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
+  addPolygons(data = shape_1, color = "black", weight = 0.25,
               opacity = 1, fillOpacity = 0) |> 
   addLegend("topright", colors = c("gray", "aliceblue"),
             labels = c("land", "ice"),
