@@ -1,20 +1,21 @@
 
 # Define UI for application that draws a histogram
 ui = bslib::page_navbar(
-    # theme = bslib::bs_theme(bootswatch = "solar",
-    # base_font = bslib::font_google("Cormorant Garamond"),
-    # base_font = bslib::font_google("Yanone Kaffeesatz"),
-    # base_font = bslib::font_google("Playfair Display")),
+
+# Setup -------------------------------------------------------------------
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
       ),
     theme = bslib::bs_theme(bootswatch = "cosmo",
                             version = 5,
-                            # base_font = bslib::font_google("Cormorant Garamond")
     ),
     title = "Paleotidal Visualization", 
+
+# Nav Panels --------------------------------------------------------------
+## About ------------------------------------------------------------------
     bslib::nav_panel("About", 
                      about_tab_ui("about_tab_content")), 
+## Data Viz ---------------------------------------------------------------
     bslib::nav_panel("Explore Data Visualizations", 
                      bslib::layout_columns(
                        col_widths = c(7, 5),
@@ -34,10 +35,10 @@ ui = bslib::page_navbar(
                          )
                        ),
                        
-                       # dummy input card
+                       # Inputs
                        bslib::layout_columns(
                          col_widths = 12,
-                         row_heights = c(4,2),
+                         row_heights = c(3,3),
                          bslib::card(
                            bslib::card_title("Inputs"),
                            input_ui("inputs")

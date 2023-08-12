@@ -123,7 +123,7 @@ map_server <- function(id,
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
                              labels = c("land", "ice"),
                              opacity = 1) |> 
-          addLegend("bottomright",
+          leaflet::addLegend("bottomright",
                     colors = c("#43A2CA", 
                                "#A8DDB5", 
                                "#E0F3DB"),
