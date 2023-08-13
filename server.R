@@ -90,7 +90,7 @@ function(input, output, session) {
                        rsl_data = rsl_data, 
                        amp_data = amp_data,
                        data = data_list,
-                       tibbles = list(amp_data = amp_data,
+                       remaining_data = list(
                                       strat_data = strat_data,
                                       bss_data = bss_data,
                                       vel_data = vel_data)
