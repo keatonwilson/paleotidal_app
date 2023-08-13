@@ -118,7 +118,6 @@ time_series_server <- function(id,
         },
         content = function(file) {
           
-
           
           # combine all data and filter for points clicked points identfied above
           # drastically reduces data size and makes for faster computations
@@ -129,6 +128,7 @@ time_series_server <- function(id,
               data |> 
                 dplyr::filter(y == closest_lat & x == closest_lon)
             })
+          
           
 
           
@@ -142,13 +142,13 @@ time_series_server <- function(id,
                                    "Tidal Current" = c("amp_data", "rsl_data", "vel_data")
           )
           
+          
    
           # keep appropriate data and bind
           to_download = purrr::keep_at(all_data_in_list, 
                                        ~.x %in% data_to_include) |> 
             dplyr::bind_rows()
           
- 
           
           
           # Write the dataset to the `file` that will be downloaded

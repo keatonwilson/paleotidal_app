@@ -14,8 +14,7 @@ ui = bslib::page_navbar(
 # Nav Panels --------------------------------------------------------------
 ## About ------------------------------------------------------------------
     header =  # waiter load animations
-      shiny::tagList(waiter::use_waiter(),
-                     waiter::useAttendant()),
+      shiny::tagList(waiter::use_waiter()),
     bslib::nav_panel("About", 
                      about_tab_ui("about_tab_content")), 
 ## Data Viz ---------------------------------------------------------------
