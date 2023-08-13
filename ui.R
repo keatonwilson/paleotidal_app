@@ -45,10 +45,8 @@ ui = bslib::page_navbar(
                            bslib::card_title("Inputs"),
                            input_ui("inputs")
                          ),
-                         bslib::card(
-                           time_series_ui("time_series"),
-                           full_screen = TRUE
-                         )
+                        time_series_ui("time_series"),
+
                        )
                      )
     ), 

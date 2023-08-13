@@ -1,14 +1,24 @@
 time_series_ui <- function(id) {
   
   ns <- NS(id)
-  tagList(
-    shiny::uiOutput(ns("timeseries_plot")),
-    # hide initially
-    shinyjs::hidden(
-      shiny::downloadButton(ns("download_data"), "Download Data")
-    )
-    
+  bslib::card(
+    bslib::card_body(
+      bslib::as_fill_carrier(
+        shiny::uiOutput(ns("timeseries_plot"))
+      )
+    ),
+    bslib::card_body(
+      # hide initially
+      shinyjs::hidden(shiny::downloadButton(ns("download_data"), "Download Data"))
+    ), 
+    full_screen = TRUE
   )
+
+
+  
+
+    
+
   
   
   
