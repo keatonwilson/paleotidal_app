@@ -118,41 +118,51 @@ time_series_server <- function(id,
         },
         content = function(file) {
           
+          shiny::withProgress(message = "Preparing data for download", 
+                              min = 0, 
+                              max = 5,
+                              value = 1, {
+            # combine all data and filter for points clicked points identfied above
+            # drastically reduces data size and makes for faster computations
+            all_data_in_list = purrr::list_modify(remaining_data, 
+                                                  rsl_data = rsl_data, 
+                                                  amp_data = amp_data) |> 
+              purrr::map(function(data) {
+                data |> 
+                  dplyr::filter(y == closest_lat & x == closest_lon)
+              })
+            
+            shiny::incProgress(2)
+            
+            
+  
+            
+            # move wrangling to download handler so it doesn't happen unless it 
+            # needs to
+            
+            data_to_include = switch(data$datatype, 
+                                     "Tidal Amplitude" = c("amp_data", "rsl_data"),
+                                     "Stratification" = c("amp_data", "rsl_data", "strat_data"), 
+                                     "Peak Bed Stress" = c("amp_data", "rsl_data", "bss_data"), 
+                                     "Tidal Current" = c("amp_data", "rsl_data", "vel_data")
+            )
+            shiny::incProgress(3)
+            
+            
+     
+            # keep appropriate data and bind
+            to_download = purrr::keep_at(all_data_in_list, 
+                                         ~.x %in% data_to_include) |> 
+              dplyr::bind_rows()
+            shiny::incProgress(4)
+            
+            
+            
+            # Write the dataset to the `file` that will be downloaded
+            write.csv(to_download, file)
+            shiny::incProgress(5)
           
-          # combine all data and filter for points clicked points identfied above
-          # drastically reduces data size and makes for faster computations
-          all_data_in_list = purrr::list_modify(remaining_data, 
-                                                rsl_data = rsl_data, 
-                                                amp_data = amp_data) |> 
-            purrr::map(function(data) {
-              data |> 
-                dplyr::filter(y == closest_lat & x == closest_lon)
-            })
-          
-          
-
-          
-          # move wrangling to download handler so it doesn't happen unless it 
-          # needs to
-          
-          data_to_include = switch(data$datatype, 
-                                   "Tidal Amplitude" = c("amp_data", "rsl_data"),
-                                   "Stratification" = c("amp_data", "rsl_data", "strat_data"), 
-                                   "Peak Bed Stress" = c("amp_data", "rsl_data", "bss_data"), 
-                                   "Tidal Current" = c("amp_data", "rsl_data", "vel_data")
-          )
-          
-          
-   
-          # keep appropriate data and bind
-          to_download = purrr::keep_at(all_data_in_list, 
-                                       ~.x %in% data_to_include) |> 
-            dplyr::bind_rows()
-          
-          
-          
-          # Write the dataset to the `file` that will be downloaded
-          write.csv(to_download, file)
+          })
 
         }
       )
