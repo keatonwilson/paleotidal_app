@@ -331,10 +331,10 @@ vel_raster = make_raster_list(vel, year)
 
 
 # bss testing
-pal = colorNumeric(palette = "GnBu",
+pal = colorNumeric(palette = "viridis",
                   domain = values(bss_raster$X0_bss),
                   na.color = "gray30", 
-                  reverse = TRUE)
+                  reverse = FALSE)
 leaflet() |> 
   addRasterImage(bss_raster$X0_bss, 
                  colors = pal) 
