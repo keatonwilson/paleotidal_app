@@ -163,7 +163,7 @@ map_server <- function(id,
         w$hide()
         
       } else if(data$datatype == "Peak Bed Stress") {
-       browser()
+       
         pal <- leaflet::colorNumeric(palette = "viridis",
                            domain = raster::values(raster),
                            na.color = "gray30")
