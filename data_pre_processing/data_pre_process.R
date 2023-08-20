@@ -335,10 +335,42 @@ pal = colorNumeric(palette = "viridis",
                   domain = values(bss_raster$X0_bss),
                   na.color = "gray30", 
                   reverse = FALSE)
-leaflet() |> 
+## This could be an altnerative to a regular grid
+## It's also faster
+## 
+bss_filt = bss |> 
+  dplyr::filter(year == 0) |> 
+  dplyr::filter(uv > 1) |> 
+  dplyr::arrange(x) |> 
+  dplyr::slice(which(dplyr::row_number() %% 250 == 1))
+
+# mag multiplier
+mag_mult = 0.10
+polylines_df_base = bss_filt |> 
+  dplyr::mutate(id = dplyr::row_number())
+
+polylines_end = bss_filt |> 
+  dplyr::mutate(x = x+(u*mag_mult), 
+                y = y+(v*mag_mult)) |> 
+  dplyr::mutate(id = dplyr::row_number())
+
+to_plot = dplyr::bind_rows(polylines_df_base, polylines_end) |> 
+  dplyr::mutate(id = factor(id))
+
+
+
+mp = leaflet() |> 
   addRasterImage(bss_raster$X0_bss, 
                  colors = pal) 
 
+for(group in levels(to_plot$id)){
+  mp = leaflet.extras2::addArrowhead(mp,
+                                     lng= ~x,
+                                     lat= ~y,
+                                     data = to_plot[to_plot$id==group,],
+                                     weight = 2, 
+                                     color = "white")
+}
 # strat testing
 pal = colorFactor(palette = "GnBu",
                   domain = values(strat_raster$X0_strat),
