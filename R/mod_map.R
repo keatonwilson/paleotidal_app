@@ -187,15 +187,13 @@ map_server <- function(id,
                              labFormat = leaflet::labelFormat(suffix = " N/m2"), 
                              opacity = 1)
         
-
         bss_filt = bss |> 
           dplyr::filter(year == inputs$yearBP) |> 
-          dplyr::filter(!is.na(quadrant)) |> 
-          dplyr::filter(uv > 1) |> 
-          dplyr::slice_max(order_by = uv, n = 500)
+          dplyr::arrange(x) |> 
+          dplyr::slice(which(dplyr::row_number() %% 500 == 1))
         
         # mag multiplier
-        mag_mult = 0.05
+        mag_mult = 0.10
         polylines_df_base = bss_filt |> 
           dplyr::mutate(id = dplyr::row_number())
         
@@ -212,7 +210,8 @@ map_server <- function(id,
                                               lng= ~x,
                                               lat= ~y,
                                               data = to_plot[to_plot$id==group,],
-                                              weight = 2)
+                                              weight = 2, 
+                                              color = "white")
         }
         
         
