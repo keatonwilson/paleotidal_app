@@ -164,7 +164,7 @@ map_server <- function(id,
         
       } else if(data$datatype == "Peak Bed Stress") {
        
-        pal <- leaflet::colorFactor(palette = "GnBu",
+        pal <- leaflet::colorNumeric(palette = "viridis",
                            domain = raster::values(raster),
                            na.color = "gray30")
         
@@ -182,14 +182,9 @@ map_server <- function(id,
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
                              labels = c("land", "ice"),
                              opacity = 1)  |> 
-          leaflet::addLegend("bottomright", 
-                             colors = c("#F0F9E8", 
-                                        "#BAE4BC", 
-                                        "#7BCCC4", 
-                                        "#2B8CBE", 
-                                        "#4d4d4d"),
-                             labels = c("NW", "SW", "NE", "SE", "No Direction"),
+          leaflet::addLegend("bottomright", pal = pal, values = c(0, 15), bins = 4,
                              title = "Peak Bed Stress",
+                             labFormat = leaflet::labelFormat(suffix = " N/m2"), 
                              opacity = 1)
         
 

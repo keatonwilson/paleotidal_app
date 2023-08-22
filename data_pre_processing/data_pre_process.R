@@ -299,8 +299,8 @@ make_raster_list = function(data,
         extent = extent(list_item[,(1:2)])
         r = raster(extent, ncol = ncol, nrow = nrow)
         
-        # rasterize
-        r_new = rasterize(list_item[,1:2], r, list_item[,8], fun='first')
+        # rasterize - column 6 is the magnitude
+        r_new = rasterize(list_item[,1:2], r, list_item[,6], fun='first')
         r_new[r_new == Inf] = NA
         crs(r_new) = "+proj=longlat +datum=WGS84"
         
@@ -331,10 +331,10 @@ vel_raster = make_raster_list(vel, year)
 
 
 # bss testing
-pal = colorFactor(palette = "GnBu",
+pal = colorNumeric(palette = "viridis",
                   domain = values(bss_raster$X0_bss),
                   na.color = "gray30", 
-                  reverse = TRUE)
+                  reverse = FALSE)
 leaflet() |> 
   addRasterImage(bss_raster$X0_bss, 
                  colors = pal) 
