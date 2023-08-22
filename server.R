@@ -65,7 +65,7 @@ function(input, output, session) {
              data = data_list,
              rasters = list(amp_raster = amp_raster,
                             bss_raster = bss_raster,
-                            mask_water_raster = mask_water_raster,
+                            # mask_water_raster = mask_water_raster,
                             rsl_raster = rsl_raster,
                             strat_raster = strat_raster,
                             vel_raster = vel_raster,
@@ -87,8 +87,13 @@ function(input, output, session) {
     closest_lat_lon = time_series_server("time_series", 
                        map_click_obj = click, 
                        inputs = input_list, 
-                       rsl_data = rsl, 
-                       amp_data = amp_data
+                       rsl_data = rsl_data, 
+                       amp_data = amp_data,
+                       data = data_list,
+                       remaining_data = list(
+                                      strat_data = strat_data,
+                                      bss_data = bss_data,
+                                      vel_data = vel_data)
                        )
     
     # don't run proxy update without a click

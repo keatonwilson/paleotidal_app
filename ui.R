@@ -14,7 +14,7 @@ ui = bslib::page_navbar(
 # Nav Panels --------------------------------------------------------------
 ## About ------------------------------------------------------------------
     header =  # waiter load animations
-      waiter::use_waiter(),
+      shiny::tagList(waiter::use_waiter()),
     bslib::nav_panel("About", 
                      about_tab_ui("about_tab_content")), 
 ## Data Viz ---------------------------------------------------------------
@@ -45,10 +45,8 @@ ui = bslib::page_navbar(
                            bslib::card_title("Inputs"),
                            input_ui("inputs")
                          ),
-                         bslib::card(
-                           time_series_ui("time_series"),
-                           full_screen = TRUE
-                         )
+                        time_series_ui("time_series"),
+
                        )
                      )
     ), 
