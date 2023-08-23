@@ -190,10 +190,12 @@ map_server <- function(id,
         bss_filt = bss |> 
           dplyr::filter(year == inputs$yearBP) |> 
           dplyr::arrange(x) |> 
-          dplyr::slice(which(dplyr::row_number() %% 500 == 1))
+          # sample rows with remainder == 1
+          dplyr::slice(which(dplyr::row_number() %% 500 == 1)) # TODO: Replace 500 dynamically from UI
+          # TODO: Add filter to set minimum size vector shown
         
         # mag multiplier
-        mag_mult = 0.10
+        mag_mult = 0.10 # Shows arrow size
         polylines_df_base = bss_filt |> 
           dplyr::mutate(id = dplyr::row_number())
         
