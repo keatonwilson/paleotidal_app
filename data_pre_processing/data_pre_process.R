@@ -205,19 +205,27 @@ y_recal <- readr::read_rds("./data/y_lat_recal.RDS")
 # creating objects
 amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
 rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
-# mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
+mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 
 # bss pre-processing is special
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss") |> 
   tidyr::pivot_wider(names_from = type, values_from = value) |>
-  mutate(quadrant = dplyr::case_when(u > 0 & v > 0 ~ 1, 
+  dplyr::mutate(quadrant = dplyr::case_when(u > 0 & v > 0 ~ 1, 
                                      u > 0 & v < 0 ~ 2, 
                                      u < 0 & v > 0 ~ 3,
                                      u == 0 & v == 0 ~ NA,
                                      u == 0 & v != 0 ~ 0, 
                                      u != 0 & v == 0 ~ 0,
                                      .default = 4))
+
+# adding land NAs to BSS data from water
+bss = bss |> 
+  dplyr::left_join(mask_water |> 
+              dplyr::select(x, y, water_value = value, year)) |> 
+  dplyr::mutate(uv = dplyr::case_when(is.na(water_value) ~ NA, 
+                                               .default = uv)) |> 
+  dplyr::select(-water_value)
 
 ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
 strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
