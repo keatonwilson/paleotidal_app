@@ -98,8 +98,8 @@ input_ui <- function(id) {
         #     )
         #   )
         # ),
-        shiny::div(
-          id = NS(id, "vector_inputs"),
+        # shiny::div(
+        #   id = NS(id, "vector_inputs"),
           # bslib::layout_column_wrap(
           #   width = 1 / 2,
           #   bslib::card(
@@ -145,7 +145,7 @@ input_ui <- function(id) {
               )
             # )
           # )
-        )
+        # )
       )
     )
   )
@@ -211,19 +211,19 @@ input_server <- function(id, inputs) {
     })
     
     # Now works when div is namespaced appropriately
-    observe({
- 
-      if(inputs$datatype == "Peak Bed Stress") {
-        shinyjs::show(id = "vector_inputs", anim = TRUE)
-        # shinyjs::show(id = "front_inputs", anim = TRUE)
-        # shinyjs::hide(id = "vector_inputs", anim = TRUE)
-      } else {
-        shinyjs::hide(id = "vector_inputs", anim = TRUE)
-        # shinyjs::hide(id = "front_inputs", anim = TRUE)
-        # shinyjs::show(id = "vector_inputs", anim = TRUE)
-      }
-      
-    })    
+    # observe({
+    # 
+    #   if(inputs$datatype == "Peak Bed Stress") {
+    #     shinyjs::show(id = "vector_inputs", anim = TRUE)
+    #     # shinyjs::show(id = "front_inputs", anim = TRUE)
+    #     # shinyjs::hide(id = "vector_inputs", anim = TRUE)
+    #   } else {
+    #     shinyjs::hide(id = "vector_inputs", anim = TRUE)
+    #     # shinyjs::hide(id = "front_inputs", anim = TRUE)
+    #     # shinyjs::show(id = "vector_inputs", anim = TRUE)
+    #   }
+    #   
+    # })    
     
 
 # Passing Inputs out to Main Server Env -----------------------------------
