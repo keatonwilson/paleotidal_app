@@ -66,7 +66,7 @@ map_server <- function(id,
                                color = "black",
                                fillOpacity = 0) |> 
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
-                    labels = c("land", "ice"),
+                    labels = c("Land", "Ice"),
                     opacity = 1) |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
                     title = "Tidal Amplitude",
@@ -102,7 +102,7 @@ map_server <- function(id,
                                color = "black",
                                fillOpacity = 0) |> 
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
-                    labels = c("land", "ice"),
+                    labels = c("Land", "Ice"),
                     opacity = 1) |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 1.6), bins = 4,
                     title = "Tidal Current",
@@ -140,7 +140,7 @@ map_server <- function(id,
                                color = "black",
                                fillOpacity = 0) |> 
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
-                             labels = c("land", "ice"),
+                             labels = c("Land", "Ice"),
                              opacity = 1) |> 
           leaflet::addLegend("bottomright",
                     colors = c("#43A2CA", 
@@ -163,10 +163,12 @@ map_server <- function(id,
         w$hide()
         
       } else if(data$datatype == "Peak Bed Stress") {
-       
-        pal <- leaflet::colorNumeric(palette = "viridis",
-                           domain = raster::values(raster),
-                           na.color = "gray30")
+        
+        # bss testing
+        pal = colorNumeric(palette = "viridis",
+                           domain = values(raster),
+                           na.color = "gray30", 
+                           reverse = FALSE)
         
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
@@ -180,7 +182,7 @@ map_server <- function(id,
                                color = "black",
                                fillOpacity = 0) |> 
           leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
-                             labels = c("land", "ice"),
+                             labels = c("Land", "Ice"),
                              opacity = 1)  |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 15), bins = 4,
                              title = "Peak Bed Stress",
