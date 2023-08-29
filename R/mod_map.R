@@ -163,6 +163,12 @@ map_server <- function(id,
         w$hide()
         
       } else if(data$datatype == "Peak Bed Stress") {
+        
+        spacing = switch(inputs$vec_space, 
+                         `sparse` = 800, 
+                         `medium` = 500,
+                         `dense` = 200
+        )
        
         pal <- leaflet::colorNumeric(palette = "viridis",
                            domain = raster::values(raster),
@@ -189,13 +195,14 @@ map_server <- function(id,
         
         bss_filt = bss |> 
           dplyr::filter(year == inputs$yearBP) |> 
+          dplyr::filter(uv >= inputs$minvec) |> # Filters out vectors below minimum threshold
           dplyr::arrange(x) |> 
           # sample rows with remainder == 1
-          dplyr::slice(which(dplyr::row_number() %% 500 == 1)) # TODO: Replace 500 dynamically from UI
-          # TODO: Add filter to set minimum size vector shown
+          dplyr::slice(which(dplyr::row_number() %% spacing == 1)) # Replace resampling interval based on "sparse", "medium", or "dense"
+          
         
         # mag multiplier
-        mag_mult = 0.10 # Shows arrow size
+        mag_mult = 0.10 # Magnifies arrows
         polylines_df_base = bss_filt |> 
           dplyr::mutate(id = dplyr::row_number())
         
