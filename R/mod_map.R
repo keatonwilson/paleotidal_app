@@ -166,8 +166,8 @@ map_server <- function(id,
         
 
         # bss palette
-        pal = colorNumeric(palette = "viridis",
-                           domain = values(raster),
+        pal = leaflet::colorNumeric(palette = "viridis",
+                           domain = raster::values(raster),
                            na.color = "gray30", 
                            reverse = FALSE)
         
@@ -184,7 +184,8 @@ map_server <- function(id,
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
-          leaflet::addPolygons(data = shape_1, 
+          leaflet::addPolygons(data = shape_1,
+                               layerId = "coastline",
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
@@ -197,7 +198,7 @@ map_server <- function(id,
                              labFormat = leaflet::labelFormat(suffix = " N/m2"), 
                              opacity = 1)
         
-        bss_filt = bss |> 
+        bss_filt = bss_data |> 
           dplyr::filter(year == inputs$yearBP) |> 
           dplyr::filter(uv >= inputs$minvec) |> # Filters out vectors below minimum threshold
           dplyr::arrange(x) |> 
@@ -232,7 +233,7 @@ map_server <- function(id,
         
         if(inputs$coast == FALSE) {
           mp2<- mp |> 
-            leaflet::clearShapes()
+            leaflet::removeShape(layerId = "coastline")
           mp2
         }
         
