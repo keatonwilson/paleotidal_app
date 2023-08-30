@@ -1,6 +1,9 @@
 
 # Data load ---------------------------------------------------------------
 
+# TODO: testing aggregate (downsample) for all rasters - leaving non mapping 
+# rasters at full resolution
+
 # rasters
 amp_raster = readr::read_rds("./data/processed_data/amp_raster.rds")
 bss_raster = readr::read_rds("./data/processed_data/bss_raster.rds")

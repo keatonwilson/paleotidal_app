@@ -345,12 +345,13 @@ pal = colorNumeric(palette = "viridis",
                   reverse = FALSE)
 ## This could be an altnerative to a regular grid
 ## It's also faster
-## 
-bss_filt = bss |> 
+
+# Sampling 
+bss_filt = bss_data |> 
   dplyr::filter(year == 0) |> 
-  dplyr::filter(uv > 1) |> 
+  # dplyr::filter(uv > 1) |> 
   dplyr::arrange(x) |> 
-  dplyr::slice(which(dplyr::row_number() %% 250 == 1))
+  dplyr::slice(which(dplyr::row_number() %% 100 == 1))
 
 # mag multiplier
 mag_mult = 0.10
