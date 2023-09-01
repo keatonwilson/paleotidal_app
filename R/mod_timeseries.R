@@ -75,7 +75,7 @@ time_series_server <- function(id,
             tickfont = list(color = "black"),
             overlaying = "y",
             side = "right",
-            title = list(text = "Tidal Amplitude",
+            title = list(text = "Tidal Amplitude (m)",
                          font = list(color = "#33a02c"),
                          standoff = 10L))
           
@@ -104,7 +104,7 @@ time_series_server <- function(id,
               title = title, yaxis2 = ay,
               xaxis = list(title = "Thousand Years BP", 
                            autorange = "reversed"),
-              yaxis = list(title = list(text = "Relative Sea Level",
+              yaxis = list(title = list(text = "Relative Sea Level (m)",
                                         font = list(color = "#1f77b4"))),
               showlegend = FALSE
             ) |> 
