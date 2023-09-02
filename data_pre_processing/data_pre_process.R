@@ -227,6 +227,31 @@ bss = bss |>
                                                .default = uv)) |> 
   dplyr::select(-water_value)
 
+# Make BSS polylines df
+bss_arrows = bss_data |> 
+  dplyr::group_by(year, y) |> 
+  dplyr::slice(which(dplyr::row_number() %% 8 == 1)) |> 
+  dplyr::ungroup() |> 
+  dplyr::group_by(year, x) |> 
+  dplyr::slice(which(dplyr::row_number() %% 8 == 1)) |> 
+  ungroup() |> 
+  dplyr::filter(!is.na(uv)) |> 
+  dplyr::filter(uv > 0)
+
+# mag multiplier
+mag_mult = 0.10
+polylines_df_base = bss_arrows |> 
+  dplyr::mutate(id = dplyr::row_number())
+
+polylines_end = bss_arrows |> 
+  dplyr::mutate(x = x+(u*mag_mult*-1), 
+                y = y+(v*mag_mult*-1)) |> 
+  dplyr::mutate(id = dplyr::row_number())
+
+all_bss_polylines = dplyr::bind_rows(polylines_df_base, polylines_end) |> 
+  dplyr::mutate(id = factor(id))
+
+
 ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
 strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
 vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
@@ -237,6 +262,7 @@ arrow::write_feather(rsl, "./data/processed_data/rsl.feather")
 # arrow::write_feather(mask_water, "./data/processed_data/mask_water.feather")
 arrow::write_feather(water_depth, "./data/processed_data/water_depth.feather")
 arrow::write_feather(bss, "./data/processed_data/bss.feather")
+arrow::write_feather(all_bss_polylines, "./data/processed_data/bss_polylines.feather")
 arrow::write_feather(ice, "./data/processed_data/ice.feather")
 arrow::write_feather(strat, "./data/processed_data/strat.feather")
 arrow::write_feather(vel, "./data/processed_data/vel.feather")
@@ -346,12 +372,20 @@ pal = colorNumeric(palette = "viridis",
 ## This could be an altnerative to a regular grid
 ## It's also faster
 
-# Sampling 
+# Sampling - this seems to to work well - 
+# this is all the raw data we need for all years - much smaller than the 
+# full data set - though we'd need to full data set for the time-series/data 
+# # data download
 bss_filt = bss_data |> 
   dplyr::filter(year == 0) |> 
-  # dplyr::filter(uv > 1) |> 
-  dplyr::arrange(x) |> 
-  dplyr::slice(which(dplyr::row_number() %% 100 == 1))
+  dplyr::group_by(y) |> 
+  dplyr::slice(which(dplyr::row_number() %% 8 == 1)) |> 
+  dplyr::ungroup() |> 
+  dplyr::group_by(x) |> 
+  dplyr::slice(which(dplyr::row_number() %% 8 == 1)) |> 
+  ungroup() |> 
+  dplyr::filter(!is.na(uv)) |> 
+  dplyr::filter(uv > 0)
 
 # mag multiplier
 mag_mult = 0.10
@@ -359,8 +393,8 @@ polylines_df_base = bss_filt |>
   dplyr::mutate(id = dplyr::row_number())
 
 polylines_end = bss_filt |> 
-  dplyr::mutate(x = x+(u*mag_mult), 
-                y = y+(v*mag_mult)) |> 
+  dplyr::mutate(x = x+(u*mag_mult*-1), 
+                y = y+(v*mag_mult*-1)) |> 
   dplyr::mutate(id = dplyr::row_number())
 
 to_plot = dplyr::bind_rows(polylines_df_base, polylines_end) |> 

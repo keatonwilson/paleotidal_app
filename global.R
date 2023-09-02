@@ -17,11 +17,13 @@ ice_raster = readr::read_rds("./data/processed_data/ice_raster.rds")
 # tidy data
 amp_data = arrow::read_feather("./data/processed_data/amp_data.feather")
 bss_data = arrow::read_feather("./data/processed_data/bss.feather")
+bss_polylines = arrow::read_feather("./data/processed_data/bss_polylines.feather")
 # mask_water_data = arrow::read_feather("./data/processed_data/mask_water.feather")
 rsl_data = arrow::read_feather("./data/processed_data/rsl.feather")
 strat_data = arrow::read_feather("./data/processed_data/strat.feather")
 vel_data = arrow::read_feather("./data/processed_data/vel.feather")
 water_depth_data = arrow::read_feather("./data/processed_data/water_depth.feather")
+
 
 # shapefiles
 shape_1 = sf::st_read("./data/raw_shape/coastline/GSHHS_l_L1.shp")
