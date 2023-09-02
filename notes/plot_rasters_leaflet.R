@@ -14,7 +14,7 @@ amp_raster = readr::read_rds("./amp_raster.rds") # original
 
 pal <- colorNumeric(palette = "viridis",
                     domain = c(0, 4),
-                    na.color = "gray30")
+                    na.color = "#bebebe")
 
 leaflet() |> 
   leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
@@ -23,7 +23,7 @@ leaflet() |>
   # addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
   addPolygons(data = shape_1, color = "black", weight = 0.25,
               opacity = 1, fillOpacity = 0) |> 
-  addLegend("topright", colors = c("gray", "aliceblue"),
+  addLegend("topright", colors = c("#bebebe", "aliceblue"),
             labels = c("land", "ice"),
             opacity = 1) |> 
   addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,

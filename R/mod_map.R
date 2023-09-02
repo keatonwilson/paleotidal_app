@@ -50,7 +50,7 @@ map_server <- function(id,
         
         pal <- leaflet::colorNumeric(palette = "viridis",
                             domain = c(0, 4),
-                            na.color = "gray30")
+                            na.color = "#bebebe")
         
 
         
@@ -65,7 +65,7 @@ map_server <- function(id,
                                opacity = 1,
                                color = "black",
                                fillOpacity = 0) |> 
-          leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
+          leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                     labels = c("Land", "Ice"),
                     opacity = 1) |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
@@ -88,7 +88,7 @@ map_server <- function(id,
         
         pal <- leaflet::colorNumeric(palette = "viridis",
                             domain = c(0, 1.6),
-                            na.color = "gray30")
+                            na.color = "#bebebe")
         
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
@@ -101,7 +101,7 @@ map_server <- function(id,
                                opacity = 1,
                                color = "black",
                                fillOpacity = 0) |> 
-          leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
+          leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                     labels = c("Land", "Ice"),
                     opacity = 1) |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 1.6), bins = 4,
@@ -125,7 +125,7 @@ map_server <- function(id,
         
         pal <- leaflet::colorFactor(palette = "GnBu",
                            domain = raster::values(raster),
-                           na.color = "gray30", 
+                           na.color = "#bebebe", 
                            reverse = TRUE)
         
         mp <- map_proxy() |> 
@@ -139,7 +139,7 @@ map_server <- function(id,
                                opacity = 1,
                                color = "black",
                                fillOpacity = 0) |> 
-          leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
+          leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                              labels = c("Land", "Ice"),
                              opacity = 1) |> 
           leaflet::addLegend("bottomright",
@@ -168,7 +168,7 @@ map_server <- function(id,
         # bss palette
         pal = leaflet::colorNumeric(palette = "viridis",
                            domain = raster::values(raster),
-                           na.color = "gray30", 
+                           na.color = "#bebebe", 
                            reverse = FALSE)
         
         # dynamic spacing
@@ -190,7 +190,7 @@ map_server <- function(id,
                                opacity = 1,
                                color = "black",
                                fillOpacity = 0) |> 
-          leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
+          leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                              labels = c("Land", "Ice"),
                              opacity = 1)  |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 15), bins = 4,
