@@ -228,18 +228,18 @@ bss = bss |>
   dplyr::select(-water_value)
 
 # Make BSS polylines df
-bss_arrows = bss_data |> 
+bss_arrows = bss |> 
   dplyr::group_by(year, y) |> 
-  dplyr::slice(which(dplyr::row_number() %% 8 == 1)) |> 
+  dplyr::slice(which(dplyr::row_number() %% 10 == 1)) |> 
   dplyr::ungroup() |> 
   dplyr::group_by(year, x) |> 
-  dplyr::slice(which(dplyr::row_number() %% 8 == 1)) |> 
+  dplyr::slice(which(dplyr::row_number() %% 10 == 1)) |> 
   ungroup() |> 
   dplyr::filter(!is.na(uv)) |> 
-  dplyr::filter(uv > 0)
+  dplyr::filter(uv > 0.5)
 
 # mag multiplier
-mag_mult = 0.10
+mag_mult = 0.09
 polylines_df_base = bss_arrows |> 
   dplyr::mutate(id = dplyr::row_number())
 
@@ -379,16 +379,16 @@ pal = colorNumeric(palette = "viridis",
 bss_filt = bss_data |> 
   dplyr::filter(year == 0) |> 
   dplyr::group_by(y) |> 
-  dplyr::slice(which(dplyr::row_number() %% 8 == 1)) |> 
+  dplyr::slice(which(dplyr::row_number() %% 12 == 1)) |> 
   dplyr::ungroup() |> 
   dplyr::group_by(x) |> 
-  dplyr::slice(which(dplyr::row_number() %% 8 == 1)) |> 
+  dplyr::slice(which(dplyr::row_number() %% 12 == 1)) |> 
   ungroup() |> 
   dplyr::filter(!is.na(uv)) |> 
   dplyr::filter(uv > 0)
 
 # mag multiplier
-mag_mult = 0.10
+mag_mult = 0.09
 polylines_df_base = bss_filt |> 
   dplyr::mutate(id = dplyr::row_number())
 
@@ -400,13 +400,14 @@ polylines_end = bss_filt |>
 to_plot = dplyr::bind_rows(polylines_df_base, polylines_end) |> 
   dplyr::mutate(id = factor(id))
 
-
+to_plot = bss_polylines |> 
+  filter(year == 0)
 
 mp = leaflet() |> 
   addRasterImage(bss_raster$X0_bss, 
                  colors = pal) 
 
-for(group in levels(to_plot$id)){
+for(group in unique(to_plot$id)){
   mp = leaflet.extras2::addArrowhead(mp,
                                      lng= ~x,
                                      lat= ~y,
