@@ -37,7 +37,7 @@ vel_raster = readr::read_rds("./data/processed_data/vel_raster.rds")
 
 pal <- colorNumeric(palette = "viridis",
                     domain = c(0, 1.6),
-                   na.color = "gray30")
+                   na.color = "#bebebe")
 
 leaflet() |> 
   leaflet::setView(lng = -4, lat = 56, zoom = 4.5) |> 
@@ -45,7 +45,7 @@ leaflet() |>
   addRasterImage(ice_raster[[15]], colors = "aliceblue") |>
   addPolygons(data = shape_1, color = "black", weight = 1,
               opacity = 1, fillOpacity = 0) |> 
-  addLegend("topright", colors = c("gray", "aliceblue"),
+  addLegend("topright", colors = c("#bebebe", "aliceblue"),
             labels = c("land", "ice"),
             opacity = 1) |> 
   addLegend("bottomright", pal = pal, values = c(0, 1.6), bins = 4,
@@ -58,7 +58,7 @@ strat_raster = readr::read_rds("./data/processed_data/strat_raster.rds")
 
 pal <- colorFactor(palette = "GnBu",
                    domain = values(strat_raster[[21]]),
-                   na.color = "gray30", 
+                   na.color = "#bebebe", 
                    reverse = TRUE)
 
 strat_vec <- c()
@@ -69,7 +69,7 @@ leaflet() |>
   addPolygons(data = shape_1, color = "black", weight = 1,
               opacity = 1, fillOpacity = 0) |>
   addRasterImage(ice_raster[[21]], colors = "aliceblue") |> 
-  addLegend("topright", colors = c("gray", "aliceblue"),
+  addLegend("topright", colors = c("#bebebe", "aliceblue"),
             labels = c("land", "ice"),
             opacity = 1) |> 
   addLegend(colors = c("#43A2CA", 

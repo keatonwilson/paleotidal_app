@@ -52,8 +52,8 @@ function(input, output, session) {
                 labels = c("land", "ice"),
                 opacity = 1) |> 
       leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
-                title = "Tidal Amplitude",
-                labFormat = leaflet::labelFormat(suffix = " m"), 
+                title = "Tidal Amplitude (m)",
+                # labFormat = leaflet::labelFormat(suffix = " m"), 
                 opacity = 1)
   })
   

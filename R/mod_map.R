@@ -69,8 +69,8 @@ map_server <- function(id,
                     labels = c("Land", "Ice"),
                     opacity = 1) |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
-                    title = "Tidal Amplitude",
-                    labFormat = leaflet::labelFormat(suffix = " m"), 
+                    title = "Tidal Amplitude (m)",
+                    # labFormat = leaflet::labelFormat(suffix = " m"), 
                     opacity = 1)
         mp
         
@@ -105,8 +105,8 @@ map_server <- function(id,
                     labels = c("Land", "Ice"),
                     opacity = 1) |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 1.6), bins = 4,
-                    title = "Tidal Current",
-                    labFormat = leaflet::labelFormat(suffix = " m/s"), 
+                    title = "Tidal Current (m/s)",
+                    # labFormat = leaflet::labelFormat(suffix = " m/s"), 
                     opacity = 1)
         
         mp
@@ -194,8 +194,7 @@ map_server <- function(id,
                              labels = c("Land", "Ice"),
                              opacity = 1)  |> 
           leaflet::addLegend("bottomright", pal = pal, values = c(0, 15), bins = 4,
-                             title = "Peak Bed Stress",
-                             labFormat = leaflet::labelFormat(suffix = " N/m2"), 
+                             title = "Peak Bed Stress (N/m<sup>2</sup>)",
                              opacity = 1)
         
         bss_filt = bss_data |> 
