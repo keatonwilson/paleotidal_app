@@ -101,9 +101,13 @@ function(input, output, session) {
       
       map_proxy() |> 
         leaflet::removeMarker(layerId = "click_mark") |>
-        leaflet::addMarkers(lng = closest_lat_lon$lon, 
-                            lat = closest_lat_lon$lat, 
-                            layerId = "click_mark")
+        leaflet::addCircleMarkers(lng = closest_lat_lon$lon, 
+                                  lat = closest_lat_lon$lat, 
+                                  layerId = "click_mark",
+                                  color = "#F88379",
+                                  stroke = FALSE,
+                                  fillOpacity = 0.75,
+                                  radius = 5)
     }
   })
 
