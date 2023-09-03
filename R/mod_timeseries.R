@@ -172,7 +172,7 @@ time_series_server <- function(id,
                                            ~.x %in% data_to_include) |> 
                 dplyr::bind_rows() |> 
                 tidyr::pivot_wider(names_from = datatype, values_from = value) |> 
-                mutate(strat = dplyr::case_when(strat == 1 ~ "mixed",
+                dplyr::mutate(strat = dplyr::case_when(strat == 1 ~ "mixed",
                                                 strat == 2 ~ "frontal",
                                                 strat == 3 ~ "stratified"))
               
@@ -180,15 +180,15 @@ time_series_server <- function(id,
               init = purrr::keep_at(all_data_in_list, 
                                     ~.x %in% data_to_include) |> 
                 dplyr::bind_rows() |>
-                filter(datatype != "bss") |> 
+                dplyr::filter(datatype != "bss") |> 
                 tidyr::pivot_wider(id_cols = 1:3, names_from = datatype,
                                    values_from = value)
               
               bss = purrr::keep_at(all_data_in_list, 
                                    ~.x %in% data_to_include) |> 
                 dplyr::bind_rows() |>
-                filter(datatype == "bss") |>
-                select(u:quadrant)
+                dplyr::filter(datatype == "bss") |>
+                dplyr::select(u:quadrant)
               
               to_download = dplyr::bind_cols(init, bss)
             }
