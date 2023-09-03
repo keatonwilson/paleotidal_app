@@ -145,7 +145,7 @@ map_server <- function(id,
           leaflet::addLegend("bottomright",
                     colors = c("#43A2CA", 
                                "#A8DDB5", 
-                               "#E0F3DB"),
+                               "#f1ffed"),
                     labels = c("mixed", "frontal", "stratified"),
                     title = "Stratification",
                     opacity = 1)
