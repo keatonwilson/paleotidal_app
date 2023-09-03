@@ -110,7 +110,8 @@ function(input, output, session) {
         leaflet::removeMarker(layerId = "click_mark") |>
         leaflet::addAwesomeMarkers(lng = closest_lat_lon$lon, 
                                   lat = closest_lat_lon$lat, 
-                                  layerId = "click_mark")
+                                  layerId = "click_mark", 
+                                  icon = icons)
     }
   })
 
