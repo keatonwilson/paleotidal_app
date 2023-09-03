@@ -191,9 +191,10 @@ time_series_server <- function(id,
       
       #TODO Make this look better with some css      
       output$timeseries_plot = shiny::renderUI({
-        # show loading  
+        # show loading
         timeseries_w$hide()
-        shiny::h2("Click anywhere on the map to generate timeseries.")
+        shiny::div(class = "font-italic text-secondary",
+                   "(Click anywhere on the map to generate timeseries.)")
       })
       
       return(NULL)
