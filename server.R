@@ -51,10 +51,10 @@ function(input, output, session) {
       leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                 labels = c("land", "ice"),
                 opacity = 1) |> 
-      leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
-                title = "Tidal Amplitude (m)",
-                # labFormat = leaflet::labelFormat(suffix = " m"), 
-                opacity = 1)
+      addLegend_decreasing("bottomright", pal = pal, values = c(0,4), bins = 5, 
+                           title = "Tidal Amplitude (m)",
+                           opacity = 1,
+                           decreasing = TRUE)
   })
   
   map_proxy = reactive(leaflet::leafletProxy("map"))

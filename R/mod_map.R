@@ -68,10 +68,11 @@ map_server <- function(id,
           leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                     labels = c("Land", "Ice"),
                     opacity = 1) |> 
-          leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
-                    title = "Tidal Amplitude (m)",
-                    # labFormat = leaflet::labelFormat(suffix = " m"), 
-                    opacity = 1)
+          addLegend_decreasing("bottomright", pal = pal, values = c(0,4), bins = 5, 
+                               title = "Tidal Amplitude (m)",
+                               opacity = 1,
+                               decreasing = TRUE)
+
         mp
         
         if(inputs$coast == FALSE) {
@@ -104,10 +105,10 @@ map_server <- function(id,
           leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                     labels = c("Land", "Ice"),
                     opacity = 1) |> 
-          leaflet::addLegend("bottomright", pal = pal, values = c(0, 1.6), bins = 4,
-                    title = "Tidal Current (m/s)",
-                    # labFormat = leaflet::labelFormat(suffix = " m/s"), 
-                    opacity = 1)
+          addLegend_decreasing("bottomright", pal = pal, values = c(0, 1.6), bins = 4, 
+                               title = "Tidal Current (m/s)",
+                               opacity = 1,
+                               decreasing = TRUE)
         
         mp
         
@@ -132,7 +133,9 @@ map_server <- function(id,
           leaflet::clearControls() |> 
           leaflet::clearShapes() |> 
           leaflet::addRasterImage(raster, 
-                                  colors = pal) |> 
+                                  colors = c("#43A2CA", 
+                                             "#A8DDB5", 
+                                             "#f1ffed")) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
           leaflet::addPolygons(data = shape_1, 
                                weight = 0.5, 
@@ -146,7 +149,7 @@ map_server <- function(id,
                     colors = c("#43A2CA", 
                                "#A8DDB5", 
                                "#f1ffed"),
-                    labels = c("mixed", "frontal", "stratified"),
+                    labels = c("Mixed", "Frontal", "Stratified"),
                     title = "Stratification",
                     opacity = 1)
         
@@ -193,9 +196,10 @@ map_server <- function(id,
           leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                              labels = c("Land", "Ice"),
                              opacity = 1)  |> 
-          leaflet::addLegend("bottomright", pal = pal, values = c(0, 15), bins = 4,
-                             title = "Peak Bed Stress (N/m<sup>2</sup>)",
-                             opacity = 1)
+          addLegend_decreasing("bottomright", pal = pal, values = c(0, 15), bins = 4, 
+                               title = "Peak Bed Stress (N/m<sup>2</sup>)",
+                               opacity = 1,
+                               decreasing = TRUE)
         
         bss_filt = bss_data |> 
           dplyr::filter(year == inputs$yearBP) |> 
