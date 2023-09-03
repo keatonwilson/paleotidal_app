@@ -99,15 +99,18 @@ function(input, output, session) {
     # don't run proxy update without a click
     if (!is.null(closest_lat_lon)) {
       
+      icons <- leaflet::awesomeIcons(
+        icon = 'ios-close',
+        iconColor = 'white',
+        library = 'ion',
+        markerColor = "green"
+      )
+      
       map_proxy() |> 
         leaflet::removeMarker(layerId = "click_mark") |>
-        leaflet::addCircleMarkers(lng = closest_lat_lon$lon, 
+        leaflet::addAwesomeMarkers(lng = closest_lat_lon$lon, 
                                   lat = closest_lat_lon$lat, 
-                                  layerId = "click_mark",
-                                  color = "#F88379",
-                                  stroke = FALSE,
-                                  fillOpacity = 0.75,
-                                  radius = 5)
+                                  layerId = "click_mark")
     }
   })
 
