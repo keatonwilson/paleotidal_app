@@ -25,7 +25,7 @@ function(input, output, session) {
   # set color legend for proxy map
   pal <- leaflet::colorNumeric(palette = "viridis",
                                domain = c(0, 4),
-                               na.color = "gray30") 
+                               na.color = "#bebebe") 
   
   output$map = leaflet::renderLeaflet({
     
@@ -36,7 +36,7 @@ function(input, output, session) {
       leaflet::setView(lng = -4, lat = 56, zoom = 5.25) |> 
       # Base amp raster
       leaflet::addRasterImage(amp_raster$X21_elevation_amplitude, 
-                              colors = "viridis") |> 
+                              colors = pal) |> 
       # # base water
       # leaflet::addRasterImage(mask_water_raster$X21_mask_water) |> 
       # base ice
@@ -48,13 +48,13 @@ function(input, output, session) {
                            color = "black",
                            fillOpacity = 0) |> 
       # add basemap legend
-      leaflet::addLegend("topright", colors = c("gray", "aliceblue"),
+      leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                 labels = c("land", "ice"),
                 opacity = 1) |> 
-      leaflet::addLegend("bottomright", pal = pal, values = c(0, 4), bins = 5,
-                title = "Tidal Amplitude",
-                labFormat = leaflet::labelFormat(suffix = " m"), 
-                opacity = 1)
+      addLegend_decreasing("bottomright", pal = pal, values = c(0,4), bins = 5, 
+                           title = "Tidal Amplitude (m)",
+                           opacity = 1,
+                           decreasing = TRUE)
   })
   
   map_proxy = reactive(leaflet::leafletProxy("map"))
@@ -99,11 +99,19 @@ function(input, output, session) {
     # don't run proxy update without a click
     if (!is.null(closest_lat_lon)) {
       
+      icons <- leaflet::awesomeIcons(
+        icon = 'ios-close',
+        iconColor = 'white',
+        library = 'ion',
+        markerColor = "green"
+      )
+      
       map_proxy() |> 
         leaflet::removeMarker(layerId = "click_mark") |>
-        leaflet::addMarkers(lng = closest_lat_lon$lon, 
-                            lat = closest_lat_lon$lat, 
-                            layerId = "click_mark")
+        leaflet::addAwesomeMarkers(lng = closest_lat_lon$lon, 
+                                  lat = closest_lat_lon$lat, 
+                                  layerId = "click_mark", 
+                                  icon = icons)
     }
   })
 

@@ -4,6 +4,7 @@ time_series_ui <- function(id) {
   bslib::card(
     bslib::card_body(
       bslib::as_fill_carrier(
+        class = "justify-content-center align-items-center text-align center",
         shiny::uiOutput(ns("timeseries_plot"))
       )
     ),
@@ -75,7 +76,7 @@ time_series_server <- function(id,
             tickfont = list(color = "black"),
             overlaying = "y",
             side = "right",
-            title = list(text = "Tidal Amplitude",
+            title = list(text = "Tidal Amplitude (m)",
                          font = list(color = "#33a02c"),
                          standoff = 10L))
           
@@ -104,7 +105,7 @@ time_series_server <- function(id,
               title = title, yaxis2 = ay,
               xaxis = list(title = "Thousand Years BP", 
                            autorange = "reversed"),
-              yaxis = list(title = list(text = "Relative Sea Level",
+              yaxis = list(title = list(text = "Relative Sea Level (m)",
                                         font = list(color = "#1f77b4"))),
               showlegend = FALSE
             ) |> 
@@ -161,9 +162,38 @@ time_series_server <- function(id,
             
      
             # keep appropriate data and bind
-            to_download = purrr::keep_at(all_data_in_list, 
-                                         ~.x %in% data_to_include) |> 
-              dplyr::bind_rows()
+            
+            if(data$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
+              to_download = purrr::keep_at(all_data_in_list, 
+                                           ~.x %in% data_to_include) |> 
+                dplyr::bind_rows() |> 
+                tidyr::pivot_wider(names_from = datatype, values_from = value)
+            } else if (data$datatype == "Stratification") {
+              to_download = purrr::keep_at(all_data_in_list, 
+                                           ~.x %in% data_to_include) |> 
+                dplyr::bind_rows() |> 
+                tidyr::pivot_wider(names_from = datatype, values_from = value) |> 
+                dplyr::mutate(strat = dplyr::case_when(strat == 1 ~ "mixed",
+                                                strat == 2 ~ "frontal",
+                                                strat == 3 ~ "stratified"))
+              
+            } else if (data$datatype == "Peak Bed Stress") {
+              init = purrr::keep_at(all_data_in_list, 
+                                    ~.x %in% data_to_include) |> 
+                dplyr::bind_rows() |>
+                dplyr::filter(datatype != "bss") |> 
+                tidyr::pivot_wider(id_cols = 1:3, names_from = datatype,
+                                   values_from = value)
+              
+              bss = purrr::keep_at(all_data_in_list, 
+                                   ~.x %in% data_to_include) |> 
+                dplyr::bind_rows() |>
+                dplyr::filter(datatype == "bss") |>
+                dplyr::select(u:quadrant)
+              
+              to_download = dplyr::bind_cols(init, bss)
+            }
+            
             shiny::incProgress(4)
             
             
@@ -191,9 +221,10 @@ time_series_server <- function(id,
       
       #TODO Make this look better with some css      
       output$timeseries_plot = shiny::renderUI({
-        # show loading  
+        # show loading
         timeseries_w$hide()
-        shiny::h2("Click anywhere on the map to generate timeseries.")
+        shiny::div(class = "font-italic text-secondary",
+                   "(Click anywhere on the map to generate timeseries)")
       })
       
       return(NULL)
