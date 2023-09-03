@@ -161,9 +161,38 @@ time_series_server <- function(id,
             
      
             # keep appropriate data and bind
-            to_download = purrr::keep_at(all_data_in_list, 
-                                         ~.x %in% data_to_include) |> 
-              dplyr::bind_rows()
+            
+            if(data$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
+              to_download = purrr::keep_at(all_data_in_list, 
+                                           ~.x %in% data_to_include) |> 
+                dplyr::bind_rows() |> 
+                tidyr::pivot_wider(names_from = datatype, values_from = value)
+            } else if (data$datatype == "Stratification") {
+              to_download = purrr::keep_at(all_data_in_list, 
+                                           ~.x %in% data_to_include) |> 
+                dplyr::bind_rows() |> 
+                tidyr::pivot_wider(names_from = datatype, values_from = value) |> 
+                mutate(strat = dplyr::case_when(strat == 1 ~ "mixed",
+                                                strat == 2 ~ "frontal",
+                                                strat == 3 ~ "stratified"))
+              
+            } else if (data$datatype == "Peak Bed Stress") {
+              init = purrr::keep_at(all_data_in_list, 
+                                    ~.x %in% data_to_include) |> 
+                dplyr::bind_rows() |>
+                filter(datatype != "bss") |> 
+                tidyr::pivot_wider(id_cols = 1:3, names_from = datatype,
+                                   values_from = value)
+              
+              bss = purrr::keep_at(all_data_in_list, 
+                                   ~.x %in% data_to_include) |> 
+                dplyr::bind_rows() |>
+                filter(datatype == "bss") |>
+                select(u:quadrant)
+              
+              to_download = dplyr::bind_cols(init, bss)
+            }
+            
             shiny::incProgress(4)
             
             
