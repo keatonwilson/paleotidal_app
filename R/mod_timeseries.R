@@ -4,6 +4,7 @@ time_series_ui <- function(id) {
   bslib::card(
     bslib::card_body(
       bslib::as_fill_carrier(
+        class = "justify-content-center align-items-center text-align center",
         shiny::uiOutput(ns("timeseries_plot"))
       )
     ),
@@ -223,7 +224,7 @@ time_series_server <- function(id,
         # show loading
         timeseries_w$hide()
         shiny::div(class = "font-italic text-secondary",
-                   "(Click anywhere on the map to generate timeseries.)")
+                   "(Click anywhere on the map to generate timeseries)")
       })
       
       return(NULL)
