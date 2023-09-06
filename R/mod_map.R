@@ -42,7 +42,7 @@ map_server <- function(id,
       
       
       # filter by time_step
-      raster = raster_to_map[[to_map]]
+      the_raster = raster_to_map[[to_map]]
       ice_raster = ice_raster[[ice_to_map]]
       
       # Tidal Amplitude Map
@@ -57,7 +57,7 @@ map_server <- function(id,
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
           leaflet::clearShapes() |> 
-          leaflet::addRasterImage(raster, 
+          leaflet::addRasterImage(the_raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
           leaflet::addPolygons(data = shape_1, 
@@ -94,7 +94,7 @@ map_server <- function(id,
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
           leaflet::clearShapes() |>  
-          leaflet::addRasterImage(raster, 
+          leaflet::addRasterImage(the_raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
           leaflet::addPolygons(data = shape_1, 
@@ -124,18 +124,18 @@ map_server <- function(id,
         # Strat Map
       } else if(data$datatype == "Stratification") {
         
-        pal <- leaflet::colorFactor(palette = "GnBu",
-                           domain = raster::values(raster),
+        pal <- leaflet::colorFactor(palette = rev(c("#43A2CA", 
+                                                "#A8DDB5", 
+                                                "#f1ffed")),
+                           domain = raster::values(the_raster),
                            na.color = "#bebebe", 
                            reverse = TRUE)
         
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
           leaflet::clearShapes() |> 
-          leaflet::addRasterImage(raster, 
-                                  colors = c("#43A2CA", 
-                                             "#A8DDB5", 
-                                             "#f1ffed")) |> 
+          leaflet::addRasterImage(the_raster, 
+                                  colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
           leaflet::addPolygons(data = shape_1, 
                                weight = 0.5, 
@@ -170,7 +170,7 @@ map_server <- function(id,
 
         # bss palette
         pal = leaflet::colorNumeric(palette = "viridis",
-                           domain = raster::values(raster),
+                           domain = raster::values(the_raster),
                            na.color = "#bebebe", 
                            reverse = FALSE)
         
@@ -184,7 +184,7 @@ map_server <- function(id,
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
           leaflet::clearShapes() |> 
-          leaflet::addRasterImage(raster, 
+          leaflet::addRasterImage(the_raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
           leaflet::addPolygons(data = shape_1,
