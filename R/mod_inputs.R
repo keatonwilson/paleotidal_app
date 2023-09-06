@@ -43,8 +43,8 @@ input_ui <- function(id) {
         # bslib::layout_column_wrap(
         #   width = 1 / 2,
           checkboxInput(
-            NS(id, "coast"),
-            "Show coastline?",
+            NS(id, "coast_current"),
+            "Show current coastline",
             value = TRUE,
             width = '100%'
           # ),
@@ -55,7 +55,12 @@ input_ui <- function(id) {
           #   selected = 0,
           #   width = '100%'
           # )
-        )
+        ),
+        checkboxInput(
+          NS(id, "coast_paleo"),
+          "Show paleo-coastline",
+          value = FALSE,
+          width = '100%')
       ),
       ## Custom Panel ----------------------------------------------------------
       bslib::nav_panel(
@@ -235,7 +240,8 @@ input_server <- function(id, inputs) {
     observe({
       # input_vals$datatype = inputs$datatype
       input_vals$yearBP = input$yearBP
-      input_vals$coast = input$coast
+      input_vals$coast_current = input$coast_current
+      input_vals$coast_paleo = input$coast_paleo
       # input_vals$coastyear = input$coastyear
       # input_vals$boundary_range = input$boundaryrange
       # input_vals$contrast = input$contrast

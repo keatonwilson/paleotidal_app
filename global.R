@@ -27,6 +27,7 @@ water_depth_data = arrow::read_feather("./data/processed_data/water_depth.feathe
 
 # shapefiles
 shape_1 = sf::st_read("./data/raw_shape/coastline/GSHHS_l_L1.shp")
+palcoasts = readRDS("./data/processed_data/palcoast_list.RDS")
 
 strat_contours = list.files("./data/raw_shape/strat/", full.names = TRUE)[stringr::str_detect(list.files("./data/raw_shape/strat/"), ".shp")] |>
   purrr::map(function(shapefile) {

@@ -38,12 +38,13 @@ map_server <- function(id,
       ice_to_map = names(ice_raster)[stringr::str_detect(names(ice_raster), 
                                                          glue::glue("^X{inputs$yearBP}_"))]
       
-      # inputs$coast returns T or F for showing shapefile
+      # inputs$coast_current returns T or F for showing current shapefile
       
       
       # filter by time_step
       raster = raster_to_map[[to_map]]
       ice_raster = ice_raster[[ice_to_map]]
+      palcoast = palcoasts[[inputs$yearBP]]
       
       # Tidal Amplitude Map
       if(data$datatype == "Tidal Amplitude") {
@@ -75,9 +76,28 @@ map_server <- function(id,
 
         mp
         
-        if(inputs$coast == FALSE) {
+        if(inputs$coast_current == FALSE & inputs$coast_paleo == FALSE) {
           mp2<- mp |> 
             leaflet::clearShapes()
+          mp2
+        } else if(inputs$coast_current == FALSE & inputs$coast_paleo == TRUE) {
+          mp2<- mp |> 
+            leaflet::clearShapes() |> 
+            leaflet::addPolylines(data = palcoast, 
+                                  weight = 0.5, 
+                                  opacity = 1,
+                                  color = "black",
+                                  dashArray = "3",
+                                  fillOpacity = 0)
+          mp2
+        } else if(inputs$coast_current == TRUE & inputs$coast_paleo == TRUE){
+          mp2<- mp |> 
+            leaflet::addPolylines(data = palcoast, 
+                                  weight = 0.5, 
+                                  opacity = 1,
+                                  color = "black",
+                                  dashArray = "3",
+                                  fillOpacity = 0)
           mp2
         }
         
@@ -112,9 +132,28 @@ map_server <- function(id,
         
         mp
         
-        if(inputs$coast == FALSE) {
+        if(inputs$coast_current == FALSE & inputs$coast_paleo == FALSE) {
           mp2<- mp |> 
             leaflet::clearShapes()
+          mp2
+        } else if(inputs$coast_current == FALSE & inputs$coast_paleo == TRUE) {
+          mp2<- mp |> 
+            leaflet::clearShapes() |> 
+            leaflet::addPolylines(data = palcoast, 
+                                  weight = 0.5, 
+                                  opacity = 1,
+                                  color = "black",
+                                  dashArray = "3",
+                                  fillOpacity = 0)
+          mp2
+        } else if(inputs$coast_current == TRUE & inputs$coast_paleo == TRUE){
+          mp2<- mp |> 
+            leaflet::addPolylines(data = palcoast, 
+                                  weight = 0.5, 
+                                  opacity = 1,
+                                  color = "black",
+                                  dashArray = "3",
+                                  fillOpacity = 0)
           mp2
         }
         
@@ -156,10 +195,29 @@ map_server <- function(id,
         
         mp
         
-        if(inputs$coast == FALSE) {
-         mp2<- mp |> 
-           leaflet::clearShapes()
-         mp2
+        if(inputs$coast_current == FALSE & inputs$coast_paleo == FALSE) {
+          mp2<- mp |> 
+            leaflet::clearShapes()
+          mp2
+        } else if(inputs$coast_current == FALSE & inputs$coast_paleo == TRUE) {
+          mp2<- mp |> 
+            leaflet::clearShapes() |> 
+            leaflet::addPolylines(data = palcoast, 
+                                  weight = 0.5, 
+                                  opacity = 1,
+                                  color = "black",
+                                  dashArray = "3",
+                                  fillOpacity = 0)
+          mp2
+        } else if(inputs$coast_current == TRUE & inputs$coast_paleo == TRUE){
+          mp2<- mp |> 
+            leaflet::addPolylines(data = palcoast, 
+                                  weight = 0.5, 
+                                  opacity = 1,
+                                  color = "black",
+                                  dashArray = "3",
+                                  fillOpacity = 0)
+          mp2
         }
         
         # hide loading screen
@@ -216,9 +274,28 @@ map_server <- function(id,
         
         mp
         
-        if(inputs$coast == FALSE) {
+        if(inputs$coast_current == FALSE & inputs$coast_paleo == FALSE) {
           mp2<- mp |> 
-            leaflet::removeShape(layerId = "coastline")
+            leaflet::clearShapes()
+          mp2
+        } else if(inputs$coast_current == FALSE & inputs$coast_paleo == TRUE) {
+          mp2<- mp |> 
+            leaflet::clearShapes() |> 
+            leaflet::addPolylines(data = palcoast, 
+                                  weight = 0.5, 
+                                  opacity = 1,
+                                  color = "black",
+                                  dashArray = "3",
+                                  fillOpacity = 0)
+          mp2
+        } else if(inputs$coast_current == TRUE & inputs$coast_paleo == TRUE){
+          mp2<- mp |> 
+            leaflet::addPolylines(data = palcoast, 
+                                  weight = 0.5, 
+                                  opacity = 1,
+                                  color = "black",
+                                  dashArray = "3",
+                                  fillOpacity = 0)
           mp2
         }
         
