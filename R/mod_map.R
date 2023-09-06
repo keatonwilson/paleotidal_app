@@ -245,8 +245,7 @@ map_server <- function(id,
           leaflet::addRasterImage(raster, 
                                   colors = pal) |> 
           leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
-          leaflet::addPolygons(data = shape_1,
-                               layerId = "coastline",
+          leaflet::addPolygons(data = shape_1, 
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
