@@ -201,33 +201,15 @@ map_server <- function(id,
                                opacity = 1,
                                decreasing = TRUE)
         
-        bss_filt = bss_data |> 
-          dplyr::filter(year == inputs$yearBP) |> 
-          dplyr::filter(uv >= inputs$minvec) |> # Filters out vectors below minimum threshold
-          dplyr::arrange(x) |> 
-          # sample rows with remainder == 1
-          dplyr::slice(which(dplyr::row_number() %% spacing == 1)) # Replace resampling interval based on "sparse", "medium", or "dense"
-          
-        
-        # mag multiplier
-        mag_mult = 0.10 # Magnifies arrows
-        polylines_df_base = bss_filt |> 
-          dplyr::mutate(id = dplyr::row_number())
-        
-        polylines_end = bss_filt |> 
-          dplyr::mutate(x = x+(u*mag_mult), 
-                 y = y+(v*mag_mult)) |> 
-          dplyr::mutate(id = dplyr::row_number())
-        
-        to_plot = dplyr::bind_rows(polylines_df_base, polylines_end) |> 
-          dplyr::mutate(id = factor(id))
-        
-        for(group in levels(to_plot$id)){
+        to_plot = bss_polylines |>
+          dplyr::filter(year == inputs$yearBP)
+
+        for(group in unique(to_plot$id)){
           mp = leaflet.extras2::addArrowhead(mp,
                                               lng= ~x,
                                               lat= ~y,
                                               data = to_plot[to_plot$id==group,],
-                                              weight = 2, 
+                                              weight = 2,
                                               color = "white")
         }
         
