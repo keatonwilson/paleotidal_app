@@ -433,3 +433,15 @@ readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
 readr::write_rds(ice_raster, "./data/processed_data/ice_raster.rds")
 readr::write_rds(strat_raster, "./data/processed_data/strat_raster.rds")
 readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
+
+
+## Make list of paleocoast shapefiles
+
+fn <- as.character(sprintf("palcoast_%02d", 1:21))
+shape_list <- list()
+for(i in 1:length(fn)) {
+  temp <- sf::st_read(glue::glue("./data/raw_shape/coastline/shpfile_palcoasts/{fn[i]}.shp"))
+  shape_list[[i]] <- temp
+}
+
+saveRDS(shape_list, "data/processed_data/palcoast_list.RDS")

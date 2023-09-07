@@ -6,6 +6,7 @@ library(leaflet)
 
 # Sandbox to make leaflet plots locally before connecting to app
 shape_1 = sf::st_read("./data/raw_shape/coastline/GSHHS_l_L1.shp")
+shapes = sf::st_read("./data/raw_shape/coastline/shpfile_palcoasts/palcoast_21.shp")
 ice_raster = readr::read_rds("./data/processed_data/ice_raster.rds")
 
 # Start with amp
@@ -21,8 +22,11 @@ leaflet() |>
   # leaflet::setMaxBounds(-15, 45, 11, 65.0125) |> 
   addRasterImage(amp_raster[[1]], opacity = 0.8, colors = pal) |> 
   # addRasterImage(ice_raster[[21]], colors = "aliceblue") |>
-  addPolygons(data = shape_1, color = "black", weight = 0.25,
-              opacity = 1, fillOpacity = 0) |> 
+  # addPolygons(data = shape_1, color = "black", weight = 0.5,
+  #             opacity = 1, fillOpacity = 0) |> 
+  addPolylines(data = shapes, color = "black", weight = 0.25,
+              opacity = 1, fillOpacity = 0,
+              dashArray = "2") |> 
   addLegend("topright", colors = c("#bebebe", "aliceblue"),
             labels = c("land", "ice"),
             opacity = 1) |> 
