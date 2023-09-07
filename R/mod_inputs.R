@@ -208,7 +208,7 @@ input_server <- function(id, inputs) {
     # Hide "Custom" tab if either Tidal product is selected
     # works great when navset cardtab id is namespaced in UI above
     observe({
-      if(inputs$datatype %in% c("Tidal Amplitude", "Tidal Current", "Stratification")) {
+      if(inputs$datatype %in% c("Tidal Amplitude", "Tidal Current", "Stratification", "Peak Bed Stress")) {
         bslib::nav_hide("tabs", target = "Custom")
       } else {
         bslib::nav_show("tabs", target = "Custom")
