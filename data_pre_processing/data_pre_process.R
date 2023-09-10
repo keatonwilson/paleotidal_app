@@ -451,9 +451,10 @@ readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
 
 fn <- as.character(sprintf("palcoast_%02d", 1:21))
 shape_list <- list()
+shape_list[[1]] <- sf::st_read("./data/raw_shape/coastline/GSHHS_l_L1.shp")
 for(i in 1:length(fn)) {
   temp <- sf::st_read(glue::glue("./data/raw_shape/coastline/shpfile_palcoasts/{fn[i]}.shp"))
-  shape_list[[i]] <- temp
+  shape_list[[i+1]] <- temp
 }
 
 saveRDS(shape_list, "data/processed_data/palcoast_list.RDS")
