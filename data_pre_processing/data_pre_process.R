@@ -371,9 +371,10 @@ rsl_raster = make_raster_list(rsl, year)
 water_depth_raster = make_raster_list(water_depth, year)
 bss_raster = make_raster_list(bss, year)
 ice_raster = make_raster_list(ice, year)
-strat_raster = make_raster_list(strat, year)
+# strat raster mods because categorial
+strat_raster = make_raster_list(strat, year) |> 
+  leaflet::projectRasterForLeaflet(method = "ngb")
 vel_raster = make_raster_list(vel, year)
-
 
 # bss testing
 pal = colorNumeric(palette = "viridis",
@@ -431,10 +432,12 @@ pal = colorFactor(palette = "GnBu",
                   domain = unique(values(strat_raster$X0_strat)),
                   na.color = "gray30", 
                   reverse = TRUE)
+
+test_projection = leaflet::projectRasterForLeaflet(strat_raster$X0_strat, method = "ngb")
+
 leaflet() |> 
-  addRasterImage(strat_raster$X0_strat, 
-                 colors = pal,
-                 project = FALSE) # Fixes problem with NA's between levels, but new lines present?
+  addRasterImage(test_projection, 
+                 colors = pal) # Fixes problem with NA's between levels, but new lines present?
 
 # writing raster stacks to rds files
 readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
