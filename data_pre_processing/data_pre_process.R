@@ -207,6 +207,17 @@ amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
 rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
 mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
+strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
+
+# additional strat processing
+# adding land NAs to strat data from water
+strat = strat |> 
+  dplyr::left_join(mask_water |> 
+                     dplyr::select(x, y, water_value = value, year)) |> 
+  dplyr::mutate(value = dplyr::case_when(is.na(water_value) ~ NA, 
+                                      .default = value)) |> 
+  dplyr::select(-water_value)
+
 
 # bss pre-processing is special
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss") |> 
@@ -252,8 +263,8 @@ all_bss_polylines = dplyr::bind_rows(polylines_df_base, polylines_end) |>
   dplyr::mutate(id = factor(id))
 
 
+
 ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
-strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
 vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
 
 # write feather files
@@ -417,12 +428,13 @@ for(group in unique(to_plot$id)){
 }
 # strat testing
 pal = colorFactor(palette = "GnBu",
-                  domain = values(strat_raster$X0_strat),
+                  domain = unique(values(strat_raster$X0_strat)),
                   na.color = "gray30", 
                   reverse = TRUE)
 leaflet() |> 
   addRasterImage(strat_raster$X0_strat, 
-                 colors = pal) 
+                 colors = pal,
+                 project = FALSE) 
 
 # writing raster stacks to rds files
 readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
