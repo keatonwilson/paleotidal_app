@@ -433,11 +433,11 @@ pal = colorFactor(palette = "GnBu",
                   na.color = "gray30", 
                   reverse = TRUE)
 
-test_projection = leaflet::projectRasterForLeaflet(strat_raster$X0_strat, method = "ngb")
+# test_projection = leaflet::projectRasterForLeaflet(strat_raster$X0_strat, method = "ngb")
 
 leaflet() |> 
-  addRasterImage(test_projection, 
-                 colors = pal) # Fixes problem with NA's between levels, but new lines present?
+  addRasterImage(strat_raster$X0_strat, 
+                 colors = pal) 
 
 # writing raster stacks to rds files
 readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
