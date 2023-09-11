@@ -207,6 +207,17 @@ amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
 rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
 mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
+strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
+
+# additional strat processing
+# adding land NAs to strat data from water
+strat = strat |> 
+  dplyr::left_join(mask_water |> 
+                     dplyr::select(x, y, water_value = value, year)) |> 
+  dplyr::mutate(value = dplyr::case_when(is.na(water_value) ~ NA, 
+                                      .default = value)) |> 
+  dplyr::select(-water_value)
+
 
 # bss pre-processing is special
 bss = combine_all_years("./data/raw_lat_lon/bss/", "bss") |> 
@@ -252,8 +263,8 @@ all_bss_polylines = dplyr::bind_rows(polylines_df_base, polylines_end) |>
   dplyr::mutate(id = factor(id))
 
 
+
 ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
-strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
 vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
 
 # write feather files
@@ -360,9 +371,10 @@ rsl_raster = make_raster_list(rsl, year)
 water_depth_raster = make_raster_list(water_depth, year)
 bss_raster = make_raster_list(bss, year)
 ice_raster = make_raster_list(ice, year)
-strat_raster = make_raster_list(strat, year)
+# strat raster mods because categorial
+strat_raster = make_raster_list(strat, year) |> 
+  leaflet::projectRasterForLeaflet(method = "ngb")
 vel_raster = make_raster_list(vel, year)
-
 
 # bss testing
 pal = colorNumeric(palette = "viridis",
@@ -417,9 +429,12 @@ for(group in unique(to_plot$id)){
 }
 # strat testing
 pal = colorFactor(palette = "GnBu",
-                  domain = values(strat_raster$X0_strat),
+                  domain = unique(values(strat_raster$X0_strat)),
                   na.color = "gray30", 
                   reverse = TRUE)
+
+# test_projection = leaflet::projectRasterForLeaflet(strat_raster$X0_strat, method = "ngb")
+
 leaflet() |> 
   addRasterImage(strat_raster$X0_strat, 
                  colors = pal) 
@@ -439,9 +454,10 @@ readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
 
 fn <- as.character(sprintf("palcoast_%02d", 1:21))
 shape_list <- list()
+shape_list[[1]] <- sf::st_read("./data/raw_shape/coastline/GSHHS_l_L1.shp")
 for(i in 1:length(fn)) {
   temp <- sf::st_read(glue::glue("./data/raw_shape/coastline/shpfile_palcoasts/{fn[i]}.shp"))
-  shape_list[[i]] <- temp
+  shape_list[[i+1]] <- temp
 }
 
 saveRDS(shape_list, "data/processed_data/palcoast_list.RDS")

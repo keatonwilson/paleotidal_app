@@ -44,7 +44,7 @@ map_server <- function(id,
       # filter by time_step
       the_raster = raster_to_map[[to_map]]
       ice_raster = ice_raster[[ice_to_map]]
-      palcoast = palcoasts[[inputs$yearBP]]
+      palcoast = palcoasts[[inputs$yearBP+1]]
       
       # Tidal Amplitude Map
       if(data$datatype == "Tidal Amplitude") {
