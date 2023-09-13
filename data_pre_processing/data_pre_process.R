@@ -439,15 +439,30 @@ leaflet() |>
   addRasterImage(strat_raster$X0_strat, 
                  colors = pal) 
 
-# writing raster stacks to rds files
-readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
-readr::write_rds(rsl_raster, "./data/processed_data/rsl_raster.rds")
+# writing rasters
+readr::write_rds(amp_raster |> 
+                      raster::readAll(), "./data/processed_data/amp_raster.rds")
+readr::write_rds(rsl_raster |> 
+                   raster::readAll(), "./data/processed_data/rsl_raster.rds")
+readr::write_rds(water_depth_raster |> 
+                   raster::readAll(), "./data/processed_data/water_depth_raster.rds")
+readr::write_rds(bss_raster |> 
+                   raster::readAll(), "./data/processed_data/bss_raster.rds")
+readr::write_rds(ice_raster |> 
+                   raster::readAll(), "./data/processed_data/ice_raster.rds")
+readr::write_rds(strat_raster |> 
+                   raster::readAll(), "./data/processed_data/strat_raster.rds")
+readr::write_rds(vel_raster |> 
+                   raster::readAll(), "./data/processed_data/vel_raster.rds")
+
+# readr::write_rds(amp_raster, "./data/processed_data/amp_raster.rds")
+# readr::write_rds(rsl_raster, "./data/processed_data/rsl_raster.rds")
 # readr::write_rds(mask_water_raster, "./data/processed_data/mask_water_raster.rds")
-readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
-readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
-readr::write_rds(ice_raster, "./data/processed_data/ice_raster.rds")
-readr::write_rds(strat_raster, "./data/processed_data/strat_raster.rds")
-readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
+# readr::write_rds(water_depth_raster, "./data/processed_data/water_depth_raster.rds")
+# readr::write_rds(bss_raster, "./data/processed_data/bss_raster.rds")
+# readr::write_rds(ice_raster, "./data/processed_data/ice_raster.rds")
+# readr::write_rds(strat_raster, "./data/processed_data/strat_raster.rds")
+# readr::write_rds(vel_raster, "./data/processed_data/vel_raster.rds")
 
 
 ## Make list of paleocoast shapefiles
