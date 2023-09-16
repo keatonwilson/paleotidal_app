@@ -26,12 +26,16 @@ map_server <- function(id,
       # show loading animation
       w$show()
       
+      print("DEF")
+      print(data$datatype)
+
       raster_to_map = switch(data$datatype, 
                              `Tidal Amplitude` = rasters$amp_raster, 
                              `Stratification` = rasters$strat_raster,
                              `Peak Bed Stress` = rasters$bss_raster,
                              `Tidal Current` = rasters$vel_raster
       )
+      print(raster_to_map)
       
       to_map = names(raster_to_map)[stringr::str_detect(names(raster_to_map), 
                                                         glue::glue("^X{inputs$yearBP}_"))]
@@ -45,6 +49,8 @@ map_server <- function(id,
       the_raster = raster_to_map[[to_map]]
       ice_raster = ice_raster[[ice_to_map]]
       palcoast = palcoasts[[inputs$yearBP+1]]
+
+      print(the_raster)
       
       # Tidal Amplitude Map
       if(data$datatype == "Tidal Amplitude") {
