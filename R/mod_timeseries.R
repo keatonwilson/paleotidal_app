@@ -63,7 +63,8 @@ time_series_server <- function(id,
         dplyr::mutate(land_type = factor(land_type, 
                                          levels = c("water", 
                                                     "land", 
-                                                    "ice")))
+                                                    "ice"))) |> 
+        dplyr::filter(land_type != "land")
       
       amp_filtered = amp_data |> 
         dplyr::filter(y == closest_lat & x == closest_lon) |> 
@@ -77,21 +78,20 @@ time_series_server <- function(id,
 
 
       output$timeseries_plot = shiny::renderUI({
-       
-        
           ay <- list(
             tickfont = list(color = "black"),
             overlaying = "y",
             side = "right",
             title = list(text = "Tidal Amplitude (m)",
                          font = list(color = "#33a02c"),
-                         standoff = 10L))
+                         standoff = 10L), 
+            range = c(0,5))
           # title w lat/lon
           title = glue::glue("Relative Sea Level & Tidal Amplitude @ {closest_lat}, {closest_lon}")
           plotly::plot_ly() |> 
             plotly::add_markers(x = ~rsl_filtered$year, 
                               y = ~rsl_filtered$value, 
-                              symbol = ~amp_filtered$land_type,
+                              symbol = ~rsl_filtered$land_type,
                               name = "Relative Sea Level", 
                               yaxis = "y1", 
                               mode = "markers", 
@@ -138,7 +138,8 @@ time_series_server <- function(id,
               xaxis = list(title = "Thousand Years BP", 
                            range = c(22,0)),
               yaxis = list(title = list(text = "Relative Sea Level (m)",
-                                        font = list(color = "#1f77b4"))),
+                                        font = list(color = "#1f77b4")), 
+                           range = c(-125,0)),
               showlegend = FALSE
             ) |> 
             plotly::config(displayModeBar = FALSE)
