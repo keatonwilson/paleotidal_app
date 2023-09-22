@@ -50,11 +50,7 @@ ui = bslib::page_navbar(
                        )
                      )
     ), 
-    bslib::nav_spacer(), 
-    bslib::nav_menu("Supporting Entities", 
-                    align = "right", 
-                    bslib::nav_item("Link 1"), 
-                    bslib::nav_item("Link 1"))
+    bslib::nav_spacer()
   )
 
 
