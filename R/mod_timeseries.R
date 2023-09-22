@@ -208,7 +208,8 @@ time_series_server <- function(id,
                 tidyr::pivot_wider(names_from = datatype, values_from = value) |> 
                 dplyr::mutate(strat = dplyr::case_when(strat == 1 ~ "mixed",
                                                 strat == 2 ~ "frontal",
-                                                strat == 3 ~ "stratified"))
+                                                strat == 3 ~ "stratified")) |> 
+                dplyr::filter(!is.na(land_type))
               
             } else if (data$datatype == "Peak Bed Stress") {
               init = purrr::keep_at(all_data_in_list, 
@@ -222,9 +223,13 @@ time_series_server <- function(id,
                                    ~.x %in% data_to_include) |> 
                 dplyr::bind_rows() |>
                 dplyr::filter(datatype == "bss") |>
-                dplyr::select(u:quadrant)
+                dplyr::select(BSS_u = u, 
+                              BSS_v = v, 
+                              BSS_magnitude = uv)
               
-              to_download = dplyr::bind_cols(init, bss)
+              to_download = dplyr::bind_cols(init, bss) |> 
+                dplyr::left_join(all_data_in_list$amp_data |> 
+                                   dplyr::select(x, y, year, land_type))
             }
             
             shiny::incProgress(4)
