@@ -237,7 +237,7 @@ time_series_server <- function(id,
             
             
             # Write the dataset to the `file` that will be downloaded
-            write.csv(to_download, file)
+            write.csv(to_download, file, row.names = FALSE)
             shiny::incProgress(5)
           
           })
