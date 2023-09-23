@@ -12,67 +12,6 @@ library(tidyverse)
 library(sp)
 library(leaflet)
 
-# Testing Sandbox ---------------------------------------------------------
-
-# test = read_tsv("./data/raw_lat_lon/ampM2/amp_M2_00.ascii", 
-#                 col_names = c("x", "y", "value"))
-# test = read_tsv("./data/raw_lat_lon/stratification/log10_strat_10.ascii", 
-#                 col_names = c("x", "y", "value")) %>%
-#   mutate(value = if_else(is.nan(value), NA, value),
-#          value = if_else(is.infinite(value), NA, value))
-# test = read_tsv("./data/raw_lat_lon/stratification/strat_00.ascii", 
-#                 col_names = c("x", "y", "value"))
-# test = read_tsv("./data/raw_lat_lon/vel/velM2_00.ascii", 
-#                 col_names = c("x", "y", "value"))
-
-# getting dims for raster transformation
-# ncol = length(unique(test$x))
-# nrow = length(unique(test$y))
-# 
-# extent = extent(test[,(1:2)])
-# r = raster(extent, ncol = ncol, nrow = nrow)
-# 
-# # rasterize
-# r_new = rasterize(test[,1:2], r, test[,3], fun=mean)
-# crs(r_new) = "+proj=longlat +datum=WGS84"
-# 
-# # testing on map
-# leaflet() |> 
-#   addTiles() |> 
-#   addRasterImage(r_new, opacity = 0.8)
-
-# Read and re_calculate lat/lon to better match 
-# 
-# test = readr::read_tsv("./data/raw_lat_lon/stratification/log10_strat_123_00.ascii",
-#                             col_names = c("x", "y", "value"),
-#                             show_col_types = FALSE,
-#                             progress = FALSE)
-# 
-# x <- unique(test$x)
-# y <- unique(test$y)
-# xdiff <- c()
-# ydiff <- c()
-# for(i in 1:length(x)){
-#  xdiff[i] <- (x[i+1] - x[i])/2
-# }
-# xdiff[625] <- xdiff[624]
-# 
-# for(i in 1:length(y)){
-#   ydiff[i] <- (y[i+1] - y[i])/2
-# }
-# ydiff[861] <- ydiff[860]
-# 
-# # create tables to match
-# x_recal <- data.frame(x, xdiff) |>
-#   dplyr::mutate(x_new = x + xdiff) |>
-#   dplyr::select(-xdiff)
-# y_recal <- data.frame(y, ydiff) |>
-#   dplyr::mutate(y_new = y + ydiff) |>
-#   dplyr::select(-ydiff)
-# 
-# # write out
-# readr::write_rds(x_recal, "./data/x_lon_recal.RDS")
-# readr::write_rds(y_recal, "./data/y_lat_recal.RDS")
 
 # Combining All Years -----------------------------------------------------
 
@@ -203,9 +142,9 @@ x_recal <- readr::read_rds("./data/x_lon_recal.RDS")
 y_recal <- readr::read_rds("./data/y_lat_recal.RDS")
 
 # creating objects
-amp_data = combine_all_years("./data/raw_lat_lon/ampM2/", "elevation_amplitude")
-rsl = combine_all_years("./data/raw_lat_lon/rsl/", "rsl")
-mask_water = combine_all_years("./data/raw_lat_lon/mask_water/", "mask_water")
+amp_data = combine_all_years("./data/ampM2/", "elevation_amplitude")
+rsl = combine_all_years("./data/rsl/", "rsl")
+mask_water = combine_all_years("./data/mask_water/", "mask_water")
 water_depth = combine_all_years("./data/raw_lat_lon/waterdepth/", "water_depth")
 strat = combine_all_years("./data/raw_lat_lon/stratification/", "strat")
 
@@ -264,8 +203,30 @@ all_bss_polylines = dplyr::bind_rows(polylines_df_base, polylines_end) |>
 
 
 
-ice = combine_all_years("./data/raw_lat_lon/ice/", "ice")
+ice = combine_all_years("./data/ice", "ice")
 vel = combine_all_years("./data/raw_lat_lon/vel/", "vel")
+
+# more preprocessing to bind ice and land to amp and rsl for 
+amp_data = amp_data |> 
+  dplyr::left_join(ice |> 
+                     dplyr::select(x, y, year, ice_val = value)) |> 
+  dplyr::left_join(mask_water |> 
+                     dplyr::select(x, y, year, land_val = value)) |> 
+  dplyr::mutate(land_type = dplyr::case_when(is.na(ice_val) & is.na(land_val) ~ "land", 
+                                             !is.na(ice_val) ~ "ice", 
+                                             .default = "water")) |> 
+  select(-ice_val, -land_val)
+
+rsl = rsl |> 
+  dplyr::left_join(ice |> 
+                     dplyr::select(x, y, year, ice_val = value)) |> 
+  dplyr::left_join(mask_water |> 
+                     dplyr::select(x, y, year, land_val = value)) |> 
+  dplyr::mutate(land_type = dplyr::case_when(is.na(ice_val) & is.na(land_val) ~ "land", 
+                                             !is.na(ice_val) ~ "ice", 
+                                             .default = "water")) |> 
+  select(-ice_val, -land_val)
+
 
 # write feather files
 arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
