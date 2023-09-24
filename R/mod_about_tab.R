@@ -25,28 +25,32 @@ about_tab_ui <- function(id) {
         heights_equal = "row",
         
         # re-uses modules like above
-        card_ui(ns("ack"), 
-                "Acknowledgements",
-                lapply(
-                  lorem::ipsum(paragraphs = 3, sentences = c(5, 2, 5)),
-                  tags$p
-                )
-                #### NEED HELP!
-                # lapply(imageOutput("logos"),
-                #        htmltools::h4("App designed by: ", 
-                #                      htmltools::a("James Scourse", href = "mailto:J.Scourse@exeter.ac.uk", .noWS = "outside"),
-                #                      ", ",
-                #                      htmltools::a("Sophie Ward", href = "mailto:sophie.ward@bangor.ac.uk", .noWS = "outside")
-                #        ),
-                #        htmltools::h4("App developed by: Keaton Wilson, Jessica Guo"),
-                #        tags$p)
-                ), 
-        card_ui(ns("how_to_cite"), 
-                "How to cite", 
-                lapply(
-                  lorem::ipsum(paragraphs = 1, sentences = c(5)),
-                  tags$p
-                ))
+        card_ui(
+          ns("ack"),
+          "Acknowledgements",
+          # items passed to the content argument in the card_ui function have 
+          # to be wrapped in a tagList
+          content = shiny::tagList(
+            lapply(lorem::ipsum(
+              paragraphs = 3,
+              sentences = c(5, 2, 5)
+            ),
+            tags$p),
+            htmltools::h4(
+              "App designed by: ",
+              htmltools::a("James Scourse", href = "mailto:J.Scourse@exeter.ac.uk", .noWS = "outside"),
+              ", ",
+              htmltools::a("Sophie Ward", href = "mailto:sophie.ward@bangor.ac.uk", .noWS = "outside")
+            ),
+            htmltools::h4("App developed by: Keaton Wilson, Jessica Guo")
+          )
+        ),
+        card_ui(ns("how_to_cite"),
+                "How to cite",
+                lapply(lorem::ipsum(
+                  paragraphs = 1, sentences = c(5)
+                ),
+                tags$p))
       )
     )
   )
