@@ -36,6 +36,10 @@ about_tab_ui <- function(id) {
               sentences = c(5, 2, 5)
             ),
             tags$p),
+            # example of inserting an image with a custom width, if you need 
+            # complex layouts/combinations, you'll probably have to wrap in a 
+            # div - check out https://rstudio.github.io/bslib/articles/cards/#multiple-columns
+            shiny::img(src = "Bangor University.jpeg", width = "50%"),
             htmltools::h4(
               "App designed by: ",
               htmltools::a("James Scourse", href = "mailto:J.Scourse@exeter.ac.uk", .noWS = "outside"),
