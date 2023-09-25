@@ -40,13 +40,13 @@ about_tab_ui <- function(id) {
             # complex layouts/combinations, you'll probably have to wrap in a 
             # div - check out https://rstudio.github.io/bslib/articles/cards/#multiple-columns
             shiny::img(src = "Bangor University.jpeg", width = "50%"),
-            htmltools::h4(
+            htmltools::h6(
               "App designed by: ",
               htmltools::a("James Scourse", href = "mailto:J.Scourse@exeter.ac.uk", .noWS = "outside"),
               ", ",
               htmltools::a("Sophie Ward", href = "mailto:sophie.ward@bangor.ac.uk", .noWS = "outside")
             ),
-            htmltools::h4("App developed by: Keaton Wilson, Jessica Guo")
+            htmltools::h6("App developed by: Keaton Wilson, Jessica Guo")
           )
         ),
         card_ui(ns("how_to_cite"),
@@ -65,10 +65,10 @@ about_tab_server <- function(id) {
   moduleServer(id, function(input, output, session) {
   # We don't need anything in the server for this module
     
-    output$logos <- renderImage({
+    output$logos <- shiny::renderImage({
       list(
-        src = file.path("www/CSS_Logo_2022_DarkGreen_RGB.jpg"), 
-        contentType = "image/jpg", 
+        src = file.path("www/Blue Marine Foundation.png"), 
+        contentType = "image/png", 
         height = 250, 
         width = 500
       )
