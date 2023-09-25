@@ -31,18 +31,14 @@ about_tab_ui <- function(id) {
           # items passed to the content argument in the card_ui function have 
           # to be wrapped in a tagList
           content = shiny::tagList(
-            lapply(lorem::ipsum(
-              paragraphs = 3,
-              sentences = c(5, 2, 5)
-            ),
-            tags$p),
-            htmltools::h4(
+            shiny::plotOutput(ns("logos")),
+            htmltools::h6(
               "App designed by: ",
               htmltools::a("James Scourse", href = "mailto:J.Scourse@exeter.ac.uk", .noWS = "outside"),
               ", ",
               htmltools::a("Sophie Ward", href = "mailto:sophie.ward@bangor.ac.uk", .noWS = "outside")
             ),
-            htmltools::h4("App developed by: Keaton Wilson, Jessica Guo")
+            htmltools::h6("App developed by: Keaton Wilson, Jessica Guo")
           )
         ),
         card_ui(ns("how_to_cite"),
@@ -61,10 +57,10 @@ about_tab_server <- function(id) {
   moduleServer(id, function(input, output, session) {
   # We don't need anything in the server for this module
     
-    output$logos <- renderImage({
+    output$logos <- shiny::renderImage({
       list(
-        src = file.path("www/CSS_Logo_2022_DarkGreen_RGB.jpg"), 
-        contentType = "image/jpg", 
+        src = file.path("www/Blue Marine Foundation.png"), 
+        contentType = "image/png", 
         height = 250, 
         width = 500
       )
