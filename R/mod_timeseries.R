@@ -200,7 +200,9 @@ time_series_server <- function(id,
               to_download = purrr::keep_at(all_data_in_list, 
                                            ~.x %in% data_to_include) |> 
                 dplyr::bind_rows() |> 
-                tidyr::pivot_wider(names_from = datatype, values_from = value)
+                tidyr::pivot_wider(names_from = datatype, values_from = value) |> 
+                dplyr::rename(longitude = x, latitude = y)
+              
             } else if (data$datatype == "Stratification") {
               to_download = purrr::keep_at(all_data_in_list, 
                                            ~.x %in% data_to_include) |> 
@@ -209,7 +211,8 @@ time_series_server <- function(id,
                 dplyr::mutate(strat = dplyr::case_when(strat == 1 ~ "mixed",
                                                 strat == 2 ~ "frontal",
                                                 strat == 3 ~ "stratified")) |> 
-                dplyr::filter(!is.na(land_type))
+                dplyr::filter(!is.na(land_type)) |> 
+                dplyr::rename(longitude = x, latitude = y)
               
             } else if (data$datatype == "Peak Bed Stress") {
               init = purrr::keep_at(all_data_in_list, 
@@ -229,7 +232,8 @@ time_series_server <- function(id,
               
               to_download = dplyr::bind_cols(init, bss) |> 
                 dplyr::left_join(all_data_in_list$amp_data |> 
-                                   dplyr::select(x, y, year, land_type))
+                                   dplyr::select(x, y, year, land_type)) |> 
+                dplyr::rename(longitude = x, latitude = y)
             }
             
             shiny::incProgress(4)
