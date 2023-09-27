@@ -25,18 +25,36 @@ about_tab_ui <- function(id) {
         heights_equal = "row",
         
         # re-uses modules like above
-        card_ui(ns("ack"), 
-                "Acknowledgements",
-                lapply(
-                  lorem::ipsum(paragraphs = 3, sentences = c(5, 5, 5)),
-                  tags$p
-                )), 
-        card_ui(ns("fun_image"), 
-                "", 
-                lapply(
-                  lorem::ipsum(paragraphs = 3, sentences = c(5, 5, 5)),
-                  tags$p
-                ))
+        card_ui(
+          ns("ack"),
+          "Acknowledgements",
+          # items passed to the content argument in the card_ui function have 
+          # to be wrapped in a tagList
+          content = shiny::tagList(
+            # lapply(lorem::ipsum(
+            #   paragraphs = 3,
+            #   sentences = c(5, 2, 5)
+            # ),
+            # tags$p),
+            # example of inserting an image with a custom width, if you need 
+            # complex layouts/combinations, you'll probably have to wrap in a 
+            # div - check out https://rstudio.github.io/bslib/articles/cards/#multiple-columns
+            shiny::img(src = "comb_logos.png", width = "80%"),
+            htmltools::h6(
+              "App designed by: ",
+              htmltools::a("James Scourse", href = "mailto:J.Scourse@exeter.ac.uk", .noWS = "outside"),
+              ", ",
+              htmltools::a("Sophie Ward", href = "mailto:sophie.ward@bangor.ac.uk", .noWS = "outside")
+            ),
+            htmltools::h6("App developed by: Keaton Wilson, Jessica Guo")
+          )
+        ),
+        card_ui(ns("how_to_cite"),
+                "How to cite",
+                lapply(lorem::ipsum(
+                  paragraphs = 1, sentences = c(5)
+                ),
+                tags$p))
       )
     )
   )
@@ -46,6 +64,7 @@ about_tab_ui <- function(id) {
 about_tab_server <- function(id) {
   moduleServer(id, function(input, output, session) {
   # We don't need anything in the server for this module
+    
   })
 }
 

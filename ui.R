@@ -6,9 +6,9 @@ ui = bslib::page_navbar(
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
       ),
+    tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
     theme = bslib::bs_theme(bootswatch = "cosmo",
-                            version = 5,
-    ),
+                            version = 5),
     title = "Paleotidal Visualization", 
 
 # Nav Panels --------------------------------------------------------------

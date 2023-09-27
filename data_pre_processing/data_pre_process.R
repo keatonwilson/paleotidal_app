@@ -189,7 +189,7 @@ bss_arrows = bss |>
   dplyr::filter(uv > 0.5)
 
 # mag multiplier
-mag_mult = 0.09
+mag_mult = 0.07
 polylines_df_base = bss_arrows |> 
   dplyr::mutate(id = dplyr::row_number())
 
@@ -361,7 +361,7 @@ bss_filt = bss_data |>
   dplyr::filter(uv > 0)
 
 # mag multiplier
-mag_mult = 0.09
+mag_mult = 0.07
 polylines_df_base = bss_filt |> 
   dplyr::mutate(id = dplyr::row_number())
 
