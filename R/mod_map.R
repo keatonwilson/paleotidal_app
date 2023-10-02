@@ -71,7 +71,8 @@ map_server <- function(id,
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
-                               fillOpacity = 0) |> 
+                               fillOpacity = 0, 
+                               options = leaflet::pathOptions(clickable = FALSE)) |> 
           leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                     labels = c("Land", "Ice"),
                     opacity = 1) |> 
@@ -94,7 +95,8 @@ map_server <- function(id,
                                   opacity = 1,
                                   color = "black",
                                   dashArray = "3",
-                                  fillOpacity = 0)
+                                  fillOpacity = 0, 
+                                  options = leaflet::pathOptions(clickable = FALSE))
           mp2
         } else if(inputs$coast_current == TRUE & inputs$coast_paleo == TRUE){
           mp2<- mp |> 
@@ -103,7 +105,8 @@ map_server <- function(id,
                                   opacity = 1,
                                   color = "black",
                                   dashArray = "3",
-                                  fillOpacity = 0)
+                                  fillOpacity = 0, 
+                                  options = leaflet::pathOptions(clickable = FALSE))
           mp2
         }
         
@@ -127,7 +130,8 @@ map_server <- function(id,
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
-                               fillOpacity = 0) |> 
+                               fillOpacity = 0, 
+                               options = leaflet::pathOptions(clickable = FALSE)) |> 
           leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                     labels = c("Land", "Ice"),
                     opacity = 1) |> 
@@ -150,7 +154,8 @@ map_server <- function(id,
                                   opacity = 1,
                                   color = "black",
                                   dashArray = "3",
-                                  fillOpacity = 0)
+                                  fillOpacity = 0, 
+                                  options = leaflet::pathOptions(clickable = FALSE))
           mp2
         } else if(inputs$coast_current == TRUE & inputs$coast_paleo == TRUE){
           mp2<- mp |> 
@@ -159,7 +164,8 @@ map_server <- function(id,
                                   opacity = 1,
                                   color = "black",
                                   dashArray = "3",
-                                  fillOpacity = 0)
+                                  fillOpacity = 0, 
+                                  options = leaflet::pathOptions(clickable = FALSE))
           mp2
         }
         
@@ -186,7 +192,8 @@ map_server <- function(id,
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
-                               fillOpacity = 0) |> 
+                               fillOpacity = 0, 
+                               options = leaflet::pathOptions(clickable = FALSE)) |> 
           leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                              labels = c("Land", "Ice"),
                              opacity = 1) |> 
@@ -213,7 +220,8 @@ map_server <- function(id,
                                   opacity = 1,
                                   color = "black",
                                   dashArray = "3",
-                                  fillOpacity = 0)
+                                  fillOpacity = 0, 
+                                  options = leaflet::pathOptions(clickable = FALSE))
           mp2
         } else if(inputs$coast_current == TRUE & inputs$coast_paleo == TRUE){
           mp2<- mp |> 
@@ -222,7 +230,8 @@ map_server <- function(id,
                                   opacity = 1,
                                   color = "black",
                                   dashArray = "3",
-                                  fillOpacity = 0)
+                                  fillOpacity = 0, 
+                                  options = leaflet::pathOptions(clickable = FALSE))
           mp2
         }
         
@@ -255,7 +264,8 @@ map_server <- function(id,
                                weight = 0.5, 
                                opacity = 1,
                                color = "black",
-                               fillOpacity = 0) |> 
+                               fillOpacity = 0, 
+                               options = leaflet::pathOptions(clickable = FALSE)) |> 
           leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
                              labels = c("Land", "Ice"),
                              opacity = 1)  |> 
@@ -291,7 +301,8 @@ map_server <- function(id,
                                   opacity = 1,
                                   color = "black",
                                   dashArray = "3",
-                                  fillOpacity = 0)
+                                  fillOpacity = 0, 
+                                  options = leaflet::pathOptions(clickable = FALSE))
           mp2
         } else if(inputs$coast_current == TRUE & inputs$coast_paleo == TRUE){
           mp2<- mp |> 
@@ -300,7 +311,8 @@ map_server <- function(id,
                                   opacity = 1,
                                   color = "black",
                                   dashArray = "3",
-                                  fillOpacity = 0)
+                                  fillOpacity = 0, 
+                                  options = leaflet::pathOptions(clickable = FALSE))
           mp2
         }
         
