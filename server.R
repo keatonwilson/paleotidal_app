@@ -49,7 +49,7 @@ function(input, output, session) {
                            fillOpacity = 0) |> 
       # add basemap legend
       leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
-                labels = c("land", "ice"),
+                labels = c("Land", "Ice"),
                 opacity = 1) |> 
       addLegend_decreasing("bottomright", pal = pal, values = c(0,4), bins = 5, 
                            title = "Tidal Amplitude (m)",

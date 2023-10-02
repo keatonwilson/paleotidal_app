@@ -85,7 +85,7 @@ time_series_server <- function(id,
             title = list(text = "Tidal Amplitude (m)",
                          font = list(color = "#33a02c"),
                          standoff = 10L), 
-            range = c(0,5))
+            range = c(0,6))
           # title w lat/lon
           title = glue::glue("Relative Sea Level & Tidal Amplitude @ {closest_lat}, {closest_lon}")
           plotly::plot_ly() |> 

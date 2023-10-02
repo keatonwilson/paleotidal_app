@@ -56,7 +56,7 @@ map_server <- function(id,
       if(data$datatype == "Tidal Amplitude") {
         
         pal <- leaflet::colorNumeric(palette = "viridis",
-                            domain = c(0, 4),
+                            domain = c(0, 5),
                             na.color = "#bebebe")
         
 

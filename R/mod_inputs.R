@@ -28,7 +28,7 @@ input_ui <- function(id) {
       # title = "User inputs",
       ## General Panel ----------------------------------------------------------
       bslib::nav_panel(
-        "General",
+        "",
         # bslib::card_title("Time"),
         shinyWidgets::sliderTextInput(
           NS(id, "yearBP"),
@@ -44,7 +44,7 @@ input_ui <- function(id) {
         #   width = 1 / 2,
           checkboxInput(
             NS(id, "coast_current"),
-            "Show current coastline",
+            "Show modern coastline",
             value = TRUE,
             width = '100%'
           # ),
