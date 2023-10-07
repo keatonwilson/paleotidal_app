@@ -2,7 +2,7 @@
 /* waiter loading screen should fill leaflet window */
 #map > div.waiter-overlay.waiter-local {
   z-index: 9999;
-  top: 0px !important;
+  top: 20px !important;
   left: 0px !important;
 }
 
