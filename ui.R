@@ -39,9 +39,8 @@ ui = bslib::page_navbar(
                              leaflet::leafletOutput("map")
                            ),
                            bslib::nav_panel(
-                             "Leaflet"
-                             # bslib::card_title("A leaflet plot"),
-                             # leaflet_widget
+                             "Leaflet",
+                             animations_ui("animations")
                            )
                        )
                        ),
