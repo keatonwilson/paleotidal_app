@@ -30,11 +30,20 @@ ui = bslib::page_navbar(
                             data_select_ui("data_type")
                            ),
                            data_summary_ui("data_summary")
-                         )
-                         ,
-                         bslib::card(
-                           leaflet::leafletOutput("map")
-                         )
+                         ),
+                         bslib::navset_card_tab(
+                           full_screen = TRUE,
+                           title = "Maps",
+                           bslib::nav_panel(
+                             "Interactive Map",
+                             leaflet::leafletOutput("map")
+                           ),
+                           bslib::nav_panel(
+                             "Leaflet"
+                             # bslib::card_title("A leaflet plot"),
+                             # leaflet_widget
+                           )
+                       )
                        ),
                        
                        # Inputs
