@@ -114,7 +114,7 @@ map_server <- function(id,
       } else if (data$datatype == "Tidal Current") {
         
         pal <- leaflet::colorNumeric(palette = "viridis",
-                            domain = c(0, 1.6),
+                            domain = c(0, 2.5),
                             na.color = "#bebebe")
         
         mp <- map_proxy() |> 
