@@ -39,7 +39,7 @@ ui = bslib::page_navbar(
                              leaflet::leafletOutput("map")
                            ),
                            bslib::nav_panel(
-                             "Leaflet",
+                             "Animations",
                              animations_ui("animations")
                            )
                        )

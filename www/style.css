@@ -6,3 +6,9 @@
   left: 0px !important;
 }
 
+.card-img, .card-img-top, .card-img-bottom {
+  object-fit: cover;
+  max-width: 60%;
+  align-self: center;
+}
+

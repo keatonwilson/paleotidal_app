@@ -4,16 +4,32 @@ animations_ui <- function(id) {
 # Card Definitions --------------------------------------------------------
 
   amp_anim_card <- bslib::card(
-    bslib::card_header("Tidal Amplitude")
+    full_screen = TRUE,
+    bslib::card_header("Tidal Amplitude"), 
+    bslib::card_image("./www/amps.gif", 
+                      fill = FALSE
+                      )
   )  
   strat_anim_card <- bslib::card(
-    bslib::card_header("Tidal Amplitude")
+    full_screen = TRUE,
+    bslib::card_header("Stratification"), 
+    bslib::card_image(file="./www/strat.gif",
+                      fill = FALSE
+                      )
   )  
   bss_anim_card <- bslib::card(
-    bslib::card_header("Tidal Amplitude")
+    full_screen = TRUE,
+    bslib::card_header("BSS"), 
+    bslib::card_image(file="./www/bss.gif",
+                      fill = FALSE
+    )
   )  
   curr_anim_card <- bslib::card(
-    bslib::card_header("Tidal Amplitude")
+    full_screen = TRUE,
+    bslib::card_header("Tidal Current"), 
+    bslib::card_image(file="./www/vel.gif",
+                      fill = FALSE
+    )
   )  
   
   tagList(

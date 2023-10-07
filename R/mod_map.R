@@ -25,9 +25,6 @@ map_server <- function(id,
       
       # show loading animation
       w$show()
-      
-      print("DEF")
-      print(data$datatype)
 
       raster_to_map = switch(data$datatype, 
                              `Tidal Amplitude` = rasters$amp_raster, 
