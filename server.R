@@ -5,6 +5,9 @@ function(input, output, session) {
   # Data Selection Module
   data_list = data_select_server("data_type")
 
+  # Animation module
+  animations_server("animations",
+                    data = data_list)
   # Inputs Module
   input_list = input_server("inputs",
                             inputs = data_list)

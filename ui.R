@@ -35,11 +35,11 @@ ui = bslib::page_navbar(
                            full_screen = TRUE,
                            title = "Maps",
                            bslib::nav_panel(
-                             "Interactive Map",
+                             "Interactive",
                              leaflet::leafletOutput("map")
                            ),
                            bslib::nav_panel(
-                             "Animations",
+                             "Animated",
                              animations_ui("animations")
                            )
                        )
