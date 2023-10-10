@@ -25,9 +25,6 @@ map_server <- function(id,
       
       # show loading animation
       w$show()
-      
-      print("DEF")
-      print(data$datatype)
 
       raster_to_map = switch(data$datatype, 
                              `Tidal Amplitude` = rasters$amp_raster, 
@@ -117,7 +114,7 @@ map_server <- function(id,
       } else if (data$datatype == "Tidal Current") {
         
         pal <- leaflet::colorNumeric(palette = "viridis",
-                            domain = c(0, 1.6),
+                            domain = c(0, 2.5),
                             na.color = "#bebebe")
         
         mp <- map_proxy() |> 

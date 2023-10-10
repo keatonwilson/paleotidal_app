@@ -281,7 +281,7 @@ make_raster_list = function(data,
         r = raster(extent, ncol = ncol, nrow = nrow)
   
         # rasterize
-        r_new = rasterize(list_item[,1:2], r, list_item[,3], fun=mean)
+        r_new = rasterize(list_item[,1:2], r, list_item[,3], fun='first')
         crs(r_new) = "+proj=longlat +datum=WGS84"
       
       } else if (all(list_item$datatype == "strat")) { # use first to rasterize
@@ -326,16 +326,21 @@ make_raster_list = function(data,
 
 
 # generating raster stacks for each data type
-amp_raster = make_raster_list(amp_data, year)
-rsl_raster = make_raster_list(rsl, year)
+amp_raster = make_raster_list(amp_data, year) |> 
+  leaflet::projectRasterForLeaflet(method = "ngb")
+rsl_raster = make_raster_list(rsl_data, year) |> 
+  leaflet::projectRasterForLeaflet(method = "ngb")
 # mask_water_raster = make_raster_list(mask_water, year)
-water_depth_raster = make_raster_list(water_depth, year)
-bss_raster = make_raster_list(bss, year)
+water_depth_raster = make_raster_list(water_depth_data, year) |> 
+  leaflet::projectRasterForLeaflet(method = "ngb")
+bss_raster = make_raster_list(bss_data, year) |> 
+  leaflet::projectRasterForLeaflet(method = "ngb")
 ice_raster = make_raster_list(ice, year)
 # strat raster mods because categorial
-strat_raster = make_raster_list(strat, year) |> 
+strat_raster = make_raster_list(strat_data, year) |> 
   leaflet::projectRasterForLeaflet(method = "ngb")
-vel_raster = make_raster_list(vel, year)
+vel_raster = make_raster_list(vel_data, year) |> 
+  leaflet::projectRasterForLeaflet(method = "ngb")
 
 # bss testing
 pal = colorNumeric(palette = "viridis",
