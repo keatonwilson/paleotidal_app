@@ -48,7 +48,7 @@ ui = bslib::page_navbar(
                        # Inputs
                        bslib::layout_columns(
                          col_widths = 12,
-                         row_heights = c(3,3),
+                         row_heights = c(2,3),
                          bslib::card(
                            bslib::card_title("Inputs"),
                            input_ui("inputs")
