@@ -85,7 +85,8 @@ time_series_server <- function(id,
             title = list(text = "Tidal Amplitude (m)",
                          font = list(color = "#33a02c"),
                          standoff = 10L), 
-            range = c(0,6))
+            range = c(0,6),
+            fixedrange = TRUE)
           # title w lat/lon
           title = glue::glue("Relative Sea Level & Tidal Amplitude @ {closest_lat}, {closest_lon}")
           plotly::plot_ly() |> 
@@ -139,7 +140,8 @@ time_series_server <- function(id,
                            range = c(22,0)),
               yaxis = list(title = list(text = "Relative Sea Level (m)",
                                         font = list(color = "#1f77b4")), 
-                           range = c(-125,0)),
+                           range = c(-120,120),
+                           tickvals = list(-120, -80, -40, 0, 40, 80, 120)),
               showlegend = FALSE
             ) |> 
             plotly::config(displayModeBar = FALSE)
