@@ -182,11 +182,7 @@ map_server <- function(id,
                            reverse = FALSE)
         
         # dynamic spacing
-        spacing = switch(inputs$vec_space, 
-                         `sparse` = 800, 
-                         `medium` = 500,
-                         `dense` = 200
-        )
+        spacing = 500 # previously 'medium' when controlled by users
        
         mp <- map_proxy() |> 
           leaflet::clearControls() |> 
