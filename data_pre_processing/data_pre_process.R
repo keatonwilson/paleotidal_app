@@ -227,6 +227,16 @@ rsl = rsl |>
                                              .default = "water")) |> 
   select(-ice_val, -land_val)
 
+vel = vel |> 
+  dplyr::left_join(ice |> 
+                     dplyr::select(x, y, year, ice_val = value)) |> 
+  dplyr::left_join(mask_water |> 
+                     dplyr::select(x, y, year, land_val = value)) |> 
+  dplyr::mutate(land_type = dplyr::case_when(is.na(ice_val) & is.na(land_val) ~ "land", 
+                                             !is.na(ice_val) ~ "ice", 
+                                             .default = "water")) |> 
+  select(-ice_val, -land_val)
+
 
 # write feather files
 arrow::write_feather(amp_data, "./data/processed_data/amp_data.feather")
@@ -339,7 +349,7 @@ ice_raster = make_raster_list(ice, year)
 # strat raster mods because categorial
 strat_raster = make_raster_list(strat_data, year) |> 
   leaflet::projectRasterForLeaflet(method = "ngb")
-vel_raster = make_raster_list(vel_data, year) |> 
+vel_raster = make_raster_list(vel, year) |> 
   leaflet::projectRasterForLeaflet(method = "ngb")
 
 # bss testing
