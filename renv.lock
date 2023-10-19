@@ -1045,19 +1045,6 @@
       ],
       "Hash": "001cecbeac1cff9301bdc3775ee46a86"
     },
-    "lorem": {
-      "Package": "lorem",
-      "Version": "1.0.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "htmltools",
-        "knitr",
-        "stats"
-      ],
-      "Hash": "7784700efa54d1c2ed98fa6755e8bb32"
-    },
     "lubridate": {
       "Package": "lubridate",
       "Version": "1.9.2",
