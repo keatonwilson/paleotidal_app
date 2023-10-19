@@ -1,5 +1,8 @@
 # Paleotidal Visualization Shiny Application
 
+[![DOI](https://zenodo.org/badge/649434353.svg)](https://zenodo.org/doi/10.5281/zenodo.10020155)
+
+
 A tool built in shiny to explore ocean-based models going back 21k
 years.
 
