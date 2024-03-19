@@ -81,13 +81,16 @@ about_tab_ui <- function(id) {
                   p("Data from this tool can be freely published with citation 
                     to the following three publications:"), 
                   tags$ol(
-                    tags$li("Scourse JD, Ward SL, Wainwright A, Bradley SL, 
-                            Wilson JK and Guo J (submitted). An interactive 
-                            visualisation and data portal tool (PALTIDE) 
-                            for relative sea level and palaeo-tidal simulations 
-                            of the northwest European shelf seas since the 
-                            Last Glacial Maximum.", 
-                            tags$em("Journal of Quaternary Science.") 
+                    tags$li("Scourse, J, Ward, S, Wainwright, A, Bradley, S, 
+                            Wilson, JK and Guo, J (2024). An interactive 
+                            visualization and data portal tool (PALTIDE) for 
+                            relative sea level and palaeotidal simulations of 
+                            the northwest European shelf seas since the Last 
+                            Glacial Maximum.", 
+                            tags$em("Journal of Quaternary Science"), 
+                            tags$a("https://doi.org/10.1002/jqs.3615", 
+                                   target = "_blank", 
+                                   href = "https://doi.org/10.1002/jqs.3615") 
                             ), 
                     tags$li("Ward SL, Neill SP, Scourse JD, Bradley SL and 
                             Uehara K 2016. Sensitivity of palaeotidal models of 
