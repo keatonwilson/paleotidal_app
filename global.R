@@ -5,7 +5,7 @@
 # One region for now; when a second arrives this becomes an input.
 region = "nw_europe"
 
-# grid axes, map layer bounds, coastline, bss arrows
+# grid axes, map layer bounds, coastline
 static = readRDS(file.path("data/app", region, "static.rds"))
 
 # per-cell values for the timeseries and download, looked up on click

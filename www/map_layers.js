@@ -9,18 +9,25 @@ Shiny.addCustomMessageHandler("preload", function(urls) {
 });
 
 // Show a new image in a raster slot ("data" or "ice") without a blank frame.
-// The new layer is drawn over the current one, which is only removed once the
-// new one has loaded and faded in.
-var layerSeq = {};
+// The new layer is drawn over the current ones, which are only removed once
+// the new one has loaded and faded in.
+var layerSeq = {};    // slot -> number of the newest layer
+var layerOldest = {}; // slot -> number of the oldest layer still on the map
 Shiny.addCustomMessageHandler("swap-layer", function(msg) {
   var map = HTMLWidgets.find("#map").getMap();
-  var seq = layerSeq[msg.slot] = (layerSeq[msg.slot] || 0) + 1;
-  var id = msg.slot + "-" + seq;
-  var previous = msg.slot + "-" + (seq - 1);
+  var slot = msg.slot;
+  var seq = layerSeq[slot] = (layerSeq[slot] || 0) + 1;
+  layerOldest[slot] = layerOldest[slot] || 1;
   // the same method leaflet::addRasterImage() uses, pointed at a file
-  LeafletWidget.methods.addRasterImage.call(map, msg.url, msg.bounds, id, null, msg.options);
-  map.layerManager.getLayer("image", id).once("load", function() {
-    setTimeout(function() { map.layerManager.removeLayer("image", previous); }, 250);
+  LeafletWidget.methods.addRasterImage.call(map, msg.url, msg.bounds, slot + "-" + seq, null, msg.options);
+  map.layerManager.getLayer("image", slot + "-" + seq).once("load", function() {
+    setTimeout(function() {
+      // every older layer, not just the previous one: a layer that is removed
+      // before it loads never gets to remove its own predecessor
+      for (; layerOldest[slot] < seq; layerOldest[slot]++) {
+        map.layerManager.removeLayer("image", slot + "-" + layerOldest[slot]);
+      }
+    }, 250);
   });
 });
 
@@ -58,8 +65,9 @@ var ArrowLayer = L.Layer.extend({
     var px = xs.map(function(x) { return map.latLngToContainerPoint([ys[0], x]).x; });
     var py = ys.map(function(y) { return map.latLngToContainerPoint([y, xs[0]]).y; });
 
-    // keep arrows about 12px apart whatever the zoom, by skipping grid cells
-    var cell = px[1] - px[0];
+    // keep arrows about 12px apart whatever the zoom, by skipping grid cells.
+    // Cell width is averaged over the axis because positions are whole pixels.
+    var cell = (px[px.length - 1] - px[0]) / (px.length - 1);
     var base = this._axes.stride;
     var stride = Math.max(base, base * Math.round(12 / cell / base));
     var maxLength = Math.min(stride * cell, 26) * 0.9;
@@ -98,7 +106,13 @@ var arrowLayer = new ArrowLayer();
 var arrowFiles = {}; // url -> promise of its contents
 var arrowsWanted = null;
 function arrowFile(url, parse) {
-  return arrowFiles[url] = arrowFiles[url] || fetch(url).then(parse);
+  return arrowFiles[url] = arrowFiles[url] || fetch(url).then(function(r) {
+    if (!r.ok) throw new Error(url + ": " + r.status);
+    return parse(r);
+  }).catch(function(error) {
+    delete arrowFiles[url]; // so the next request for it tries again
+    throw error;
+  });
 }
 function arrowData(url) {
   return arrowFile(url, function(r) { return r.arrayBuffer().then(function(b) { return new Int16Array(b); }); });
@@ -112,7 +126,7 @@ Shiny.addCustomMessageHandler("arrows", function(msg) {
     arrowLayer.remove();
     return;
   }
-  msg.preload.forEach(arrowData);
+  msg.preload.forEach(function(url) { arrowData(url).catch(function() {}); });
   Promise.all([
     arrowFile(msg.axes, function(r) { return r.json(); }),
     arrowData(msg.url)
@@ -120,5 +134,5 @@ Shiny.addCustomMessageHandler("arrows", function(msg) {
     if (arrowsWanted !== msg.url) return; // a later year was asked for meanwhile
     arrowLayer.setData(files[0], files[1]);
     arrowLayer.addTo(map);
-  });
+  }).catch(function() {}); // no arrows for this year; fetched again when next asked for
 });
