@@ -3,8 +3,9 @@
 # Turns the long feather tables and raster bricks written by data_pre_process.R
 # into what the app actually reads:
 #   data/app/<region>/cube.parquet  one row per (cell, year), one column per variable
-#   data/app/<region>/static.rds    grid axes, layer bounds, coastline, bss arrows
+#   data/app/<region>/static.rds    grid axes, layer bounds, coastline
 #   www/layers/<region>/*.png       one pre-rendered map image per variable and year
+#   www/layers/<region>/arrows_*    bed stress arrows per year, drawn by www/map_layers.js
 #
 # The nw_europe inputs (data/processed_data/) were removed from the repo when
 # this script was introduced; they are in git history (LFS) up to that commit.
@@ -58,6 +59,27 @@ build_region = function(region, in_dir, view) {
   cube_path = file.path(data_dir, "cube.parquet")
   arrow::write_parquet(cube, cube_path, compression = "zstd", chunk_size = 22L * 4096L)
 
+  # Bed stress arrows -------------------------------------------------------
+
+  # Every 2nd grid cell in each direction with stress above 0.1; the browser
+  # thins these further when zoomed out. Four little-endian int16 per arrow:
+  # 0-based column, 0-based row, u * 100, v * 100.
+  arrow_stride = 2L
+  arrow_cells = cube |>
+    dplyr::mutate(ix = (cell - 1L) %% length(xs), iy = (cell - 1L) %/% length(xs)) |>
+    dplyr::filter(ix %% arrow_stride == 0, iy %% arrow_stride == 0,
+                  !is.na(BSS_u), !is.na(BSS_v), BSS_magnitude > 0.1)
+  for (yr in 0:21) {
+    one_year = arrow_cells[arrow_cells$year == yr, ]
+    values = rbind(one_year$ix, one_year$iy, round(one_year$BSS_u * 100), round(one_year$BSS_v * 100))
+    stopifnot(abs(values) < 2^15)
+    writeBin(as.integer(values), file.path(layer_dir, sprintf("arrows_%02d.bin", yr)),
+             size = 2, endian = "little")
+  }
+  jsonlite::write_json(list(xs = xs, ys = ys, stride = arrow_stride),
+                       file.path(layer_dir, "arrow_axes.json"),
+                       auto_unbox = TRUE, digits = NA)
+
   # Map layers --------------------------------------------------------------
 
   # Renders a layer as the app used to on every slider move, and keeps the PNG
@@ -104,22 +126,12 @@ build_region = function(region, in_dir, view) {
     sf::st_crop(xmin = max(min(xs) - margin, -180), xmax = min(max(xs) + margin, 180),
                 ymin = max(min(ys) - margin, -85), ymax = min(max(ys) + margin, 85))
 
-  # bss arrows: one sf of two-point lines per year, so the app adds them in one call
-  polylines = read_tbl("bss_polylines.feather")
-  arrows = purrr::map(0:21, function(yr) {
-    one_year = polylines[polylines$year == yr, ]
-    lines = split(one_year[, c("x", "y")], droplevels(one_year$id)) |>
-      purrr::map(function(pts) sf::st_linestring(as.matrix(pts)))
-    sf::st_sf(geometry = sf::st_sfc(lines, crs = 4326))
-  })
-
   saveRDS(list(xs = xs,
                ys = ys,
                bounds = bounds,
                raster_opts = raster_opts,
                coast = coast,
-               view = view,
-               arrows = arrows),
+               view = view),
           file.path(data_dir, "static.rds"))
 
   # Checks ------------------------------------------------------------------
@@ -139,7 +151,7 @@ build_region = function(region, in_dir, view) {
                         c(amp$value[i], rsl$value[i], vel$value[i], strat$value[i], bss$u[i], bss$v[i], bss$uv[i])))
   }
   stopifnot(length(list.files(layer_dir, pattern = "\\.png$")) == 5 * 22,
-            sum(purrr::map_int(arrows, nrow)) == nrow(polylines) / 2)
+            sum(file.size(list.files(layer_dir, pattern = "^arrows_.*\\.bin$", full.names = TRUE))) == nrow(arrow_cells) * 8)
 
   message(region, ": built ", cube_path, " (", round(file.size(cube_path) / 1e6, 1), " MB)")
 }

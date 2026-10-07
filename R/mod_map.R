@@ -46,21 +46,24 @@ map_server <- function(id,
     observe({
       req(data$datatype)
 
-      # also holds everything below until the map exists
-      proxy = map_proxy()
+      # holds everything below until the map exists
+      map_proxy()
       prefix = map_layers[[data$datatype]]$prefix
 
       add_layer(prefix, inputs$yearBP, "data", 1)
       add_layer("ice", inputs$yearBP, "ice", 2)
 
-      leaflet::clearGroup(proxy, "arrows")
-      if (prefix == "bss") {
-        leaflet.extras2::addArrowhead(proxy,
-                                      data = static$arrows[[as.integer(inputs$yearBP) + 1]],
-                                      group = "arrows",
-                                      weight = 2,
-                                      color = "white")
+      # bed stress arrows are drawn by www/map_layers.js from a file per year
+      arrow_url = function(year) {
+        sprintf("layers/%s/arrows_%02d.bin", region, as.integer(year))
       }
+      session$sendCustomMessage("arrows", if (prefix == "bss") {
+        list(url = arrow_url(inputs$yearBP),
+             axes = sprintf("layers/%s/arrow_axes.json", region),
+             preload = arrow_url(0:21))
+      } else {
+        list()
+      })
     })
 
     # Legends: data type changed

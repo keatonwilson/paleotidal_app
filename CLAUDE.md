@@ -8,8 +8,8 @@ a per-cell table are pre-built; the app only reads them.
 
 ## Layout
 
-- `global.R` — sets `region`, reads `static` (grid axes, layer bounds, coastline, bss
-  arrows) and opens `con`, a DuckDB connection with a `cube` view over the region's
+- `global.R` — sets `region`, reads `static` (grid axes, layer bounds, coastline) and
+  opens `con`, a DuckDB connection with a `cube` view over the region's
   parquet file. Sourced automatically by Shiny before `ui.R`/`server.R`.
 - `ui.R` / `server.R` — two-file Shiny app (no `app.R`). `server.R` is a bare
   `function(input, output, session)`.
@@ -18,7 +18,8 @@ a per-cell table are pre-built; the app only reads them.
 - `data/app/<region>/` — `cube.parquet` (one row per grid cell and year, one column
   per variable, sorted by `cell`) and `static.rds`. `data/raw_shape/` — shapefiles.
 - `www/layers/<region>/` — one pre-rendered PNG per variable and year
-  (`amp_00.png` … `ice_21.png`), served as static files.
+  (`amp_00.png` … `ice_21.png`) and the bed stress arrows per year
+  (`arrows_00.bin` …, plus `arrow_axes.json`), served as static files.
 - `data_pre_processing/` — not run by the app. `build_backend.R` builds `data/app/` and
   `www/layers/` from the long tables and raster bricks that `data_pre_process.R`
   writes. Those inputs are no longer in the repo (git history only).
@@ -38,6 +39,7 @@ a per-cell table are pre-built; the app only reads them.
   the `map_proxy` reactive it's handed. Don't create a second map output.
 - Map layers are swapped by URL, not rendered in R. The swap happens in
   `www/map_layers.js`, which keeps the old image up until the new one has loaded.
+  The same file draws the bed stress arrows on a canvas, thinning them by zoom.
   Layer colours are baked into the PNGs, so a palette change means editing
   `build_backend.R` and rebuilding, and keeping the legend domains in `map_layers`
   (`R/mod_map.R`) in step.
