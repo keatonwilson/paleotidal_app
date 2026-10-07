@@ -60,8 +60,9 @@ build_region = function(region, in_dir, view) {
 
   # Map layers --------------------------------------------------------------
 
-  # Renders a layer exactly as the app used to on every slider move, and keeps
-  # the PNG instead of sending it
+  # Renders a layer as the app used to on every slider move, and keeps the PNG
+  # instead of sending it. Numeric domains are fixed and must match the legend
+  # domains in map_layers (R/mod_map.R).
   bounds = list()
   raster_opts = NULL
   render_layers = function(prefix, brick, pal_for) {
@@ -89,7 +90,7 @@ build_region = function(region, in_dir, view) {
                          reverse = TRUE)
   })
   render_layers("bss", read_brick("bss_raster.rds"), function(layer) {
-    leaflet::colorNumeric(palette = "viridis", domain = raster::values(layer), na.color = "#bebebe")
+    leaflet::colorNumeric(palette = "viridis", domain = c(0, 15), na.color = "#bebebe")
   })
   render_layers("ice", read_brick("ice_raster.rds"), function(layer) "aliceblue")
 
