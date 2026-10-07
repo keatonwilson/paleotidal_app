@@ -1,3 +1,0 @@
-*.rds filter=lfs diff=lfs merge=lfs -text
-*.feather filter=lfs diff=lfs merge=lfs -text
-*.gif filter=lfs diff=lfs merge=lfs -text

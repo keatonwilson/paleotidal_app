@@ -4,7 +4,8 @@ ui = bslib::page_navbar(
 
 # Setup -------------------------------------------------------------------
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+      tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
+      tags$script(src = "preload.js")
       ),
     tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
     theme = bslib::bs_theme(bootswatch = "cosmo",
@@ -13,8 +14,6 @@ ui = bslib::page_navbar(
 
 # Nav Panels --------------------------------------------------------------
 ## About ------------------------------------------------------------------
-    header =  # waiter load animations
-      shiny::tagList(waiter::use_waiter()),
     bslib::nav_panel("About", 
                      about_tab_ui("about_tab_content")), 
 ## Data Viz ---------------------------------------------------------------
@@ -31,18 +30,11 @@ ui = bslib::page_navbar(
                            ),
                            data_summary_ui("data_summary")
                          ),
-                         bslib::navset_card_tab(
+                         bslib::card(
                            full_screen = TRUE,
-                           title = "Maps",
-                           bslib::nav_panel(
-                             "Interactive",
-                             leaflet::leafletOutput("map")
-                           ),
-                           bslib::nav_panel(
-                             "Animated",
-                             animations_ui("animations")
-                           )
-                       )
+                           bslib::card_header("Map"),
+                           leaflet::leafletOutput("map")
+                         )
                        ),
                        
                        # Inputs

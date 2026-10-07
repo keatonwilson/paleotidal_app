@@ -23,6 +23,8 @@ input_ui <- function(id) {
           selected = 21,
           grid = TRUE,
           width = "100%",
+          # play button steps through to the present
+          animate = animationOptions(interval = 600, loop = FALSE)
         ),
         
         checkboxInput(

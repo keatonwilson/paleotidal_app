@@ -32,17 +32,14 @@ git clone https://github.com/keatonwilson/paleotidal_app.git
     
 ### File structure
 
-`data/` 
-   - `raw/` contains data layers used by the app. Each file is numbered from 0-21, indicating thousands of years before present and contains a 431 by 313 matrix
-     - `alt/` contains 22 .txt files of  
-     - `amp/` contains 22 .txt files of tidal amplitude of M2 constituent
-     - `bss/` contains 42 .txt files of bed shear stress
-       - 22 files of the V component (positive eastward)
-       - 22 files of the U component (positive northward)
-     - `ice/` contains 22 .txt files of the ice mask
-     - `str/` contains 22 .txt files of stratification using M2 constituent
-     - `vel/` contains 22 .txt files of tidal velocity of M2 constituent
-     
+`data/`
+   - `app/<region>/` is everything the app reads at runtime, built by `data_pre_processing/build_backend.R`
+     - `cube.parquet` holds one row per grid cell and time step (0-21 thousand years before present) with a column per model variable. It is queried with DuckDB when the map is clicked.
+     - `static.rds` holds the grid axes, coastline and bed stress arrows
+   - `raw_shape/` contains the source shapefiles
+
+`www/layers/<region>/` contains one pre-rendered map image per variable and time step
+
 `R/`
    - `mod_about_tab.R`
    - `mod_card.R`
