@@ -5,7 +5,7 @@ ui = bslib::page_navbar(
 # Setup -------------------------------------------------------------------
     tags$head(
       tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
-      tags$script(src = "preload.js")
+      tags$script(src = "map_layers.js")
       ),
     tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
     theme = bslib::bs_theme(bootswatch = "cosmo",

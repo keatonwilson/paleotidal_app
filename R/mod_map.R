@@ -31,29 +31,31 @@ map_server <- function(id,
       sprintf("layers/%s/%s_%02d.png", region, prefix, as.integer(year))
     }
 
-    # same client-side method leaflet::addRasterImage() uses, pointed at a
-    # pre-rendered file. A fixed layerId replaces the previous year's image.
-    add_layer = function(prefix, year, layer_id, z_index) {
-      leaflet::invokeMethod(map_proxy(), NULL, "addRasterImage",
-                            layer_url(prefix, year),
-                            static$bounds[[prefix]],
-                            layer_id,
-                            NULL,
-                            utils::modifyList(static$raster_opts, list(zIndex = z_index)))
+    # show a pre-rendered file in a raster slot; www/map_layers.js swaps it in
+    # over the previous image so there is no blank frame in between
+    add_layer = function(prefix, year, slot, z_index) {
+      session$sendCustomMessage("swap-layer", list(
+        slot = slot,
+        url = layer_url(prefix, year),
+        bounds = static$bounds[[prefix]],
+        options = utils::modifyList(static$raster_opts, list(zIndex = z_index))
+      ))
     }
 
     # Layers: data type or year changed
     observe({
       req(data$datatype)
 
+      # also holds everything below until the map exists
+      proxy = map_proxy()
       prefix = map_layers[[data$datatype]]$prefix
 
       add_layer(prefix, inputs$yearBP, "data", 1)
       add_layer("ice", inputs$yearBP, "ice", 2)
 
-      leaflet::clearGroup(map_proxy(), "arrows")
+      leaflet::clearGroup(proxy, "arrows")
       if (prefix == "bss") {
-        leaflet.extras2::addArrowhead(map_proxy(),
+        leaflet.extras2::addArrowhead(proxy,
                                       data = static$arrows[[as.integer(inputs$yearBP) + 1]],
                                       group = "arrows",
                                       weight = 2,

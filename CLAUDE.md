@@ -23,7 +23,7 @@ a per-cell table are pre-built; the app only reads them.
   `www/layers/` from the long tables and raster bricks that `data_pre_process.R`
   writes. Those inputs are no longer in the repo (git history only).
 - `notes/` — scratch experiments. Not loaded by the app. Ignore unless asked.
-- `www/` — static assets (`style.css`, `preload.js`, logos).
+- `www/` — static assets (`style.css`, `map_layers.js`, logos).
 
 ## Conventions
 
@@ -36,9 +36,11 @@ a per-cell table are pre-built; the app only reads them.
   arguments, not via the global env.
 - The map is one `leaflet` output owned by `server.R`; `mod_map.R` updates it through
   the `map_proxy` reactive it's handed. Don't create a second map output.
-- Map layers are swapped by URL, not rendered in R. Their colours are baked into the
-  PNGs, so a palette change means editing `build_backend.R` and rebuilding, and
-  keeping the legend domains in `map_layers` (`R/mod_map.R`) in step.
+- Map layers are swapped by URL, not rendered in R. The swap happens in
+  `www/map_layers.js`, which keeps the old image up until the new one has loaded.
+  Layer colours are baked into the PNGs, so a palette change means editing
+  `build_backend.R` and rebuilding, and keeping the legend domains in `map_layers`
+  (`R/mod_map.R`) in step.
 - Per-cell data comes from one query, `SELECT * FROM cube WHERE cell = ?`. Don't read
   the parquet file into memory.
 
