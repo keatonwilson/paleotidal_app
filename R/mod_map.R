@@ -75,7 +75,7 @@ map_server <- function(id,
       session$sendCustomMessage("arrows", if (prefix == "bss") {
         list(url = arrow_url(inputs$yearBP),
              axes = sprintf("layers/%s/arrow_axes.json", region),
-             preload = arrow_url(0:21))
+             preload = arrow_url(years$bss))
       } else {
         list()
       })

@@ -48,7 +48,7 @@ data_select_server <- function(id) {
     observeEvent(input$region, {
       choices = datatype_choices(input$region)
       updateSelectizeInput(session, "datatype", choices = choices,
-                           selected = intersect(input$datatype, choices))
+                           selected = if (input$datatype %in% choices) input$datatype else choices[1])
     }, ignoreInit = TRUE)
     
     return(input_vals)
