@@ -28,6 +28,10 @@ about_tab_ui <- function(id) {
                   software is provided by Scourse et al. (in press)."
                 ), 
                 p(
+                  "A second region, the Patagonian Shelf, can be chosen under 
+                  Data Selection. It currently shows water depth only."
+                ), 
+                p(
                   "On the “Explore Data Visualisations” tab, the “Maps” section 
                   enables visualisation of two-dimensional colour (raster) plots 
                   of tidal amplitude, stratification, peak bed stress and tidal 

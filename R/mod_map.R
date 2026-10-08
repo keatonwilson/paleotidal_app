@@ -18,7 +18,10 @@ map_layers = list(
   `Peak Bed Stress` = list(prefix = "bss",
                            title = "Peak Bed Stress (N/m<sup>2</sup>)",
                            domain = c(0, 15), values = c(0, 15), bins = 4),
-  `Stratification` = list(prefix = "strat")
+  `Stratification` = list(prefix = "strat"),
+  `Water Depth` = list(prefix = "depth",
+                       title = "Water Depth (m, capped at 200)",
+                       domain = c(0, 200), values = c(0, 200), bins = 4)
 )
 
 map_server <- function(id,
@@ -28,12 +31,13 @@ map_server <- function(id,
   moduleServer(id, function(input, output, session) {
 
     layer_url = function(prefix, year) {
-      sprintf("layers/%s/%s_%02d.png", region, prefix, as.integer(year))
+      sprintf("layers/%s/%s_%02d.png", data$region, prefix, as.integer(year))
     }
 
     # show a pre-rendered file in a raster slot; www/map_layers.js swaps it in
     # over the previous image so there is no blank frame in between
     add_layer = function(prefix, year, slot, z_index) {
+      static = statics[[data$region]]
       session$sendCustomMessage("swap-layer", list(
         slot = slot,
         url = layer_url(prefix, year),
@@ -42,16 +46,27 @@ map_server <- function(id,
       ))
     }
 
-    # Layers: data type or year changed
+    # Layers: region, data type or year changed
     observe({
       req(data$datatype)
 
       # holds everything below until the map exists
       map_proxy()
+      region = data$region
+      years = statics[[region]]$years
       prefix = map_layers[[data$datatype]]$prefix
 
+      # after a region or data type change the other inputs take a moment to
+      # catch up; wait for a combination that has a layer
+      req(inputs$yearBP %in% years[[prefix]])
+
       add_layer(prefix, inputs$yearBP, "data", 1)
-      add_layer("ice", inputs$yearBP, "ice", 2)
+      if (inputs$yearBP %in% years$ice) {
+        add_layer("ice", inputs$yearBP, "ice", 2)
+      } else {
+        # no url empties the slot
+        session$sendCustomMessage("swap-layer", list(slot = "ice"))
+      }
 
       # bed stress arrows are drawn by www/map_layers.js from a file per year
       arrow_url = function(year) {
@@ -66,11 +81,13 @@ map_server <- function(id,
       })
     })
 
-    # Legends: data type changed
+    # Legends: region or data type changed
     observe({
       req(data$datatype)
 
       layer = map_layers[[data$datatype]]
+      years = statics[[data$region]]$years
+      req(years[[layer$prefix]])
 
       mp = map_proxy() |>
         leaflet::clearControls() |>
@@ -99,8 +116,8 @@ map_server <- function(id,
 
       # have the browser fetch every year for this data type now, so the
       # slider and play button never wait on the network
-      session$sendCustomMessage("preload", c(layer_url(layer$prefix, 0:21),
-                                             layer_url("ice", 0:21)))
+      session$sendCustomMessage("preload", c(layer_url(layer$prefix, years[[layer$prefix]]),
+                                             layer_url("ice", years$ice)))
     })
 
     # Modern coastline toggle

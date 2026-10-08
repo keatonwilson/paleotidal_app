@@ -27,7 +27,10 @@ download_cols = list(
                        "strat", "rsl", "elevation_amplitude"),
   `Peak Bed Stress` = c("longitude", "latitude", "year", "rsl",
                         "elevation_amplitude", "BSS_u", "BSS_v",
-                        "BSS_magnitude", "land_type")
+                        "BSS_magnitude", "land_type"),
+  # depth is a map layer only for now, so this is the amplitude set
+  `Water Depth` = c("longitude", "latitude", "year", "land_type",
+                    "rsl", "elevation_amplitude")
 )
 
 time_series_server <- function(id,
@@ -43,11 +46,15 @@ time_series_server <- function(id,
     cell_data = reactive({
       req(click())
 
+      # the view name comes from the folder names in data/app, not from input
+      region = match.arg(data$region, names(statics))
+      static = statics[[region]]
+
       ix = which.min(abs(static$xs - click()$lng))
       iy = which.min(abs(static$ys - click()$lat))
 
       DBI::dbGetQuery(con,
-                      "SELECT * FROM cube WHERE cell = ? ORDER BY year",
+                      glue::glue("SELECT * FROM cube_{region} WHERE cell = ? ORDER BY year"),
                       params = list((iy - 1L) * length(static$xs) + ix)) |>
         dplyr::mutate(land_type = factor(land_type,
                                          levels = c("water",
@@ -61,6 +68,10 @@ time_series_server <- function(id,
 
       # Default is explanatory text
       #TODO Make this look better with some css
+      if (is.null(statics[[data$region]]$xs)) {
+        return(shiny::div(class = "font-italic text-secondary",
+                          "(No time series for this region yet)"))
+      }
       if (is.null(click())) {
         return(shiny::div(class = "font-italic text-secondary",
                           "(Click anywhere on the map to generate timeseries)"))
@@ -147,8 +158,8 @@ time_series_server <- function(id,
 
 # Download ----------------------------------------------------------------
 
-    # show button once there is something to download
-    observeEvent(click(), shinyjs::show("download_data"), once = TRUE)
+    # show button while there is something to download
+    observe(shinyjs::toggle("download_data", condition = !is.null(click())))
 
     output$download_data = shiny::downloadHandler(
       filename = function() {

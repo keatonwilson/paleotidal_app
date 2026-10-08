@@ -10,7 +10,7 @@ Shiny.addCustomMessageHandler("preload", function(urls) {
 
 // Show a new image in a raster slot ("data" or "ice") without a blank frame.
 // The new layer is drawn over the current ones, which are only removed once
-// the new one has loaded and faded in.
+// the new one has loaded and faded in. A message with no url empties the slot.
 var layerSeq = {};    // slot -> number of the newest layer
 var layerOldest = {}; // slot -> number of the oldest layer still on the map
 Shiny.addCustomMessageHandler("swap-layer", function(msg) {
@@ -18,6 +18,12 @@ Shiny.addCustomMessageHandler("swap-layer", function(msg) {
   var slot = msg.slot;
   var seq = layerSeq[slot] = (layerSeq[slot] || 0) + 1;
   layerOldest[slot] = layerOldest[slot] || 1;
+  if (!msg.url) {
+    for (; layerOldest[slot] < seq; layerOldest[slot]++) {
+      map.layerManager.removeLayer("image", slot + "-" + layerOldest[slot]);
+    }
+    return;
+  }
   // the same method leaflet::addRasterImage() uses, pointed at a file
   LeafletWidget.methods.addRasterImage.call(map, msg.url, msg.bounds, slot + "-" + seq, null, msg.options);
   map.layerManager.getLayer("image", slot + "-" + seq).once("load", function() {
