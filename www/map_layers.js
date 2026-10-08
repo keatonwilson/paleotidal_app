@@ -134,5 +134,8 @@ Shiny.addCustomMessageHandler("arrows", function(msg) {
     if (arrowsWanted !== msg.url) return; // a later year was asked for meanwhile
     arrowLayer.setData(files[0], files[1]);
     arrowLayer.addTo(map);
-  }).catch(function() {}); // no arrows for this year; fetched again when next asked for
+  }).catch(function() {
+    // show no arrows rather than another year's; fetched again when next asked for
+    if (arrowsWanted === msg.url) arrowLayer.remove();
+  });
 });
