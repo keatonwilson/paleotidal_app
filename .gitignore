@@ -54,3 +54,8 @@ rsconnect/
 .DS_Store
 
 *.icloud
+# roborev snapshots
+/.roborev/
+
+# raw model transfers (large; inputs to data_pre_processing/build_backend.R)
+data/raw/

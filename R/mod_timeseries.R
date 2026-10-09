@@ -1,5 +1,5 @@
 time_series_ui <- function(id) {
-  
+
   ns <- NS(id)
   bslib::card(
     bslib::card_body(
@@ -11,269 +11,179 @@ time_series_ui <- function(id) {
     bslib::card_body(
       # hide initially
       shinyjs::hidden(shiny::downloadButton(ns("download_data"), "Download Data"))
-    ), 
+    ),
     full_screen = TRUE
   )
 
-
-  
-
-    
-
-  
-  
-  
 }
 
+# columns in the downloaded csv, by data type
+download_cols = list(
+  `Tidal Amplitude` = c("longitude", "latitude", "year", "land_type",
+                        "rsl", "elevation_amplitude"),
+  `Tidal Current` = c("longitude", "latitude", "year", "land_type",
+                      "vel", "rsl", "elevation_amplitude"),
+  `Stratification` = c("longitude", "latitude", "year", "land_type",
+                       "strat", "rsl", "elevation_amplitude"),
+  `Peak Bed Stress` = c("longitude", "latitude", "year", "rsl",
+                        "elevation_amplitude", "BSS_u", "BSS_v",
+                        "BSS_magnitude", "land_type"),
+  # depth is a map layer only for now, so this is the amplitude set
+  `Water Depth` = c("longitude", "latitude", "year", "land_type",
+                    "rsl", "elevation_amplitude")
+)
 
-time_series_server <- function(id, 
-                               map_click_obj, 
-                               inputs, 
-                               rsl_data, 
-                               amp_data,
-                               data,
-                               remaining_data
+time_series_server <- function(id,
+                               click,
+                               data
                                ) {
   moduleServer(id, function(input, output, session) {
 
-  ns = session$ns
-# Loading Animation -------------------------------------------------------
-
-    # setup waiter for loading animations
-    timeseries_w = waiter::Waiter$new(
-      id = ns("timeseries_plot"),
-      html = waiter::spin_3(),
-      color = waiter::transparent(.5)
-    )
-    
-    # only run if a click happens, else display text
-    if (!is.null(map_click_obj)) {
-      
-      # show loading  
-      timeseries_w$show()
-  
 # Calculations ------------------------------------------------------------
-      # find closest lat/lon to clicked point
-      closest_lat = unique(rsl_data$y)[which.min(abs(unique(rsl_data$y) - map_click_obj$lat))]
-      closest_lon = unique(rsl_data$x)[which.min(abs(unique(rsl_data$x) - map_click_obj$lng))]
-      
-      # filter by closest
-      rsl_filtered = rsl_data |>
-        dplyr::filter(y == closest_lat & x == closest_lon) |> 
-        dplyr::mutate(land_type = factor(land_type, 
-                                         levels = c("water", 
-                                                    "land", 
-                                                    "ice"))) |> 
-        dplyr::filter(land_type != "land")
-      
-      amp_filtered = amp_data |> 
-        dplyr::filter(y == closest_lat & x == closest_lon) |> 
-        dplyr::mutate(land_type = factor(land_type, 
-                                         levels = c("water", 
-                                                    "land", 
+
+    # every variable at all 22 time steps for the grid cell closest to the
+    # clicked point - feeds both the plot and the download
+    cell_data = reactive({
+      req(click())
+
+      # the view name comes from the folder names in data/app, not from input
+      region = match.arg(data$region, names(statics))
+      static = statics[[region]]
+
+      ix = which.min(abs(static$xs - click()$lng))
+      iy = which.min(abs(static$ys - click()$lat))
+
+      DBI::dbGetQuery(con,
+                      glue::glue("SELECT * FROM cube_{region} WHERE cell = ? ORDER BY year"),
+                      params = list((iy - 1L) * length(static$xs) + ix)) |>
+        dplyr::mutate(land_type = factor(land_type,
+                                         levels = c("water",
+                                                    "land",
                                                     "ice")))
-      
+    })
 
 # Render Plotly Timeseries ------------------------------------------------
 
+    output$timeseries_plot = shiny::renderUI({
 
-      output$timeseries_plot = shiny::renderUI({
-          ay <- list(
-            tickfont = list(color = "black"),
-            overlaying = "y",
-            side = "right",
-            title = list(text = "Tidal Amplitude (m)",
-                         font = list(color = "#33a02c"),
-                         standoff = 10L), 
-            range = c(0,6),
-            fixedrange = TRUE)
-          # title w lat/lon
-          title = glue::glue("Relative Sea Level & Tidal Amplitude @ {closest_lat}, {closest_lon}")
-          plotly::plot_ly() |> 
-            plotly::add_markers(x = ~rsl_filtered$year, 
-                              y = ~rsl_filtered$value, 
-                              symbol = ~rsl_filtered$land_type,
-                              name = "Relative Sea Level", 
-                              yaxis = "y1", 
-                              mode = "markers", 
-                              type = "scatter",
-                              symbols = c(16,18,1),
-                              # line = list(color = "#1f77b4"),
-                              marker = list(color = "#1f77b4", 
-                                            size = 8), 
-                              hoverinfo = "text", 
-                              text = ~paste('</br> RSL: ', rsl_filtered$value,
-                                            '</br> Year: ', rsl_filtered$year, "K BP",
-                                            '</br> Landtype: ', stringr::str_to_title(rsl_filtered$land_type))) |> 
-            plotly::add_markers(x = ~amp_filtered$year, 
-                              y = ~amp_filtered$value, 
-                              symbol = ~amp_filtered$land_type,
-                              name = "Tidal Amplitude", 
-                              yaxis = "y2", 
-                              mode = "markers", 
-                              type = "scatter",
-                              symbols = c(16,18,1),
-                              # line = list(color = "#33a02c"),
-                              marker = list(color = "#33a02c", 
-                                            size = 8), 
-                              hoverinfo = "text", 
-                              text = ~paste('</br> Tidal Amp: ', amp_filtered$value,
-                                            '</br> Year: ', amp_filtered$year, "K BP",
-                                            '</br> Landtype: ', stringr::str_to_title(amp_filtered$land_type))) |> 
-            plotly::add_lines(x = ~rsl_filtered$year, 
-                              y = ~rsl_filtered$value, 
-                              name = "Relative Sea Level", 
-                              yaxis = "y1", 
-                              line = list(color = "#1f77b4")
-                              ) |>
-            plotly::add_lines(x = ~amp_filtered$year, 
-                              y = ~amp_filtered$value, 
-                              name = "Tidal Amplitude", 
-                              yaxis = "y2", 
-                              line = list(color = "#33a02c")
-            ) |>
-            plotly::layout(
-              margin = list(r = 75),
-              title = title, 
-              yaxis2 = ay,
-              xaxis = list(title = "Thousand Years BP", 
-                           range = c(22,0)),
-              yaxis = list(title = list(text = "Relative Sea Level (m)",
-                                        font = list(color = "#1f77b4")), 
-                           range = c(-120,120),
-                           tickvals = list(-120, -80, -40, 0, 40, 80, 120)),
-              showlegend = FALSE
-            ) |> 
-            plotly::config(displayModeBar = FALSE)
-      })
-      
-      # hide loading  
-      timeseries_w$hide()
-      
-      # Download Data Wrangling -------------------------------------------------
-      
-      # show button
-      shinyjs::show("download_data")
-      
-      
-      # Show button
-      output$download_data = shiny::downloadHandler(
-        filename = function() {
-          # Use the selected dataset as the suggested file name
-          paste0(data$datatype, ".csv")
-        },
-        content = function(file) {
-          
-          shiny::withProgress(message = "Preparing data for download", 
-                              min = 0, 
-                              max = 5,
-                              value = 1, {
-            # combine all data and filter for points clicked points identfied above
-            # drastically reduces data size and makes for faster computations
-            all_data_in_list = purrr::list_modify(remaining_data, 
-                                                  rsl_data = rsl_data, 
-                                                  amp_data = amp_data) |> 
-              purrr::map(function(data) {
-                data |> 
-                  dplyr::filter(y == closest_lat & x == closest_lon)
-              })
-            
-            shiny::incProgress(2)
-            
-            
-  
-            
-            # move wrangling to download handler so it doesn't happen unless it 
-            # needs to
-            
-            data_to_include = switch(data$datatype, 
-                                     "Tidal Amplitude" = c("amp_data", "rsl_data"),
-                                     "Stratification" = c("amp_data", "rsl_data", "strat_data"), 
-                                     "Peak Bed Stress" = c("amp_data", "rsl_data", "bss_data"), 
-                                     "Tidal Current" = c("amp_data", "rsl_data", "vel_data")
-            )
-            shiny::incProgress(3)
-            
-            
-     
-            # keep appropriate data and bind
-            
-            if(data$datatype %in% c("Tidal Amplitude", "Tidal Current")) {
-              to_download = purrr::keep_at(all_data_in_list, 
-                                           ~.x %in% data_to_include) |> 
-                dplyr::bind_rows() |> 
-                tidyr::pivot_wider(names_from = datatype, values_from = value) |> 
-                dplyr::rename(longitude = x, latitude = y)
-              
-            } else if (data$datatype == "Stratification") {
-              to_download = purrr::keep_at(all_data_in_list, 
-                                           ~.x %in% data_to_include) |> 
-                dplyr::bind_rows() |> 
-                tidyr::pivot_wider(names_from = datatype, values_from = value) |> 
-                dplyr::mutate(strat = dplyr::case_when(strat == 1 ~ "mixed",
-                                                strat == 2 ~ "frontal",
-                                                strat == 3 ~ "stratified")) |> 
-                dplyr::filter(!is.na(land_type)) |> 
-                dplyr::rename(longitude = x, latitude = y)
-              
-            } else if (data$datatype == "Peak Bed Stress") {
-              init = purrr::keep_at(all_data_in_list, 
-                                    ~.x %in% data_to_include) |> 
-                dplyr::bind_rows() |>
-                dplyr::filter(datatype != "bss") |> 
-                tidyr::pivot_wider(id_cols = 1:3, names_from = datatype,
-                                   values_from = value)
-              
-              bss = purrr::keep_at(all_data_in_list, 
-                                   ~.x %in% data_to_include) |> 
-                dplyr::bind_rows() |>
-                dplyr::filter(datatype == "bss") |>
-                dplyr::select(BSS_u = u, 
-                              BSS_v = v, 
-                              BSS_magnitude = uv)
-              
-              to_download = dplyr::bind_cols(init, bss) |> 
-                dplyr::left_join(all_data_in_list$amp_data |> 
-                                   dplyr::select(x, y, year, land_type)) |> 
-                dplyr::rename(longitude = x, latitude = y)
-            }
-            
-            shiny::incProgress(4)
-            
-            
-            
-            # Write the dataset to the `file` that will be downloaded
-            write.csv(to_download, file, row.names = FALSE)
-            shiny::incProgress(5)
-          
-          })
+      # Default is explanatory text
+      #TODO Make this look better with some css
+      if (is.null(statics[[data$region]]$xs)) {
+        return(shiny::div(class = "font-italic text-secondary",
+                          "(No time series for this region yet)"))
+      }
+      if (is.null(click())) {
+        return(shiny::div(class = "font-italic text-secondary",
+                          "(Click anywhere on the map to generate timeseries)"))
+      }
 
-        }
-      )
-      
-      
-      # function returns closest lat lon out of it - this will make it easy to 
-      # plop on a marker for folks to know where they clicked. 
-      return(list(lat = closest_lat, 
-                  lon = closest_lon))
-      
+      closest_lat = cell_data()$y[1]
+      closest_lon = cell_data()$x[1]
 
+      rsl_filtered = cell_data() |>
+        dplyr::filter(land_type != "land") |>
+        dplyr::mutate(value = rsl)
 
-    } else {
+      amp_filtered = cell_data() |>
+        dplyr::mutate(value = elevation_amplitude)
 
-# Default is explanatory text ---------------------------------------------
-      
-      #TODO Make this look better with some css      
-      output$timeseries_plot = shiny::renderUI({
-        # show loading
-        timeseries_w$hide()
-        shiny::div(class = "font-italic text-secondary",
-                   "(Click anywhere on the map to generate timeseries)")
-      })
-      
-      return(NULL)
-    }
-    
+      ay <- list(
+        tickfont = list(color = "black"),
+        overlaying = "y",
+        side = "right",
+        title = list(text = "Tidal Amplitude (m)",
+                     font = list(color = "#33a02c"),
+                     standoff = 10L),
+        range = c(0,6),
+        fixedrange = TRUE)
+      # title w lat/lon
+      title = glue::glue("Relative Sea Level & Tidal Amplitude @ {closest_lat}, {closest_lon}")
+      plotly::plot_ly() |>
+        plotly::add_markers(x = ~rsl_filtered$year,
+                            y = ~rsl_filtered$value,
+                            symbol = ~rsl_filtered$land_type,
+                            name = "Relative Sea Level",
+                            yaxis = "y1",
+                            mode = "markers",
+                            type = "scatter",
+                            symbols = c(16,18,1),
+                            # line = list(color = "#1f77b4"),
+                            marker = list(color = "#1f77b4",
+                                          size = 8),
+                            hoverinfo = "text",
+                            text = ~paste('</br> RSL: ', rsl_filtered$value,
+                                          '</br> Year: ', rsl_filtered$year, "K BP",
+                                          '</br> Landtype: ', stringr::str_to_title(rsl_filtered$land_type))) |>
+        plotly::add_markers(x = ~amp_filtered$year,
+                            y = ~amp_filtered$value,
+                            symbol = ~amp_filtered$land_type,
+                            name = "Tidal Amplitude",
+                            yaxis = "y2",
+                            mode = "markers",
+                            type = "scatter",
+                            symbols = c(16,18,1),
+                            # line = list(color = "#33a02c"),
+                            marker = list(color = "#33a02c",
+                                          size = 8),
+                            hoverinfo = "text",
+                            text = ~paste('</br> Tidal Amp: ', amp_filtered$value,
+                                          '</br> Year: ', amp_filtered$year, "K BP",
+                                          '</br> Landtype: ', stringr::str_to_title(amp_filtered$land_type))) |>
+        plotly::add_lines(x = ~rsl_filtered$year,
+                          y = ~rsl_filtered$value,
+                          name = "Relative Sea Level",
+                          yaxis = "y1",
+                          line = list(color = "#1f77b4")
+        ) |>
+        plotly::add_lines(x = ~amp_filtered$year,
+                          y = ~amp_filtered$value,
+                          name = "Tidal Amplitude",
+                          yaxis = "y2",
+                          line = list(color = "#33a02c")
+        ) |>
+        plotly::layout(
+          margin = list(r = 75),
+          title = title,
+          yaxis2 = ay,
+          xaxis = list(title = "Thousand Years BP",
+                       range = c(22,0)),
+          yaxis = list(title = list(text = "Relative Sea Level (m)",
+                                    font = list(color = "#1f77b4")),
+                       range = c(-120,120),
+                       tickvals = list(-120, -80, -40, 0, 40, 80, 120)),
+          showlegend = FALSE
+        ) |>
+        plotly::config(displayModeBar = FALSE)
+    })
+
+# Download ----------------------------------------------------------------
+
+    # show button while there is something to download
+    observe(shinyjs::toggle("download_data", condition = !is.null(click())))
+
+    output$download_data = shiny::downloadHandler(
+      filename = function() {
+        # Use the selected dataset as the suggested file name
+        paste0(data$datatype, ".csv")
+      },
+      content = function(file) {
+        to_download = cell_data() |>
+          dplyr::rename(longitude = x, latitude = y) |>
+          dplyr::mutate(strat = dplyr::case_when(strat == 1 ~ "mixed",
+                                                 strat == 2 ~ "frontal",
+                                                 strat == 3 ~ "stratified"))
+
+        # Write the dataset to the `file` that will be downloaded
+        write.csv(to_download[download_cols[[data$datatype]]], file, row.names = FALSE)
+      }
+    )
+
+    # returns closest lat lon out of it - this will make it easy to
+    # plop on a marker for folks to know where they clicked.
+    reactive({
+      list(lat = cell_data()$y[1],
+           lon = cell_data()$x[1])
+    })
 
   })
 }

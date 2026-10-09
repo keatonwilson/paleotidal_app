@@ -1,237 +1,134 @@
 map_ui <- function(id) {
-  
+
   # ns <- NS(id)
   # leaflet::leafletOutput(ns("map"))
-  
+
 }
 
-map_server <- function(id, 
+# What differs between data types: the layer file prefix and the legend.
+# The colours themselves are baked into the pre-rendered layers by
+# data_pre_processing/build_backend.R, so the domains here must match it.
+map_layers = list(
+  `Tidal Amplitude` = list(prefix = "amp",
+                           title = "Tidal Amplitude (m)",
+                           domain = c(0, 5), values = c(0, 4), bins = 5),
+  `Tidal Current` = list(prefix = "vel",
+                         title = "Tidal Current (m/s)",
+                         domain = c(0, 2.5), values = c(0, 1.6), bins = 4),
+  `Peak Bed Stress` = list(prefix = "bss",
+                           title = "Peak Bed Stress (N/m<sup>2</sup>)",
+                           domain = c(0, 15), values = c(0, 15), bins = 4),
+  `Stratification` = list(prefix = "strat"),
+  `Water Depth` = list(prefix = "depth",
+                       title = "Water Depth (m, capped at 200)",
+                       domain = c(0, 200), values = c(0, 200), bins = 4)
+)
+
+map_server <- function(id,
                        inputs,
-                       data, 
-                       rasters, 
-                       ice_raster,
+                       data,
                        map_proxy) {
   moduleServer(id, function(input, output, session) {
-    
-    # waiter loading animation
-    w = waiter::Waiter$new(
-      id = "map",
-      html = waiter::spin_3(), 
-      color = waiter::transparent(.5)
-    )
-    
+
+    layer_url = function(prefix, year) {
+      sprintf("layers/%s/%s_%02d.png", data$region, prefix, as.integer(year))
+    }
+
+    # show a pre-rendered file in a raster slot; www/map_layers.js swaps it in
+    # over the previous image so there is no blank frame in between
+    add_layer = function(prefix, year, slot, z_index) {
+      static = statics[[data$region]]
+      session$sendCustomMessage("swap-layer", list(
+        slot = slot,
+        url = layer_url(prefix, year),
+        bounds = static$bounds[[prefix]],
+        options = utils::modifyList(static$raster_opts, list(zIndex = z_index))
+      ))
+    }
+
+    # Layers: region, data type or year changed
     observe({
-      # data mapping
-      
-      # show loading animation
-      w$show()
+      req(data$datatype)
 
-      raster_to_map = switch(data$datatype, 
-                             `Tidal Amplitude` = rasters$amp_raster, 
-                             `Stratification` = rasters$strat_raster,
-                             `Peak Bed Stress` = rasters$bss_raster,
-                             `Tidal Current` = rasters$vel_raster
-      )
-      print(raster_to_map)
-      
-      to_map = names(raster_to_map)[stringr::str_detect(names(raster_to_map), 
-                                                        glue::glue("^X{inputs$yearBP}_"))]
-      ice_to_map = names(ice_raster)[stringr::str_detect(names(ice_raster), 
-                                                         glue::glue("^X{inputs$yearBP}_"))]
-      
-      # inputs$coast_current returns T or F for showing current shapefile
-      
-      
-      # filter by time_step
-      the_raster = raster_to_map[[to_map]]
-      ice_raster = ice_raster[[ice_to_map]]
-      # palcoast = palcoasts[[inputs$yearBP+1]]
+      # holds everything below until the map exists
+      map_proxy()
+      region = data$region
+      years = statics[[region]]$years
+      prefix = map_layers[[data$datatype]]$prefix
 
-      print(the_raster)
-      
-      # Tidal Amplitude Map
-      if(data$datatype == "Tidal Amplitude") {
-        
-        pal <- leaflet::colorNumeric(palette = "viridis",
-                            domain = c(0, 5),
-                            na.color = "#bebebe")
-        
+      # after a region or data type change the other inputs take a moment to
+      # catch up; wait for a combination that has a layer
+      req(inputs$yearBP %in% years[[prefix]])
 
-        
-        mp <- map_proxy() |> 
-          leaflet::clearControls() |> 
-          leaflet::clearShapes() |> 
-          leaflet::addRasterImage(the_raster, 
-                                  colors = pal) |> 
-          leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
-          leaflet::addPolygons(data = shape_1, 
-                               weight = 0.5, 
-                               opacity = 1,
-                               color = "black",
-                               fillOpacity = 0, 
-                               options = leaflet::pathOptions(clickable = FALSE)) |> 
-          leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
-                    labels = c("Land", "Ice"),
-                    opacity = 1) |> 
-          addLegend_decreasing("bottomright", pal = pal, values = c(0,4), bins = 5, 
-                               title = "Tidal Amplitude (m)",
-                               opacity = 1,
-                               decreasing = TRUE)
-
-        mp
-        
-        if(inputs$coast_current == FALSE) {
-          mp2<- mp |> 
-            leaflet::clearShapes()
-          mp2
-        } 
-        
-        # hide loading screen
-        w$hide()
-        
-        # Tidal Current Map
-      } else if (data$datatype == "Tidal Current") {
-        
-        pal <- leaflet::colorNumeric(palette = "viridis",
-                            domain = c(0, 2.5),
-                            na.color = "#bebebe")
-        
-        mp <- map_proxy() |> 
-          leaflet::clearControls() |> 
-          leaflet::clearShapes() |>  
-          leaflet::addRasterImage(the_raster, 
-                                  colors = pal) |> 
-          leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
-          leaflet::addPolygons(data = shape_1, 
-                               weight = 0.5, 
-                               opacity = 1,
-                               color = "black",
-                               fillOpacity = 0, 
-                               options = leaflet::pathOptions(clickable = FALSE)) |> 
-          leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
-                    labels = c("Land", "Ice"),
-                    opacity = 1) |> 
-          addLegend_decreasing("bottomright", pal = pal, values = c(0, 1.6), bins = 4, 
-                               title = "Tidal Current (m/s)",
-                               opacity = 1,
-                               decreasing = TRUE)
-        
-        mp
-        
-        if(inputs$coast_current == FALSE) {
-          mp2<- mp |> 
-            leaflet::clearShapes()
-          mp2
-        } 
-        
-        # hide loading screen
-        w$hide()
-        
-        # Strat Map
-      } else if(data$datatype == "Stratification") {
-        
-        pal <- leaflet::colorFactor(palette = rev(c("#43A2CA", 
-                                                "#A8DDB5", 
-                                                "#f1ffed")),
-                           domain = raster::values(the_raster),
-                           na.color = "#bebebe", 
-                           reverse = TRUE)
-        
-        mp <- map_proxy() |> 
-          leaflet::clearControls() |> 
-          leaflet::clearShapes() |> 
-          leaflet::addRasterImage(the_raster, 
-                                  colors = pal) |> 
-          leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
-          leaflet::addPolygons(data = shape_1, 
-                               weight = 0.5, 
-                               opacity = 1,
-                               color = "black",
-                               fillOpacity = 0, 
-                               options = leaflet::pathOptions(clickable = FALSE)) |> 
-          leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
-                             labels = c("Land", "Ice"),
-                             opacity = 1) |> 
-          leaflet::addLegend("bottomright",
-                    colors = c("#43A2CA", 
-                               "#A8DDB5", 
-                               "#f1ffed"),
-                    labels = c("Mixed", "Frontal", "Stratified"),
-                    title = "Stratification",
-                    opacity = 1)
-        
-        
-        mp
-        
-        if(inputs$coast_current == FALSE) {
-          mp2<- mp |> 
-            leaflet::clearShapes()
-          mp2
-        }
-        
-        # hide loading screen
-        w$hide()
-        
-      } else if(data$datatype == "Peak Bed Stress") {
-        
-
-        # bss palette
-        pal = leaflet::colorNumeric(palette = "viridis",
-                           domain = raster::values(the_raster),
-                           na.color = "#bebebe", 
-                           reverse = FALSE)
-        
-        # dynamic spacing
-        spacing = 500 # previously 'medium' when controlled by users
-       
-        mp <- map_proxy() |> 
-          leaflet::clearControls() |> 
-          leaflet::clearShapes() |> 
-          leaflet::addRasterImage(the_raster, 
-                                  colors = pal) |> 
-          leaflet::addRasterImage(ice_raster, colors = "aliceblue") |> 
-          leaflet::addPolygons(data = shape_1, 
-                               weight = 0.5, 
-                               opacity = 1,
-                               color = "black",
-                               fillOpacity = 0, 
-                               options = leaflet::pathOptions(clickable = FALSE)) |> 
-          leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
-                             labels = c("Land", "Ice"),
-                             opacity = 1)  |> 
-          addLegend_decreasing("bottomright", pal = pal, values = c(0, 15), bins = 4, 
-                               title = "Peak Bed Stress (N/m<sup>2</sup>)",
-                               opacity = 1,
-                               decreasing = TRUE)
-        
-        to_plot = bss_polylines |>
-          dplyr::filter(year == inputs$yearBP)
-
-        for(group in unique(to_plot$id)){
-          mp = leaflet.extras2::addArrowhead(mp,
-                                              lng= ~x,
-                                              lat= ~y,
-                                              data = to_plot[to_plot$id==group,],
-                                              weight = 2,
-                                              color = "white")
-        }
-        
-        
-        mp
-        
-        if(inputs$coast_current == FALSE) {
-          mp2<- mp |> 
-            leaflet::clearShapes()
-          mp2
-        } 
-        
-        # hide loading screen
-        w$hide()
+      add_layer(prefix, inputs$yearBP, "data", 1)
+      if (inputs$yearBP %in% years$ice) {
+        add_layer("ice", inputs$yearBP, "ice", 2)
+      } else {
+        # no url empties the slot
+        session$sendCustomMessage("swap-layer", list(slot = "ice"))
       }
 
-      
+      # bed stress arrows are drawn by www/map_layers.js from a file per year
+      arrow_url = function(year) {
+        sprintf("layers/%s/arrows_%02d.bin", region, as.integer(year))
+      }
+      session$sendCustomMessage("arrows", if (prefix == "bss") {
+        list(url = arrow_url(inputs$yearBP),
+             axes = sprintf("layers/%s/arrow_axes.json", region),
+             # a list, so that one year is still sent as an array
+             preload = as.list(arrow_url(years$bss)))
+      } else {
+        list()
       })
-      
     })
-    
-  }
+
+    # Legends: region or data type changed
+    observe({
+      req(data$datatype)
+
+      layer = map_layers[[data$datatype]]
+      years = statics[[data$region]]$years
+      req(years[[layer$prefix]])
+
+      mp = map_proxy() |>
+        leaflet::clearControls() |>
+        leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
+                           labels = c("Land", "Ice"),
+                           opacity = 1)
+
+      if (layer$prefix == "strat") {
+        leaflet::addLegend(mp, "bottomright",
+                           colors = c("#43A2CA",
+                                      "#A8DDB5",
+                                      "#f1ffed"),
+                           labels = c("Mixed", "Frontal", "Stratified"),
+                           title = "Stratification",
+                           opacity = 1)
+      } else {
+        addLegend_decreasing(mp, "bottomright",
+                             pal = leaflet::colorNumeric(palette = "viridis",
+                                                         domain = layer$domain,
+                                                         na.color = "#bebebe"),
+                             values = layer$values, bins = layer$bins,
+                             title = layer$title,
+                             opacity = 1,
+                             decreasing = TRUE)
+      }
+
+      # have the browser fetch every year for this data type now, so the
+      # slider and play button never wait on the network
+      session$sendCustomMessage("preload", as.list(c(layer_url(layer$prefix, years[[layer$prefix]]),
+                                                     layer_url("ice", years$ice))))
+    })
+
+    # Modern coastline toggle
+    observe({
+      if (isTRUE(inputs$coast_current)) {
+        leaflet::showGroup(map_proxy(), "coast")
+      } else {
+        leaflet::hideGroup(map_proxy(), "coast")
+      }
+    })
+
+  })
+}
