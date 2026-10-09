@@ -75,7 +75,8 @@ map_server <- function(id,
       session$sendCustomMessage("arrows", if (prefix == "bss") {
         list(url = arrow_url(inputs$yearBP),
              axes = sprintf("layers/%s/arrow_axes.json", region),
-             preload = arrow_url(years$bss))
+             # a list, so that one year is still sent as an array
+             preload = as.list(arrow_url(years$bss)))
       } else {
         list()
       })
@@ -116,8 +117,8 @@ map_server <- function(id,
 
       # have the browser fetch every year for this data type now, so the
       # slider and play button never wait on the network
-      session$sendCustomMessage("preload", c(layer_url(layer$prefix, years[[layer$prefix]]),
-                                             layer_url("ice", years$ice)))
+      session$sendCustomMessage("preload", as.list(c(layer_url(layer$prefix, years[[layer$prefix]]),
+                                                     layer_url("ice", years$ice))))
     })
 
     # Modern coastline toggle
