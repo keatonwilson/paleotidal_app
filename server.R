@@ -9,10 +9,6 @@ function(input, output, session) {
   input_list = input_server("inputs",
                             inputs = data_list)
 
-  # Data Summary Module
-  data_summary_server("data_summary",
-                      inputs = input_list)
-
   # base map and proxy
 
   # only the parts that never change; the region observer below and mod_map.R
