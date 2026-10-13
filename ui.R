@@ -27,6 +27,7 @@ ui = bslib::page_navbar(
                          bslib::layout_columns(
                            col_widths = c(5, 7),
                            bslib::card(
+                            class = "compact-card",
                             data_select_ui("data_type")
                            ),
                            input_ui("inputs")
