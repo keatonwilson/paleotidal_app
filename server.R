@@ -67,6 +67,12 @@ function(input, output, session) {
              map_proxy = map_proxy
              )
 
+  # clicking the pin (the "x") clears the selection
+  observeEvent(input$map_marker_click, {
+    req(identical(input$map_marker_click$id, "click_mark"))
+    click(NULL)
+  })
+
   # Time-series Module - returns the grid point closest to the last map click
   closest_lat_lon = time_series_server("time_series",
                                        click = click,
@@ -74,6 +80,12 @@ function(input, output, session) {
 
   # Click marker
   observe({
+
+    # no selection: remove the pin
+    if (is.null(click())) {
+      map_proxy() |> leaflet::removeMarker(layerId = "click_mark")
+      return()
+    }
 
     icons <- leaflet::awesomeIcons(
       icon = 'ios-close',
