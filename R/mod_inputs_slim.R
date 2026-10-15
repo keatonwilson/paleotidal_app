@@ -23,6 +23,8 @@ input_ui <- function(id) {
           selected = 21,
           grid = TRUE,
           width = "100%",
+          # play button steps through to the present
+          animate = animationOptions(interval = 600, loop = FALSE)
         ),
         
         checkboxInput(
@@ -41,6 +43,21 @@ input_server <- function(id, inputs) {
     
     ns <- session$ns
     
+
+    # Years ------------------------------------------------------------------
+
+    # the slider offers the years the region has for the chosen data type
+    observe({
+      req(inputs$region, inputs$datatype)
+      years = statics[[inputs$region]]$years[[map_layers[[inputs$datatype]]$prefix]]
+      req(years)
+      current = isolate(input$yearBP)
+      shinyWidgets::updateSliderTextInput(
+        session, "yearBP",
+        choices = rev(years),
+        selected = if (isTRUE(current %in% years)) current else max(years)
+      )
+    })
 
     # Passing Inputs out to Main Server Env -----------------------------------
     

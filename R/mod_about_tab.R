@@ -28,15 +28,19 @@ about_tab_ui <- function(id) {
                   software is provided by Scourse et al. (in press)."
                 ), 
                 p(
+                  "A second region, the Patagonian Shelf, can be chosen under 
+                  Data Selection. It currently shows water depth only."
+                ), 
+                p(
                   "On the “Explore Data Visualisations” tab, the “Maps” section 
                   enables visualisation of two-dimensional colour (raster) plots 
                   of tidal amplitude, stratification, peak bed stress and tidal 
                   current. Point-location data can be downloaded by moving the 
                   cursor and clicking on a chosen location; these data downloads 
                   are specific to the ocean model variable being viewed. Users can 
-                  interrogate the maps using the “Interactive” tab and by sliding 
-                  the age-scale, or can run a time-sequence animation under the 
-                  “Animate” tab. A zoom function is available, and maps can be 
+                  interrogate the maps by sliding the age-scale, or can run a 
+                  time-sequence animation using the play button beneath it. 
+                  A zoom function is available, and maps can be 
                   moved using click-and-grab functionality with the cursor. 
                   Further description of functionality is available in Scourse et 
                   al. (submitted). "
