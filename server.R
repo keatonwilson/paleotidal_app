@@ -2,6 +2,12 @@
 # Define server logic required to draw a histogram
 function(input, output, session) {
 
+  # About modal: shown on every session start, and reopened from the navbar
+  shiny::showModal(about_modal())
+  shiny::observeEvent(input$show_about, {
+    shiny::showModal(about_modal())
+  })
+
   # Data Selection Module
   data_list = data_select_server("data_type")
 

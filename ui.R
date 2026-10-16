@@ -13,9 +13,6 @@ ui = bslib::page_navbar(
     title = "Paleotidal Visualization", 
 
 # Nav Panels --------------------------------------------------------------
-## About ------------------------------------------------------------------
-    bslib::nav_panel("About", 
-                     about_tab_ui("about_tab_content")), 
 ## Data Viz ---------------------------------------------------------------
     bslib::nav_panel("Explore Data Visualizations", 
                      bslib::layout_columns(
@@ -43,7 +40,11 @@ ui = bslib::page_navbar(
                        time_series_ui("time_series")
                      )
     ), 
-    bslib::nav_spacer()
+    bslib::nav_spacer(),
+## About (opens modal) ----------------------------------------------------
+    bslib::nav_item(
+      shiny::actionLink("show_about", "About", icon = shiny::icon("circle-info"))
+    )
   )
 
 

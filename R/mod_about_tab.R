@@ -1,5 +1,5 @@
 # these module functions could have better documentation via roxygen2
-about_tab_ui <- function(id) {
+about_tab_ui <- function(id, height = 300) {
   ns <- NS(id)
 
 # Main Content for Tab ----------------------------------------------------
@@ -8,7 +8,7 @@ about_tab_ui <- function(id) {
   ## Column 1 --------------------------------------------------------------
     bslib::layout_column_wrap(
       width = 1/2, 
-      height = 300,
+      height = height,
       
       # calls other module from mod_card.R
       card_ui(ns("how_to_use_card"), 
@@ -126,6 +126,19 @@ about_tab_ui <- function(id) {
   )
 }
 
+
+# Welcome modal with the About content. Shown at the start of every session and
+# whenever the navbar "About" link is clicked.
+about_modal <- function(id = "about_tab_content") {
+  shiny::modalDialog(
+    title = "Welcome to PALTIDE",
+    # height = NULL lets the cards size to their content inside the modal
+    about_tab_ui(id, height = NULL),
+    size = "xl",
+    easyClose = TRUE,
+    footer = shiny::modalButton("Start exploring")
+  )
+}
 
 about_tab_server <- function(id) {
   moduleServer(id, function(input, output, session) {
