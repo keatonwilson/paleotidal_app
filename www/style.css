@@ -1,4 +1,44 @@
 
+/* Cards: softer, flatter look */
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Compact top-row cards so the map gets the remaining height */
+.compact-card .card-body,
+.inputs-card .card-body {
+  padding: 0.5rem 0.75rem;
+  gap: 0.25rem;
+}
+.compact-card .form-group,
+.compact-card .shiny-input-container,
+.inputs-card .form-group,
+.inputs-card .shiny-input-container {
+  margin-bottom: 0;
+}
+
+/* Year display in the inputs card */
+.year-display {
+  margin-bottom: 0;
+}
+.year-display-icon {
+  color: var(--bs-primary);
+  line-height: 1;
+}
+.year-display-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--bs-secondary-color);
+}
+.year-display-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
 .card-img, .card-img-top, .card-img-bottom {
   object-fit: cover;
   max-width: 60%;

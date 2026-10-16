@@ -1,40 +1,41 @@
-# First stab at card with inputs
+# Card with the year display (text + hourglass icon), time slider and coastline toggle
 
 input_ui <- function(id) {
-  tagList(
-    
-    #shinyJS Set --------------------------------------------------
+  bslib::card(
+    class = "inputs-card",
     shinyjs::useShinyjs(),
-    
-    # General and Custom Tab Panels -------------------------------------------
-    
-    # bslib::navset_card_tab(
-    #   id = NS(id, "tabs"),
-    #   full_screen = FALSE,
-      # title = "User inputs",
-      ## General Panel ----------------------------------------------------------
-      bslib::nav_panel(
-        "",
-        # bslib::card_title("Time"),
-        shinyWidgets::sliderTextInput(
-          NS(id, "yearBP"),
-          "Years BP(*1000):",
-          choices = 21:0,
-          selected = 21,
-          grid = TRUE,
-          width = "100%",
-          # play button steps through to the present
-          animate = animationOptions(interval = 600, loop = FALSE)
+    bslib::card_body(
+      # Year display on the left, coastline toggle on the right
+      div(
+        class = "d-flex align-items-center justify-content-between",
+        div(
+          class = "year-display d-flex align-items-center gap-2",
+          div(class = "year-display-icon",
+              bsicons::bs_icon("hourglass-split", size = "1.25em")),
+          div(
+            div(class = "year-display-label", "Year"),
+            div(class = "year-display-value",
+                shiny::textOutput(NS(id, "year_bp"), inline = TRUE))
+          )
         ),
-        
         checkboxInput(
           NS(id, "coast_current"),
           "Show modern coastline",
           value = TRUE,
-          width = '100%'
-        ),
+          width = "auto"
+        )
+      ),
+      shinyWidgets::sliderTextInput(
+        NS(id, "yearBP"),
+        "Years BP (*1000):",
+        choices = 21:0,
+        selected = 21,
+        grid = TRUE,
+        width = "100%",
+        # play button steps through to the present
+        animate = animationOptions(interval = 600, loop = FALSE)
       )
-    # )
+    )
   )
 }
 
@@ -43,6 +44,11 @@ input_server <- function(id, inputs) {
     
     ns <- session$ns
     
+    # Year text above the slider
+    output$year_bp = shiny::renderText({
+      year = as.numeric(input$yearBP) * 1000
+      paste(prettyNum(year, big.mark = ",", scientific = FALSE), "BP")
+    })
 
     # Years ------------------------------------------------------------------
 

@@ -33,6 +33,31 @@ download_cols = list(
                     "rsl", "elevation_amplitude")
 )
 
+# one variable through time at the clicked cell: markers by land type on a line
+ts_plot = function(df, colour, label, title, yaxis) {
+  plotly::plot_ly() |>
+    plotly::add_lines(x = ~df$year,
+                      y = ~df$value,
+                      line = list(color = colour),
+                      hoverinfo = "none") |>
+    plotly::add_markers(x = ~df$year,
+                        y = ~df$value,
+                        symbol = ~df$land_type,
+                        symbols = c(16,18,1),
+                        marker = list(color = colour, size = 8),
+                        hoverinfo = "text",
+                        text = ~paste('</br>', paste0(label, ': '), df$value,
+                                      '</br> Year: ', df$year, "K BP",
+                                      '</br> Landtype: ', stringr::str_to_title(df$land_type))) |>
+    plotly::layout(
+      title = title,
+      xaxis = list(title = "Thousand Years BP", range = c(22,0)),
+      yaxis = yaxis,
+      showlegend = FALSE
+    ) |>
+    plotly::config(displayModeBar = FALSE)
+}
+
 time_series_server <- function(id,
                                click,
                                data
@@ -87,73 +112,20 @@ time_series_server <- function(id,
       amp_filtered = cell_data() |>
         dplyr::mutate(value = elevation_amplitude)
 
-      ay <- list(
-        tickfont = list(color = "black"),
-        overlaying = "y",
-        side = "right",
-        title = list(text = "Tidal Amplitude (m)",
-                     font = list(color = "#33a02c"),
-                     standoff = 10L),
-        range = c(0,6),
-        fixedrange = TRUE)
-      # title w lat/lon
-      title = glue::glue("Relative Sea Level & Tidal Amplitude @ {closest_lat}, {closest_lon}")
-      plotly::plot_ly() |>
-        plotly::add_markers(x = ~rsl_filtered$year,
-                            y = ~rsl_filtered$value,
-                            symbol = ~rsl_filtered$land_type,
-                            name = "Relative Sea Level",
-                            yaxis = "y1",
-                            mode = "markers",
-                            type = "scatter",
-                            symbols = c(16,18,1),
-                            # line = list(color = "#1f77b4"),
-                            marker = list(color = "#1f77b4",
-                                          size = 8),
-                            hoverinfo = "text",
-                            text = ~paste('</br> RSL: ', rsl_filtered$value,
-                                          '</br> Year: ', rsl_filtered$year, "K BP",
-                                          '</br> Landtype: ', stringr::str_to_title(rsl_filtered$land_type))) |>
-        plotly::add_markers(x = ~amp_filtered$year,
-                            y = ~amp_filtered$value,
-                            symbol = ~amp_filtered$land_type,
-                            name = "Tidal Amplitude",
-                            yaxis = "y2",
-                            mode = "markers",
-                            type = "scatter",
-                            symbols = c(16,18,1),
-                            # line = list(color = "#33a02c"),
-                            marker = list(color = "#33a02c",
-                                          size = 8),
-                            hoverinfo = "text",
-                            text = ~paste('</br> Tidal Amp: ', amp_filtered$value,
-                                          '</br> Year: ', amp_filtered$year, "K BP",
-                                          '</br> Landtype: ', stringr::str_to_title(amp_filtered$land_type))) |>
-        plotly::add_lines(x = ~rsl_filtered$year,
-                          y = ~rsl_filtered$value,
-                          name = "Relative Sea Level",
-                          yaxis = "y1",
-                          line = list(color = "#1f77b4")
-        ) |>
-        plotly::add_lines(x = ~amp_filtered$year,
-                          y = ~amp_filtered$value,
-                          name = "Tidal Amplitude",
-                          yaxis = "y2",
-                          line = list(color = "#33a02c")
-        ) |>
-        plotly::layout(
-          margin = list(r = 75),
-          title = title,
-          yaxis2 = ay,
-          xaxis = list(title = "Thousand Years BP",
-                       range = c(22,0)),
-          yaxis = list(title = list(text = "Relative Sea Level (m)",
-                                    font = list(color = "#1f77b4")),
-                       range = c(-120,120),
-                       tickvals = list(-120, -80, -40, 0, 40, 80, 120)),
-          showlegend = FALSE
-        ) |>
-        plotly::config(displayModeBar = FALSE)
+      shiny::tagList(
+        ts_plot(rsl_filtered, "#1f77b4", "RSL",
+                glue::glue("Relative Sea Level @ {closest_lat}, {closest_lon}"),
+                list(title = list(text = "Relative Sea Level (m)",
+                                  font = list(color = "#1f77b4")),
+                     range = c(-120,120),
+                     tickvals = list(-120, -80, -40, 0, 40, 80, 120))),
+        ts_plot(amp_filtered, "#33a02c", "Tidal Amp",
+                glue::glue("Tidal Amplitude @ {closest_lat}, {closest_lon}"),
+                list(title = list(text = "Tidal Amplitude (m)",
+                                  font = list(color = "#33a02c")),
+                     range = c(0,6),
+                     fixedrange = TRUE))
+      )
     })
 
 # Download ----------------------------------------------------------------

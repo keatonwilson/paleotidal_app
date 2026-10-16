@@ -1,6 +1,6 @@
 data_select_ui <- function(id) {
   tagList(
-    shiny::h4("Data Selection"),
+    shiny::h6("Data Selection", class = "mb-2"),
     bslib::layout_columns(
       col_widths = c(6, 6),
       selectizeInput(
