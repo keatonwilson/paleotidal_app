@@ -1,126 +1,111 @@
 # these module functions could have better documentation via roxygen2
-about_tab_ui <- function(id, height = 300) {
+about_tab_ui <- function(id) {
   ns <- NS(id)
 
-# Main Content for Tab ----------------------------------------------------
-  shiny::tagList(
+# Main Content ------------------------------------------------------------
+  # three full-width cards stacked vertically
+  bslib::layout_column_wrap(
+    width = 1,
+    fill = FALSE,
 
-  ## Column 1 --------------------------------------------------------------
-    bslib::layout_column_wrap(
-      width = 1/2, 
-      height = height,
-      
-      # calls other module from mod_card.R
-      card_ui(ns("how_to_use_card"), 
-              "How to Use", 
-              tagList(
-                p(
-                  "PALTIDE is on online web-based data portal tool with intuitive 
-                  user interface to enable users to  visualise, interrogate and 
-                  download datasets on relative sea level, palaeotidal amplitudes 
-                  and other tide-dependant parameters.  The model domain is the 
-                  northwest European continental shelf covering the period from 
-                  the Last Glacial Maximum to the present day. The tool is based 
-                  on the glacial isostatic adjustment (GIA) simulations in Bradley 
-                  et al. (2011) and hydrodynamic simulations using the Regional 
-                  Ocean Modelling System (ROMS) published by Ward et al. (2016). 
-                  A technical description of the input simulations and visualisation 
-                  software is provided by Scourse et al. (in press)."
-                ), 
-                p(
-                  "A second model run, PALTIDE2, covers the northwest European
-                  shelf and the Patagonian Shelf and can be chosen under Data
-                  Selection. Its hydrodynamics come from TELEMAC and are masked to
-                  the shelf and to water at least 5 m deep. Bed shear stress is
-                  the 90th percentile magnitude, combining M2, S2, K1 and O1;
-                  unlike PALTIDE1 there are no bed stress vectors or tidal
-                  currents. It adds the M2 elevation amplitude, the spring tidal
-                  range (2 × (M2 + S2)), and maps of relative sea level and ice
-                  thickness, both interpolated from the Bradley reconstructions."
-                ), 
-                p(
-                  "On the “Explore Data Visualisations” tab, the “Maps” section 
-                  enables visualisation of two-dimensional colour (raster) plots 
-                  of tidal amplitude, stratification, peak bed stress and tidal 
-                  current. Point-location data can be downloaded by moving the 
-                  cursor and clicking on a chosen location; these data downloads 
-                  are specific to the ocean model variable being viewed. Users can 
-                  interrogate the maps by sliding the age-scale, or can run a 
-                  time-sequence animation using the play button beneath it. 
-                  A zoom function is available, and maps can be 
-                  moved using click-and-grab functionality with the cursor. 
-                  Further description of functionality is available in Scourse et 
-                  al. (submitted). "
-                )
+    ## How to Use ------------------------------------------------------------
+    # calls other module from mod_card.R
+    card_ui(ns("how_to_use_card"), 
+            "How to Use", 
+            tagList(
+              p(
+                "PALTIDE is on online web-based data portal tool with intuitive 
+                user interface to enable users to  visualise, interrogate and 
+                download datasets on relative sea level, palaeotidal amplitudes 
+                and other tide-dependant parameters.  The model domain is the 
+                northwest European continental shelf covering the period from 
+                the Last Glacial Maximum to the present day. The tool is based 
+                on the glacial isostatic adjustment (GIA) simulations in Bradley 
+                et al. (2011) and hydrodynamic simulations using the Regional 
+                Ocean Modelling System (ROMS) published by Ward et al. (2016). 
+                A technical description of the input simulations and visualisation 
+                software is provided by Scourse et al. (in press)."
+              ), 
+              p(
+                "A second model run, PALTIDE2, covers the northwest European
+                shelf and the Patagonian Shelf and can be chosen under Data
+                Selection. Its hydrodynamics come from TELEMAC and are masked to
+                the shelf and to water at least 5 m deep. Bed shear stress is
+                the 90th percentile magnitude, combining M2, S2, K1 and O1;
+                unlike PALTIDE1 there are no bed stress vectors or tidal
+                currents. It adds the M2 elevation amplitude, the spring tidal
+                range (2 × (M2 + S2)), and maps of relative sea level and ice
+                thickness, both interpolated from the Bradley reconstructions."
+              ), 
+              p(
+                "On the “Explore Data Visualisations” tab, the “Maps” section 
+                enables visualisation of two-dimensional colour (raster) plots 
+                of tidal amplitude, stratification, peak bed stress and tidal 
+                current. Point-location data can be downloaded by moving the 
+                cursor and clicking on a chosen location; these data downloads 
+                are specific to the ocean model variable being viewed. Users can 
+                interrogate the maps by sliding the age-scale, or can run a 
+                time-sequence animation using the play button beneath it. 
+                A zoom function is available, and maps can be 
+                moved using click-and-grab functionality with the cursor. 
+                Further description of functionality is available in Scourse et 
+                al. (submitted). "
               )
-              ),
+            )
+    ),
 
-## Column 2 Nested ---------------------------------------------------------
+    ## How to cite -----------------------------------------------------------
+    card_ui(ns("how_to_cite"),
+            "How to cite",
+            tagList(
+              p("Data from this tool can be freely published with citation 
+                to the following three publications:"), 
+              tags$ol(
+                tags$li("Scourse, J, Ward, S, Wainwright, A, Bradley, S, 
+                        Wilson, JK and Guo, J (2024). An interactive 
+                        visualization and data portal tool (PALTIDE) for 
+                        relative sea level and palaeotidal simulations of 
+                        the northwest European shelf seas since the Last 
+                        Glacial Maximum.", 
+                        tags$em("Journal of Quaternary Science"), 
+                        tags$a("https://doi.org/10.1002/jqs.3615", 
+                               target = "_blank", 
+                               href = "https://doi.org/10.1002/jqs.3615") 
+                        ), 
+                tags$li("Ward SL, Neill SP, Scourse JD, Bradley SL and 
+                        Uehara K 2016. Sensitivity of palaeotidal models of 
+                        the northwest European shelf seas to glacial 
+                        isostatic adjustment since the Last Glacial Maximum.", 
+                        tags$em("Quaternary Science Reviews"), 
+                        HTML('&nbsp;'),
+                        tags$b("151"), 
+                        ", 198-211."), 
+                tags$li("Bradley SL, Milne GA, Shennan I and Edwards R 
+                        2011. An improved glacial isostatic adjustment model 
+                        for the British Isles.", 
+                        tags$em("Journal of Quaternary Science"), 
+                        HTML('&nbsp;'),
+                        tags$b("26"), 
+                        ", 541-552.")
+              )
+            )
+    ),
 
-      bslib::layout_column_wrap(
-        width = 1, 
-        heights_equal = "row",
-        
-        # re-uses modules like above
-        card_ui(
-          ns("ack"),
-          "Acknowledgements",
-          # items passed to the content argument in the card_ui function have 
-          # to be wrapped in a tagList
-          content = shiny::tagList(
-            # lapply(lorem::ipsum(
-            #   paragraphs = 3,
-            #   sentences = c(5, 2, 5)
-            # ),
-            # tags$p),
-            # example of inserting an image with a custom width, if you need 
-            # complex layouts/combinations, you'll probably have to wrap in a 
-            # div - check out https://rstudio.github.io/bslib/articles/cards/#multiple-columns
-            shiny::img(src = "comb_logos.png", width = "80%"),
-            htmltools::h6(
-              "App designed by: ",
-              htmltools::a("James Scourse", href = "mailto:J.Scourse@exeter.ac.uk", .noWS = "outside"),
-              ", ",
-              htmltools::a("Sophie Ward", href = "mailto:sophie.ward@bangor.ac.uk", .noWS = "outside")
-            ),
-            htmltools::h6("App developed by: Keaton Wilson, Jessica Guo")
-          )
+    ## Acknowledgements ------------------------------------------------------
+    card_ui(
+      ns("ack"),
+      "Acknowledgements",
+      # items passed to the content argument in card_ui have to be wrapped in 
+      # a tagList
+      content = shiny::tagList(
+        shiny::img(src = "comb_logos.png", width = "80%"),
+        htmltools::h6(
+          "App designed by: ",
+          htmltools::a("James Scourse", href = "mailto:J.Scourse@exeter.ac.uk", .noWS = "outside"),
+          ", ",
+          htmltools::a("Sophie Ward", href = "mailto:sophie.ward@bangor.ac.uk", .noWS = "outside")
         ),
-        card_ui(ns("how_to_cite"),
-                "How to cite",
-                tagList(
-                  p("Data from this tool can be freely published with citation 
-                    to the following three publications:"), 
-                  tags$ol(
-                    tags$li("Scourse, J, Ward, S, Wainwright, A, Bradley, S, 
-                            Wilson, JK and Guo, J (2024). An interactive 
-                            visualization and data portal tool (PALTIDE) for 
-                            relative sea level and palaeotidal simulations of 
-                            the northwest European shelf seas since the Last 
-                            Glacial Maximum.", 
-                            tags$em("Journal of Quaternary Science"), 
-                            tags$a("https://doi.org/10.1002/jqs.3615", 
-                                   target = "_blank", 
-                                   href = "https://doi.org/10.1002/jqs.3615") 
-                            ), 
-                    tags$li("Ward SL, Neill SP, Scourse JD, Bradley SL and 
-                            Uehara K 2016. Sensitivity of palaeotidal models of 
-                            the northwest European shelf seas to glacial 
-                            isostatic adjustment since the Last Glacial Maximum.", 
-                            tags$em("Quaternary Science Reviews"), 
-                            HTML('&nbsp;'),
-                            tags$b("151"), 
-                            ", 198-211."), 
-                    tags$li("Bradley SL, Milne GA, Shennan I and Edwards R 
-                            2011. An improved glacial isostatic adjustment model 
-                            for the British Isles.", 
-                            tags$em("Journal of Quaternary Science"), 
-                            HTML('&nbsp;'),
-                            tags$b("26"), 
-                            ", 541-552.")
-                  )
-                )
-                )
+        htmltools::h6("App developed by: Keaton Wilson, Jessica Guo")
       )
     )
   )
@@ -132,9 +117,8 @@ about_tab_ui <- function(id, height = 300) {
 about_modal <- function(id = "about_tab_content") {
   shiny::modalDialog(
     title = "Welcome to PALTIDE",
-    # height = NULL lets the cards size to their content inside the modal
-    about_tab_ui(id, height = NULL),
-    size = "xl",
+    about_tab_ui(id),
+    size = "l",
     easyClose = TRUE,
     footer = shiny::modalButton("Start exploring")
   )
@@ -146,6 +130,3 @@ about_tab_server <- function(id) {
     
   })
 }
-
-
-
