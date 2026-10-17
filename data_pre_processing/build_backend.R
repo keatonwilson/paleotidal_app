@@ -7,10 +7,10 @@
 #   www/layers/<region>/*.png       one pre-rendered map image per variable and year
 #   www/layers/<region>/arrows_*    bed stress arrows per year, drawn by www/map_layers.js
 #
-# build_region() does all of that for the first model run (Paltide1). The second
-# run (Paltide2) arrives as x/y/value ascii files in data/raw/, one per variable
-# and year; add_ascii_layers() turns those into map layers and adds them to a
-# region, creating the region if it is new.
+# There is one folder per region and model run. build_region() does all of that
+# for the first run (Paltide1, nw_europe). The second run (Paltide2) arrives as
+# x/y/value ascii files in data/raw/Transfer2/, one per variable and year;
+# build_paltide2() turns those into a region (nw_europe_p2, patagonia).
 #
 # The nw_europe inputs (data/processed_data/) were removed from the repo when
 # this script was introduced; they are in git history (LFS) up to that commit.
@@ -18,6 +18,7 @@
 # Run from the project root: Rscript data_pre_processing/build_backend.R
 
 library(raster) # needed for `[[` on the saved RasterBrick objects
+source("R/mod_map.R") # strat_cols, shared with the map legend
 
 # modern coastline, cropped to the region plus a margin for panning
 crop_coast = function(xs, ys, margin = 30) {
@@ -132,9 +133,12 @@ build_region = function(region, in_dir, view) {
 
   # Static bits -------------------------------------------------------------
 
-  saveRDS(list(xs = xs,
+  saveRDS(list(label = "NW European Shelf",
+               model = "PALTIDE1",
+               xs = xs,
                ys = ys,
                bounds = bounds,
+               years = lapply(bounds, function(b) 0:21),
                raster_opts = raster_opts,
                coast = crop_coast(xs, ys),
                view = view),
@@ -162,69 +166,184 @@ build_region = function(region, in_dir, view) {
   message(region, ": built ", cube_path, " (", round(file.size(cube_path) / 1e6, 1), " MB)")
 }
 
-# Map layers from x/y/value ascii files, added to a region's static.rds.
-# `depth` and `ice` are named character vectors, year -> file. Each layer keeps
-# its own bounds, so the files need not share a grid: hydrodynamic output is cut
-# to the shelf, masks cover the whole model domain.
-add_ascii_layers = function(region, label, view, depth, ice = NULL) {
+# Map layers and cube for a Paltide2 region, from the ascii transfer in `dir`
+# (x/y/value, one file per variable and year, e.g. ascii_bss/bss_07.ascii).
+# The land/ice/water mask, ice thickness and RSL cover the whole grid;
+# hydrodynamic output is cut to water >= 5 m on the shelf and sits on the same
+# grid.
+build_paltide2 = function(region, label, view, dir) {
 
   data_dir = file.path("data/app", region)
   layer_dir = file.path("www/layers", region)
-  dir.create(data_dir, recursive = TRUE, showWarnings = FALSE)
-  dir.create(layer_dir, recursive = TRUE, showWarnings = FALSE)
+  unlink(c(data_dir, layer_dir), recursive = TRUE)
+  dir.create(data_dir, recursive = TRUE)
+  dir.create(layer_dir, recursive = TRUE)
 
-  static_path = file.path(data_dir, "static.rds")
-  static = if (file.exists(static_path)) readRDS(static_path) else list()
-  # layers written by build_region() cover every year
-  if (is.null(static$years)) static$years = lapply(static$bounds, function(b) 0:21)
-
-  extent = NULL
-  render = function(prefix, files, values_for, colors) {
-    if (is.null(files)) return()
-    for (year in names(files)) {
-      xyz = data.table::fread(files[[year]], col.names = c("x", "y", "value"))
-      xyz$value = values_for(xyz$value)
-      extent <<- list(xs = range(extent$xs, xyz$x), ys = range(extent$ys, xyz$y))
-      layer = raster::rasterFromXYZ(xyz, crs = "EPSG:4326")
-      # nearest neighbour: averaging depth with land elevation would move the coast
-      call = leaflet::addRasterImage(leaflet::leaflet(), layer, colors = colors,
-                                     method = "ngb", maxBytes = Inf)$x$calls[[1]]
-      png = jsonlite::base64_dec(sub("^data:image/png;base64,", "", call$args[[1]]))
-      writeBin(png, file.path(layer_dir, sprintf("%s_%02d.png", prefix, as.integer(year))))
-      static$bounds[[prefix]] <<- call$args[[2]]
-      static$raster_opts <<- call$args[[5]]
-    }
-    static$years[[prefix]] <<- sort(as.integer(names(files)))
+  read_var = function(folder, stem, year) {
+    data.table::fread(file.path(dir, folder, sprintf("%s_%02d.ascii", stem, year)),
+                      col.names = c("x", "y", "value"))
   }
 
-  # Depth is positive in water and negative (elevation) on land. Colours stop at
-  # depth_cap so the shelf keeps its contrast; the domain must match the legend
-  # in map_layers (R/mod_map.R). Cells missing from the file stay transparent.
-  depth_cap = 200
-  depth_pal = leaflet::colorNumeric(palette = "viridis", domain = c(0, depth_cap))
-  render("depth", depth,
-         function(h) {
-           # catches a flipped sign convention in a later transfer
-           stopifnot(any(h > 0), any(h < 0))
-           pmin(h, depth_cap)
-         },
-         function(h) ifelse(is.na(h), "#00000000", ifelse(h <= 0, "#bebebe", depth_pal(pmax(h, 0)))))
+  mask0 = read_var("ascii_landicewater", "mask_landicewater", 0)
+  xs = sort(unique(mask0$x))
+  ys = sort(unique(mask0$y))
+  # coordinates are printed to 4 decimals, so match them as text, not floats
+  cell_of = function(xyz) {
+    (match(sprintf("%.4f", xyz$y), sprintf("%.4f", ys)) - 1L) * length(xs) +
+      match(sprintf("%.4f", xyz$x), sprintf("%.4f", xs))
+  }
+  n_cells = length(xs) * length(ys)
+  stopifnot(nrow(mask0) == n_cells)
+  grid = data.frame(x = rep(xs, times = length(ys)), y = rep(ys, each = length(xs)))
 
-  # ice files hold thickness in metres, 0 where there is none
-  render("ice", ice,
-         function(thickness) ifelse(thickness > 0, 1, NA),
-         function(v) ifelse(is.na(v), "#00000000", "aliceblue"))
+  # Colours are baked in here; numeric domains must match map_layers (R/mod_map.R).
+  # Values above a cap take the top colour. Land is grey (marked by a sentinel,
+  # as NaN would not survive the raster round trip), off-shelf water with no
+  # output is transparent.
+  land = -9999
+  land_col = "#bebebe"
+  none_col = "#00000000"
+  numeric_cols = function(palette, domain) {
+    pal = leaflet::colorNumeric(palette = palette, domain = domain)
+    function(v) {
+      out = rep(none_col, length(v))
+      ok = !is.na(v) & v != land
+      out[ok] = pal(pmin(pmax(v[ok], domain[1]), domain[2]))
+      out[!is.na(v) & v == land] = land_col
+      out
+    }
+  }
+  layers = list(
+    bss90 = list(folder = "ascii_bss", stem = "bss", cols = numeric_cols("viridis", c(0, 5))),
+    strat = list(folder = "ascii_stratification", stem = "strat",
+                 cols = function(v) {
+                   ifelse(is.na(v), none_col,
+                          ifelse(v == land, land_col, strat_cols$PALTIDE2[pmax(v, 1)]))
+                 }),
+    amp = list(folder = "ascii_m2amplitude", stem = "m2amplitude", cols = numeric_cols("viridis", c(0, 5))),
+    range = list(folder = "ascii_springtidalrange", stem = "springtidalrange", cols = numeric_cols("viridis", c(0, 11))),
+    depth = list(folder = "ascii_water_depth", stem = "h", cols = numeric_cols("viridis", c(0, 500))),
+    # RSL covers land too, so no grey
+    rsl = list(folder = "ascii_rsl", stem = "rsl", cols = numeric_cols("RdBu", c(-150, 150))),
+    icethk = list(folder = "ascii_mask_ice", stem = "mask_ice", cols = numeric_cols("Blues", c(0, 2500)))
+  )
 
-  if (is.null(static$coast)) static$coast = crop_coast(extent$xs, extent$ys)
-  static$label = label
-  static$view = view
-  saveRDS(static, static_path)
+  bounds = list()
+  raster_opts = NULL
+  render = function(prefix, year, values, colors) {
+    layer = raster::rasterFromXYZ(cbind(grid, value = values), crs = "EPSG:4326")
+    # nearest neighbour keeps the coast and the categories sharp
+    call = leaflet::addRasterImage(leaflet::leaflet(), layer, colors = colors,
+                                   method = "ngb", maxBytes = Inf)$x$calls[[1]]
+    png = jsonlite::base64_dec(sub("^data:image/png;base64,", "", call$args[[1]]))
+    writeBin(png, file.path(layer_dir, sprintf("%s_%02d.png", prefix, year)))
+    bounds[[prefix]] <<- call$args[[2]]
+    raster_opts <<- call$args[[5]]
+  }
 
-  expected = c(sprintf("depth_%02d.png", as.integer(names(depth))),
-               sprintf("ice_%02d.png", as.integer(names(ice))))
-  stopifnot(file.size(file.path(layer_dir, expected)) > 0)
+  # The cube holds every cell on the shelf (with model output) in at least one
+  # year, with all its years, so its timeseries is complete. Ice and off-shelf
+  # cells are left out to keep the file small enough for git (< 100 MB).
+  wet_cells = sort(unique(unlist(lapply(0:21, function(year) {
+    cell_of(read_var("ascii_water_depth", "h", year))
+  }))))
 
-  message(region, ": added ", paste(expected, collapse = ", "))
+  cube = vector("list", 22)
+  checks = vector("list", 22)
+  for (year in 0:21) {
+    xyz = read_var("ascii_landicewater", "mask_landicewater", year)
+    mask = rep(NA_integer_, n_cells)
+    mask[cell_of(xyz)] = as.integer(xyz$value)
+    stopifnot(!anyNA(mask), mask %in% 1:3)
+    full = list()
+    for (prefix in names(layers)) {
+      xyz = read_var(layers[[prefix]]$folder, layers[[prefix]]$stem, year)
+      v = rep(NA_real_, n_cells)
+      v[cell_of(xyz)] = xyz$value
+      full[[prefix]] = v[wet_cells]
+      # ice thickness 0 means no ice
+      shown = if (prefix == "icethk") ifelse(v > 0, v, NA) else v
+      if (prefix != "rsl") shown[mask == 1 & is.na(shown)] = land
+      render(prefix, year, shown, layers[[prefix]]$cols)
+      checks[[year + 1]][[prefix]] = xyz[sample(nrow(xyz), 50)]
+    }
+    render("ice", year, ifelse(mask == 3, 1, NA),
+           function(v) ifelse(is.na(v), none_col, "aliceblue"))
+
+    cube[[year + 1]] = data.table::data.table(
+      cell = wet_cells, year = year,
+      land_type = c("land", "water", "ice")[mask[wet_cells]],
+      elevation_amplitude = full$amp,
+      spring_range = full$range,
+      rsl = full$rsl,
+      strat = as.integer(full$strat),
+      BSS_magnitude = full$bss90,
+      ice_thickness = full$icethk,
+      depth = full$depth
+    )
+    message(region, ": year ", year, " done")
+  }
+
+  # Cube --------------------------------------------------------------------
+
+  cube = data.table::rbindlist(cube)
+  data.table::setorder(cube, cell, year)
+  cube[, `:=`(x = xs[(cell - 1L) %% length(xs) + 1L], y = ys[(cell - 1L) %/% length(xs) + 1L])]
+  data.table::setcolorder(cube, c("cell", "x", "y", "year"))
+
+  # cm (or 0.1 m) precision as float32 halves the file, again for git's limit
+  digits = c(elevation_amplitude = 2, spring_range = 2, rsl = 2, BSS_magnitude = 2,
+             ice_thickness = 1, depth = 1)
+  for (col in names(digits)) data.table::set(cube, j = col, value = round(cube[[col]], digits[[col]]))
+  tbl = arrow::arrow_table(cube)
+  for (col in names(digits)) tbl[[col]] = tbl[[col]]$cast(arrow::float32())
+  cube_path = file.path(data_dir, "cube.parquet")
+  arrow::write_parquet(tbl, cube_path, compression = "zstd", chunk_size = 22L * 4096L)
+  n_rows = nrow(cube)
+  rm(cube, tbl)
+  gc()
+
+  # Static bits -------------------------------------------------------------
+
+  saveRDS(list(label = label,
+               model = "PALTIDE2",
+               xs = xs,
+               ys = ys,
+               bounds = bounds,
+               years = lapply(bounds, function(b) 0:21),
+               raster_opts = raster_opts,
+               coast = crop_coast(xs, ys),
+               view = view),
+          file.path(data_dir, "static.rds"))
+
+  # Checks ------------------------------------------------------------------
+
+  con = DBI::dbConnect(duckdb::duckdb())
+  on.exit(DBI::dbDisconnect(con, shutdown = TRUE))
+  stopifnot(DBI::dbGetQuery(con, glue::glue("SELECT count(*) AS n FROM read_parquet('{cube_path}')"))$n == n_rows)
+
+  # random source values must come back from the cube, looked up by cell
+  cube_col = c(bss90 = "BSS_magnitude", strat = "strat", amp = "elevation_amplitude",
+               range = "spring_range", depth = "depth", rsl = "rsl", icethk = "ice_thickness")
+  for (year in 0:21) {
+    for (prefix in names(cube_col)) {
+      src = checks[[year + 1]][[prefix]]
+      src$cell = cell_of(src)
+      src = src[src$cell %in% wet_cells, ]
+      for (i in seq_len(nrow(src))) {
+        got = DBI::dbGetQuery(con,
+                              glue::glue("SELECT * FROM read_parquet('{cube_path}') WHERE cell = ? AND year = ?"),
+                              params = list(src$cell[i], year))
+        stopifnot(nrow(got) == 1,
+                  abs(got$x - src$x[i]) < 1e-6, abs(got$y - src$y[i]) < 1e-6,
+                  abs(got[[cube_col[[prefix]]]] - src$value[i]) <= 0.05 + 1e-4 * abs(src$value[i]))
+      }
+    }
+  }
+  stopifnot(length(list.files(layer_dir, pattern = "\\.png$")) == (length(layers) + 1) * 22)
+
+  message(region, ": built ", cube_path, " (", round(file.size(cube_path) / 1e6, 1), " MB, ",
+          n_rows, " rows)")
 }
 
 # the nw_europe inputs are no longer in the repo, see the top of this file
@@ -234,17 +353,12 @@ if (dir.exists("./data/processed_data")) {
                view = list(lng = -4, lat = 56, zoom = 5.25))
 }
 
-transfer1 = "./data/raw/Transfer1"
+transfer2 = "./data/raw/Transfer2"
 
-# Europe keeps the ice layers it already has for all 22 years, so
-# Data_EuropeanShelf/mask_ice_19.ascii is not used.
-add_ascii_layers("nw_europe", "NW European Shelf",
-                 view = list(lng = -4, lat = 56, zoom = 5.25),
-                 depth = c(`0` = file.path(transfer1, "Data_EuropeanShelf/h_00.ascii"),
-                           `19` = file.path(transfer1, "Data_EuropeanShelf/h_19.ascii")))
+build_paltide2("nw_europe_p2", "NW European Shelf",
+               view = list(lng = -4, lat = 56, zoom = 5.25),
+               dir = file.path(transfer2, "NWESS"))
 
-add_ascii_layers("patagonia", "Patagonian Shelf",
-                 view = list(lng = -62, lat = -46, zoom = 4.5),
-                 depth = c(`0` = file.path(transfer1, "Data_PatagonianShelf/h_00.ascii"),
-                           `15` = file.path(transfer1, "Data_PatagonianShelf/h_15.ascii")),
-                 ice = c(`15` = file.path(transfer1, "Data_PatagonianShelf/mask_ice_15.ascii")))
+build_paltide2("patagonia", "Patagonian Shelf",
+               view = list(lng = -62, lat = -46, zoom = 4.5),
+               dir = file.path(transfer2, "Patagonia"))
