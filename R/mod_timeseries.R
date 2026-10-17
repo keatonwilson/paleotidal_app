@@ -28,9 +28,17 @@ download_cols = list(
   `Peak Bed Stress` = c("longitude", "latitude", "year", "rsl",
                         "elevation_amplitude", "BSS_u", "BSS_v",
                         "BSS_magnitude", "land_type"),
-  # depth is a map layer only for now, so this is the amplitude set
   `Water Depth` = c("longitude", "latitude", "year", "land_type",
-                    "rsl", "elevation_amplitude")
+                    "depth", "rsl", "elevation_amplitude"),
+  # PALTIDE2 only
+  `Peak Bed Stress (90th pct)` = c("longitude", "latitude", "year", "land_type",
+                              "BSS_magnitude", "rsl", "elevation_amplitude"),
+  `Spring Tidal Range` = c("longitude", "latitude", "year", "land_type",
+                           "spring_range", "rsl", "elevation_amplitude"),
+  `Relative Sea Level` = c("longitude", "latitude", "year", "land_type",
+                           "rsl", "elevation_amplitude"),
+  `Ice Thickness` = c("longitude", "latitude", "year", "land_type",
+                      "ice_thickness", "rsl", "elevation_amplitude")
 )
 
 # one variable through time at the clicked cell: markers by land type on a line
@@ -102,6 +110,12 @@ time_series_server <- function(id,
                           "(Click anywhere on the map to generate timeseries)"))
       }
 
+      # the cube only holds cells with model output
+      if (nrow(cell_data()) == 0) {
+        return(shiny::div(class = "font-italic text-secondary",
+                          "(No model data at this point)"))
+      }
+
       closest_lat = cell_data()$y[1]
       closest_lon = cell_data()$x[1]
 
@@ -146,13 +160,16 @@ time_series_server <- function(id,
                                                  strat == 3 ~ "stratified"))
 
         # Write the dataset to the `file` that will be downloaded
-        write.csv(to_download[download_cols[[data$datatype]]], file, row.names = FALSE)
+        # the two model runs have different columns
+        cols = intersect(download_cols[[data$datatype]], names(to_download))
+        write.csv(to_download[cols], file, row.names = FALSE)
       }
     )
 
     # returns closest lat lon out of it - this will make it easy to
     # plop on a marker for folks to know where they clicked.
     reactive({
+      req(nrow(cell_data()) > 0)
       list(lat = cell_data()$y[1],
            lon = cell_data()$x[1])
     })

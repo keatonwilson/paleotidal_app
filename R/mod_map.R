@@ -18,11 +18,33 @@ map_layers = list(
   `Peak Bed Stress` = list(prefix = "bss",
                            title = "Peak Bed Stress (N/m<sup>2</sup>)",
                            domain = c(0, 15), values = c(0, 15), bins = 4),
+  `Peak Bed Stress (90th pct)` = list(prefix = "bss90",
+                                      title = "Peak Bed Stress, 90th pct (N/m<sup>2</sup>)",
+                                      domain = c(0, 5), values = c(0, 5), bins = 5),
+  `Spring Tidal Range` = list(prefix = "range",
+                              title = "Spring Tidal Range (m)",
+                              domain = c(0, 11), values = c(0, 11), bins = 5),
   `Stratification` = list(prefix = "strat"),
   `Water Depth` = list(prefix = "depth",
-                       title = "Water Depth (m, capped at 200)",
-                       domain = c(0, 200), values = c(0, 200), bins = 4)
+                       title = "Water Depth (m, capped at 500)",
+                       domain = c(0, 500), values = c(0, 500), bins = 5),
+  `Relative Sea Level` = list(prefix = "rsl",
+                              title = "Relative Sea Level (m)",
+                              palette = "RdBu",
+                              domain = c(-150, 150), values = c(-150, 150), bins = 6),
+  `Ice Thickness` = list(prefix = "icethk",
+                         title = "Ice Thickness (m)",
+                         palette = "Blues",
+                         domain = c(0, 2500), values = c(0, 2500), bins = 5)
 )
+
+# Stratification classes 1-3 (mixed, frontal/transitional, stratified), by
+# model run. PALTIDE2 follows the colours its modellers use (parula ends and
+# middle); PALTIDE1 keeps the colours baked into its layers.
+strat_cols = list(PALTIDE1 = c("#43A2CA", "#A8DDB5", "#f1ffed"),
+                  PALTIDE2 = c("#3E26A8", "#13BEB9", "#F9FB15"))
+strat_labels = list(PALTIDE1 = c("Mixed", "Frontal", "Stratified"),
+                    PALTIDE2 = c("Mixed", "Transitional", "Stratified"))
 
 map_server <- function(id,
                        inputs,
@@ -61,7 +83,8 @@ map_server <- function(id,
       req(inputs$yearBP %in% years[[prefix]])
 
       add_layer(prefix, inputs$yearBP, "data", 1)
-      if (inputs$yearBP %in% years$ice) {
+      # the ice thickness layer is its own ice cover
+      if (inputs$yearBP %in% years$ice && prefix != "icethk") {
         add_layer("ice", inputs$yearBP, "ice", 2)
       } else {
         # no url empties the slot
@@ -97,16 +120,15 @@ map_server <- function(id,
                            opacity = 1)
 
       if (layer$prefix == "strat") {
+        model = statics[[data$region]]$model
         leaflet::addLegend(mp, "bottomright",
-                           colors = c("#43A2CA",
-                                      "#A8DDB5",
-                                      "#f1ffed"),
-                           labels = c("Mixed", "Frontal", "Stratified"),
+                           colors = strat_cols[[model]],
+                           labels = strat_labels[[model]],
                            title = "Stratification",
                            opacity = 1)
       } else {
         addLegend_decreasing(mp, "bottomright",
-                             pal = leaflet::colorNumeric(palette = "viridis",
+                             pal = leaflet::colorNumeric(palette = layer$palette %||% "viridis",
                                                          domain = layer$domain,
                                                          na.color = "#bebebe"),
                              values = layer$values, bins = layer$bins,
