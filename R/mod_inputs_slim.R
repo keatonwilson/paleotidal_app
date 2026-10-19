@@ -16,11 +16,10 @@ input_ui <- function(id) {
               shiny::textOutput(NS(id, "year_bp"), inline = TRUE))
         )
       ),
-      checkboxInput(
+      bslib::input_switch(
         NS(id, "coast_current"),
         "Show modern coastline",
-        value = TRUE,
-        width = "auto"
+        value = TRUE
       )
     ),
     shinyWidgets::sliderTextInput(
