@@ -49,10 +49,23 @@
 /* Page header (replaces the navbar) */
 .app-header {
   flex: 0 0 auto;
-  padding: 0.25rem 0.25rem 0;
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  color: #fff;
+  background: linear-gradient(90deg, var(--bs-primary), #0f8fa3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 .app-title {
   font-size: 1.35rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+.app-header a,
+.app-header a:hover {
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+}
+.app-header a:hover {
+  text-decoration: underline;
 }

@@ -4,10 +4,17 @@ ui = bslib::page_fillable(
 
 # Setup -------------------------------------------------------------------
     title = "Paleotidal Data Visualizations",
-    theme = bslib::bs_theme(bootswatch = "zephyr",
-                            version = 5),
+    theme = bslib::bs_theme(
+      version = 5,
+      bootswatch = "zephyr",
+      primary = "#0b6e7f",
+      base_font = bslib::font_google("Inter"),
+      heading_font = bslib::font_google("Inter", wght = "600")
+    ),
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
+      # version query string so browsers reload the CSS after it changes
+      tags$link(rel = "stylesheet", type = "text/css",
+                href = paste0("style.css?v=", as.integer(file.mtime("www/style.css")))),
       tags$script(src = "map_layers.js")
       ),
     tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
