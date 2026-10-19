@@ -39,6 +39,7 @@ selection_card_server <- function(id, data, inputs) {
       coast = if (isTRUE(inputs$coast_current)) "on" else "off"
       paste(
         statics[[data$region]]$label,
+        statics[[data$region]]$model,
         data$datatype,
         paste(year, "BP"),
         paste("Modern coastline:", coast),
