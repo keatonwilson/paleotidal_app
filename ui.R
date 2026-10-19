@@ -39,8 +39,11 @@ ui = bslib::page_fillable(
       col_widths = c(7, 5),
       bslib::card(
         full_screen = TRUE,
-        bslib::card_header("Map"),
-        leaflet::leafletOutput("map")
+        # no padding so the map fills the whole card
+        bslib::card_body(
+          padding = 0,
+          leaflet::leafletOutput("map")
+        )
       ),
       
       # Time series
