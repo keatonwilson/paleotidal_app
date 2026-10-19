@@ -200,9 +200,12 @@
 }
 
 /* Dark mode toggle in the header: white to match the other header text */
-.app-header bslib-input-dark-mode,
-.app-header bslib-input-dark-mode .btn {
+/* bslib sets the icon colors through --text-1 / --text-2 in an inline style,
+   so overriding them needs !important */
+.app-header bslib-input-dark-mode {
   color: #fff;
+  --text-1: #fff !important;
+  --text-2: rgba(255, 255, 255, 0.85) !important;
 }
 
 /* Dark mode: stronger shadows would disappear on dark surfaces, so rely on
@@ -214,4 +217,29 @@
 }
 [data-bs-theme="dark"] .selection-card .accordion-button {
   color: var(--bs-body-color);
+}
+
+/* Dark mode: the teal icon is hard to see on dark surfaces, use off-white */
+[data-bs-theme="dark"] .selection-icon,
+[data-bs-theme="dark"] .year-display-icon {
+  color: var(--bs-body-color);
+}
+
+/* Dark mode: the accordion chevron (collapsed and open) in off-white. Bootstrap
+   sets these variables on the ::after element itself, so they are set there. */
+[data-bs-theme="dark"] .selection-card .accordion-button::after,
+[data-bs-theme="dark"] .selection-card .accordion-button:not(.collapsed)::after {
+  --bs-accordion-btn-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23dee2e6'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
+  --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
+}
+
+/* Dark mode: slider play/pause button. Shiny draws it at 50% opacity in the
+   link color, which is faint on dark surfaces. */
+[data-bs-theme="dark"] .slider-animate-button {
+  color: var(--bs-body-color);
+  opacity: 0.9;
+}
+[data-bs-theme="dark"] .slider-animate-button:hover {
+  color: #fff;
+  opacity: 1;
 }
