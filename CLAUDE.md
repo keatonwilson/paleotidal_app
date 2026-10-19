@@ -3,17 +3,20 @@
 ## What this is
 
 A Shiny app for exploring paleotidal model outputs (tidal amplitude, stratification,
-bed shear stress, tidal current, water depth) over the last 21k years, for NW Europe and
-the Patagonian Shelf (water depth only so far). Map images and a per-cell table are
-pre-built; the app only reads them.
+bed shear stress, tidal current, water depth, RSL, ice) over the last 21k years, from two
+model runs: PALTIDE1 (NW Europe) and PALTIDE2 (NW Europe and the Patagonian Shelf; no
+tidal current or bed stress vectors). Map images and a per-cell table are pre-built; the
+app only reads them.
 
 ## Layout
 
-- `global.R` — reads `statics`, one `static.rds` per folder in `data/app/` (label, view,
-  layer bounds, `years` available per layer, coastline, grid axes if the region has a
-  cube), and opens `con`, a DuckDB connection with a `cube_<region>` view per cube.
-  Sourced automatically by Shiny before `ui.R`/`server.R`. The region in use is
-  per session: `data$region` from `mod_data_select.R`.
+- `global.R` — reads `statics`, one `static.rds` per folder in `data/app/` (label,
+  model, view, layer bounds, `years` available per layer, coastline, grid axes if the
+  region has a cube), and opens `con`, a DuckDB connection with a `cube_<region>` view
+  per cube. Sourced automatically by Shiny before `ui.R`/`server.R`. A "region" is one
+  folder, i.e. one shelf and model run (`nw_europe` = PALTIDE1, `nw_europe_p2`,
+  `patagonia` = PALTIDE2). The region in use is per session: `data$region` from
+  `mod_data_select.R`, which resolves the chosen shelf `label` and `model` to a folder.
 - `ui.R` / `server.R` — two-file Shiny app (no `app.R`). `server.R` is a bare
   `function(input, output, session)`.
 - `R/` — auto-sourced by Shiny. `mod_*.R` are Shiny modules (`*_ui` / `*_server`
@@ -21,15 +24,14 @@ pre-built; the app only reads them.
 - `data/app/<region>/` — `static.rds` and, for regions with per-cell data,
   `cube.parquet` (one row per grid cell and year, one column per variable, sorted by
   `cell`). `data/raw_shape/` — shapefiles. `data/raw/` — model transfers as delivered
-  (x/y/value ascii); gitignored.
+  (x/y/value ascii; PALTIDE2 is `data/raw/Transfer2/{NWESS,Patagonia}`); gitignored.
 - `www/layers/<region>/` — one pre-rendered PNG per variable and year
-  (`amp_00.png` … `ice_21.png`) and the bed stress arrows per year
+  (`amp_00.png` … `ice_21.png`) and, for PALTIDE1, the bed stress arrows per year
   (`arrows_00.bin` …, plus `arrow_axes.json`), served as static files.
 - `data_pre_processing/` — not run by the app. In `build_backend.R`, `build_region()`
   builds `data/app/` and `www/layers/` from the long tables and raster bricks that
   `data_pre_process.R` writes; those inputs are no longer in the repo (git history
-  only). `add_ascii_layers()` adds map layers from the ascii files in `data/raw/` to a
-  region, creating it if new.
+  only). `build_paltide2()` builds a PALTIDE2 region from its ascii transfer.
 - `notes/` — scratch experiments. Not loaded by the app. Ignore unless asked.
 - `www/` — static assets (`style.css`, `map_layers.js`, logos).
 
