@@ -68,10 +68,13 @@
 /* Year display in the inputs card */
 .year-display {
   margin-bottom: 0;
+  white-space: nowrap;
 }
 .year-display-icon {
   color: var(--bs-primary);
   line-height: 1;
+  /* icon sits on the text baseline */
+  align-self: center;
 }
 .year-display-label {
   font-size: 0.75rem;

@@ -3,7 +3,7 @@
 ui = bslib::page_fillable(
 
 # Setup -------------------------------------------------------------------
-    title = "Paleotidal Data Visualizations",
+    title = "Palaeotidal Data Visualisations",
     theme = bslib::bs_theme(
       version = 5,
       bootswatch = "zephyr",
@@ -25,7 +25,7 @@ ui = bslib::page_fillable(
 # Header ------------------------------------------------------------------
     div(
       class = "app-header d-flex align-items-center justify-content-between",
-      div(class = "app-title", "Paleotidal Data Visualizations"),
+      div(class = "app-title", "Palaeotidal Data Visualisations"),
       # opens the About modal
       shiny::actionLink("show_about", "About", icon = shiny::icon("circle-info"))
     ),

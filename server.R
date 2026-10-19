@@ -27,7 +27,15 @@ function(input, output, session) {
   output$map = leaflet::renderLeaflet({
     view = statics[[1]]$view
     leaflet::leaflet() |>
-      leaflet::setView(lng = view$lng, lat = view$lat, zoom = view$zoom)
+      leaflet::setView(lng = view$lng, lat = view$lat, zoom = view$zoom) |>
+      # "Reset view" button; the click is handled by the observer below
+      leaflet::addEasyButton(leaflet::easyButton(
+        icon = "fa-crosshairs",
+        title = "Reset view",
+        onClick = htmlwidgets::JS(
+          "function(btn, map) { Shiny.setInputValue('map_reset', Date.now()); }"
+        )
+      ))
   })
 
   # The map sits on a tab that is hidden at startup, and proxy calls made
@@ -56,6 +64,13 @@ function(input, output, session) {
                            fillOpacity = 0,
                            options = leaflet::pathOptions(clickable = FALSE)) |>
       leaflet::removeMarker(layerId = "click_mark")
+  })
+
+  # Reset view button: back to the selected region's start view
+  observeEvent(input$map_reset, {
+    view = statics[[data_list$region]]$view
+    map_proxy() |>
+      leaflet::setView(lng = view$lng, lat = view$lat, zoom = view$zoom)
   })
 
   # Last map click. Only regions with a cube have anything to look up, and a

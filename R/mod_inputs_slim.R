@@ -5,16 +5,15 @@ input_ui <- function(id) {
     shinyjs::useShinyjs(),
     # Year display on the left, coastline toggle on the right
     div(
-      class = "d-flex align-items-center justify-content-between",
+      class = "d-flex align-items-center justify-content-between flex-wrap gap-2",
+      # icon, label and value on a single line
       div(
-        class = "year-display d-flex align-items-center gap-2",
-        div(class = "year-display-icon",
-            bsicons::bs_icon("hourglass-split", size = "1.25em")),
-        div(
-          div(class = "year-display-label", "Year"),
-          div(class = "year-display-value",
-              shiny::textOutput(NS(id, "year_bp"), inline = TRUE))
-        )
+        class = "year-display d-flex align-items-baseline gap-2",
+        span(class = "year-display-icon",
+             bsicons::bs_icon("hourglass-split", size = "1.1em")),
+        span(class = "year-display-label", "Year"),
+        span(class = "year-display-value",
+             shiny::textOutput(NS(id, "year_bp"), inline = TRUE))
       ),
       bslib::input_switch(
         NS(id, "coast_current"),
