@@ -9,6 +9,8 @@ time_series_ui <- function(id) {
       )
     ),
     bslib::card_body(
+      # fixed height (no fill) so the card never squeezes it and adds a scrollbar
+      fill = FALSE,
       # hide initially
       shinyjs::hidden(shiny::downloadButton(ns("download_data"), "Download Data"))
     ),
