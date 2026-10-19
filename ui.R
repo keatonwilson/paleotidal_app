@@ -26,8 +26,13 @@ ui = bslib::page_fillable(
     div(
       class = "app-header d-flex align-items-center justify-content-between",
       div(class = "app-title", "Palaeotidal Data Visualisations"),
-      # opens the About modal
-      shiny::actionLink("show_about", "About", icon = shiny::icon("circle-info"))
+      div(
+        class = "d-flex align-items-center gap-3",
+        # opens the About modal
+        shiny::actionLink("show_about", "About", icon = shiny::icon("circle-info")),
+        # light/dark toggle; starts from the user's system setting
+        bslib::input_dark_mode(id = "color_mode")
+      )
     ),
 
 # Data Viz ----------------------------------------------------------------

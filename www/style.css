@@ -1,7 +1,7 @@
 
 /* Cards: softer, flatter look */
 .card {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--bs-border-color-translucent);
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
@@ -197,4 +197,21 @@
     flex: 1 1 auto;
     min-height: 350px;
   }
+}
+
+/* Dark mode toggle in the header: white to match the other header text */
+.app-header bslib-input-dark-mode,
+.app-header bslib-input-dark-mode .btn {
+  color: #fff;
+}
+
+/* Dark mode: stronger shadows would disappear on dark surfaces, so rely on
+   the translucent border and a slightly lighter card background */
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .selection-card {
+  box-shadow: none;
+  background-color: var(--bs-tertiary-bg);
+}
+[data-bs-theme="dark"] .selection-card .accordion-button {
+  color: var(--bs-body-color);
 }
