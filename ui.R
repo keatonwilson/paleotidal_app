@@ -15,7 +15,8 @@ ui = bslib::page_fillable(
       # version query string so browsers reload the CSS after it changes
       tags$link(rel = "stylesheet", type = "text/css",
                 href = paste0("style.css?v=", as.integer(file.mtime("www/style.css")))),
-      tags$script(src = "map_layers.js")
+      tags$script(src = "map_layers.js"),
+      tags$script(src = "split_handle.js")
       ),
     tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
     # waiter load animations (previously supplied by the navbar header)
@@ -35,18 +36,36 @@ ui = bslib::page_fillable(
                       data_id = "data_type",
                       inputs_id = "inputs"),
     
-    bslib::layout_columns(
-      col_widths = c(7, 5),
-      bslib::card(
-        full_screen = TRUE,
-        # no padding so the map fills the whole card
-        bslib::card_body(
-          padding = 0,
-          leaflet::leafletOutput("map")
+    # map and time series side by side, with a draggable divider between them
+    # (behavior in www/split_handle.js, layout in www/style.css)
+    bslib::as_fill_item(
+      div(
+        class = "split-container",
+        bslib::card(
+          class = "split-pane split-left",
+          full_screen = TRUE,
+          # no padding so the map fills the whole card
+          bslib::card_body(
+            padding = 0,
+            leaflet::leafletOutput("map")
+          )
+        ),
+        div(
+          class = "split-handle",
+          role = "separator",
+          `aria-orientation` = "vertical",
+          `aria-label` = "Resize map and graph panels",
+          `aria-valuemin` = "0",
+          `aria-valuemax` = "100",
+          `aria-valuenow` = "58",
+          tabindex = "0"
+        ),
+        
+        # Time series
+        htmltools::tagAppendAttributes(
+          time_series_ui("time_series"),
+          class = "split-pane split-right"
         )
-      ),
-      
-      # Time series
-      time_series_ui("time_series")
+      )
     )
   )

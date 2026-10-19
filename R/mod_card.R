@@ -5,7 +5,7 @@ card_ui <- function(id,
                   content) {
   
     bslib::card(
-      bslib::card_header(header),
+      bslib::card_header(header, class = "app-card-header"),
       content
   )
 

@@ -106,6 +106,17 @@
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+/* Card titles (About modal) match the page title */
+.app-card-header {
+  padding: 0.6rem 1rem;
+  color: #fff;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  background: linear-gradient(90deg, var(--bs-primary), #0f8fa3);
+  border-bottom: none;
+}
+
 .app-header a,
 .app-header a:hover {
   color: #fff;
@@ -114,4 +125,73 @@
 }
 .app-header a:hover {
   text-decoration: underline;
+}
+
+/* Resizable map / time-series split (see www/split_handle.js) */
+.split-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+  --split-left: 58.333;
+  --split-right: 41.667;
+}
+.split-pane {
+  min-width: 300px;
+  min-height: 0;
+  margin-bottom: 0;
+}
+.split-left {
+  flex: var(--split-left) 1 0;
+}
+.split-right {
+  flex: var(--split-right) 1 0;
+}
+.split-handle {
+  flex: 0 0 12px;
+  position: relative;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+.split-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+  background: var(--bs-border-color);
+  transition: background 0.15s, height 0.15s;
+}
+.split-handle:hover::after,
+.split-handle:focus-visible::after,
+.split-dragging .split-handle::after {
+  background: var(--bs-primary);
+  height: 72px;
+}
+/* keep the map from swallowing the drag */
+.split-dragging {
+  user-select: none;
+  cursor: col-resize;
+}
+.split-dragging .split-pane {
+  pointer-events: none;
+}
+
+/* too narrow for two 300px panes: stack them and hide the handle */
+@media (max-width: 679px) {
+  .split-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .split-handle {
+    display: none;
+  }
+  .split-left,
+  .split-right {
+    flex: 1 1 auto;
+    min-height: 350px;
+  }
 }
