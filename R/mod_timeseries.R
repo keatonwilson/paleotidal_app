@@ -60,7 +60,10 @@ ts_plot = function(df, colour, label, title, yaxis) {
                                       '</br> Year: ', df$year, "K BP",
                                       '</br> Landtype: ', stringr::str_to_title(df$land_type))) |>
     plotly::layout(
-      title = title,
+      # anchored to the top with padding above, so there is white space over the
+      # title; automargin keeps the plot area from running into it
+      title = list(text = title, yref = "container", y = 1, yanchor = "top",
+                   pad = list(t = 14), automargin = TRUE),
       xaxis = list(title = "Thousand Years BP", range = c(22,0)),
       yaxis = yaxis,
       showlegend = FALSE

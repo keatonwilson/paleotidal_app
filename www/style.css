@@ -243,3 +243,10 @@
   color: #fff;
   opacity: 1;
 }
+
+/* Plotly graphs: white background kept in both color modes, softly rounded */
+.plotly.html-widget {
+  background: #fff;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
