@@ -13,6 +13,8 @@ selection_card_ui <- function(id, data_id, inputs_id) {
       value = "selection",
       title = div(
         class = "selection-title",
+        span(class = "selection-icon",
+             bsicons::bs_icon("sliders", size = "1.1em")),
         span(class = "selection-heading", "Data selection"),
         # only visible while the panel is collapsed (see style.css)
         span(class = "selection-summary",
