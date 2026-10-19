@@ -45,3 +45,14 @@
   align-self: center;
 }
 
+
+/* Page header (replaces the navbar) */
+.app-header {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.25rem 0;
+}
+.app-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
