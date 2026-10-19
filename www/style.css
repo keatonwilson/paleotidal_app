@@ -197,6 +197,19 @@
     flex: 1 1 auto;
     min-height: 350px;
   }
+  /* Stacked: the time-series card needs room for two graphs (300px each) plus
+     the download button, otherwise they share 350px and the y axes squash */
+  .split-right {
+    min-height: 740px;
+  }
+  .split-right .plotly.html-widget {
+    min-height: 300px;
+    flex-shrink: 0;
+  }
+  /* the stacked content is taller than the window, so let the page scroll */
+  .bslib-page-fill {
+    overflow-y: auto;
+  }
 }
 
 /* Dark mode toggle in the header: white to match the other header text */
