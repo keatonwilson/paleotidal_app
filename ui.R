@@ -30,25 +30,17 @@ ui = bslib::page_fillable(
     ),
 
 # Data Viz ----------------------------------------------------------------
+    # all data selection inputs, collapsible, full width under the header
+    selection_card_ui("selection_card",
+                      data_id = "data_type",
+                      inputs_id = "inputs"),
+    
     bslib::layout_columns(
       col_widths = c(7, 5),
-      bslib::layout_columns(
-        col_widths = 12,
-        # top row sizes to its content; map takes the rest
-        row_heights = list("auto", 1),
-        bslib::layout_columns(
-          col_widths = c(5, 7),
-          bslib::card(
-            class = "compact-card",
-            data_select_ui("data_type")
-          ),
-          input_ui("inputs")
-        ),
-        bslib::card(
-          full_screen = TRUE,
-          bslib::card_header("Map"),
-          leaflet::leafletOutput("map")
-        )
+      bslib::card(
+        full_screen = TRUE,
+        bslib::card_header("Map"),
+        leaflet::leafletOutput("map")
       ),
       
       # Time series

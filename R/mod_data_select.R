@@ -1,28 +1,24 @@
 data_select_ui <- function(id) {
   labels = unique(sapply(statics, `[[`, "label"))
   tagList(
-    shiny::h6("Data Selection", class = "mb-2"),
-    bslib::layout_columns(
-      col_widths = c(6, 6),
-      selectizeInput(
-        NS(id, "label"),
-        label = NULL,
-        choices = labels,
-        options = list(dropdownParent = "body")
-      ),
-      selectizeInput(
-        NS(id, "datatype"),
-        label = NULL,
-        choices = datatype_choices(names(statics)[1]),
-        selected = "Tidal Amplitude",
-        options = list(dropdownParent = "body")
-      )
+    selectizeInput(
+      NS(id, "label"),
+      label = "Region",
+      choices = labels,
+      options = list(dropdownParent = "body")
     ),
     radioButtons(
       NS(id, "model"),
-      label = NULL,
+      label = "Model",
       choices = model_choices(labels[1]),
       inline = TRUE
+    ),
+    selectizeInput(
+      NS(id, "datatype"),
+      label = "Data type",
+      choices = datatype_choices(names(statics)[1]),
+      selected = "Tidal Amplitude",
+      options = list(dropdownParent = "body")
     )
   )
 }

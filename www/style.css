@@ -6,17 +6,36 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-/* Compact top-row cards so the map gets the remaining height */
-.compact-card .card-body,
-.inputs-card .card-body {
-  padding: 0.5rem 0.75rem;
-  gap: 0.25rem;
+/* Collapsible data selection card */
+.selection-card {
+  flex: 0 0 auto;
+  --bs-accordion-border-radius: 0.75rem;
+  --bs-accordion-inner-border-radius: 0.75rem;
+  --bs-accordion-btn-padding-y: 0.6rem;
+  --bs-accordion-body-padding-y: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: 0.75rem;
 }
-.compact-card .form-group,
-.compact-card .shiny-input-container,
-.inputs-card .form-group,
-.inputs-card .shiny-input-container {
-  margin-bottom: 0;
+.selection-card .shiny-input-container {
+  margin-bottom: 0.25rem;
+}
+.selection-title {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.selection-heading {
+  font-weight: 600;
+}
+.selection-summary {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--bs-secondary-color);
+}
+/* summary is only shown when the panel is collapsed */
+.selection-card .accordion-button:not(.collapsed) .selection-summary {
+  display: none;
 }
 
 /* Year display in the inputs card */

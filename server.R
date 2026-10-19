@@ -15,6 +15,11 @@ function(input, output, session) {
   input_list = input_server("inputs",
                             inputs = data_list)
 
+  # Collapsible selection card (summary text shown when collapsed)
+  selection_card_server("selection_card",
+                        data = data_list,
+                        inputs = input_list)
+
   # base map and proxy
 
   # only the parts that never change; the region observer below and mod_map.R
