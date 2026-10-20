@@ -28,6 +28,8 @@ function(input, output, session) {
     view = statics[[1]]$view
     leaflet::leaflet() |>
       leaflet::setView(lng = view$lng, lat = view$lat, zoom = view$zoom) |>
+      leaflet::addScaleBar("bottomleft",
+                           options = leaflet::scaleBarOptions(imperial = FALSE)) |>
       # "Reset view" button; the click is handled by the observer below
       leaflet::addEasyButton(leaflet::easyButton(
         icon = "fa-crosshairs",
@@ -51,10 +53,20 @@ function(input, output, session) {
   # Region: move the map there and swap the current shoreline
   observe({
     static = statics[[data_list$region]]
+    proxy = map_proxy()
 
-    map_proxy() |>
-      leaflet::setView(lng = static$view$lng, lat = static$view$lat,
-                       zoom = static$view$zoom) |>
+    # extent of every layer, padded; bounds are list(list(lat, lng), list(lat, lng))
+    pts = unlist(static$bounds)
+    lats = range(pts[c(TRUE, FALSE)]) + c(-2, 2)
+    lngs = range(pts[c(FALSE, TRUE)]) + c(-2, 2)
+    # moves the map too (www/map_layers.js), so the limits never apply to the
+    # old region's view
+    session$sendCustomMessage("region-view", list(
+      view = static$view,
+      bounds = list(list(lats[1], lngs[1]), list(lats[2], lngs[2]))
+    ))
+
+    proxy |>
       leaflet::clearGroup("coast") |>
       leaflet::addPolygons(data = static$coast,
                            group = "coast",
@@ -63,7 +75,8 @@ function(input, output, session) {
                            color = "black",
                            fillOpacity = 0,
                            options = leaflet::pathOptions(clickable = FALSE)) |>
-      leaflet::removeMarker(layerId = "click_mark")
+      leaflet::removeMarker(layerId = "click_mark") |>
+      leaflet::removeShape(layerId = "click_cell")
   })
 
   # Reset view button: back to the selected region's start view
@@ -105,9 +118,16 @@ function(input, output, session) {
 
     # no selection: remove the pin
     if (is.null(click())) {
-      map_proxy() |> leaflet::removeMarker(layerId = "click_mark")
+      map_proxy() |>
+        leaflet::removeMarker(layerId = "click_mark") |>
+        leaflet::removeShape(layerId = "click_cell")
       return()
     }
+
+    # grid spacing of the region's cube
+    static = statics[[data_list$region]]
+    dx = diff(static$xs[1:2])
+    dy = diff(static$ys[1:2])
 
     icons <- leaflet::awesomeIcons(
       icon = 'ios-close',
@@ -121,7 +141,17 @@ function(input, output, session) {
       leaflet::addAwesomeMarkers(lng = closest_lat_lon()$lon,
                                  lat = closest_lat_lon()$lat,
                                  layerId = "click_mark",
-                                 icon = icons)
+                                 icon = icons) |>
+      # outline the grid cell the time series comes from; clicks pass through
+      leaflet::addRectangles(lng1 = closest_lat_lon()$lon - dx / 2,
+                             lng2 = closest_lat_lon()$lon + dx / 2,
+                             lat1 = closest_lat_lon()$lat - dy / 2,
+                             lat2 = closest_lat_lon()$lat + dy / 2,
+                             layerId = "click_cell",
+                             weight = 2,
+                             color = "#f59e0b",
+                             fillOpacity = 0.15,
+                             options = leaflet::pathOptions(interactive = FALSE))
   })
 
 

@@ -263,3 +263,10 @@
   border-radius: 0.75rem;
   overflow: hidden;
 }
+
+/* scale bar follows the theme in light and dark mode */
+.leaflet-control-scale-line {
+  background: color-mix(in srgb, var(--bs-body-bg) 80%, transparent);
+  border-color: var(--bs-body-color);
+  color: var(--bs-body-color);
+}

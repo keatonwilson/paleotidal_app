@@ -145,3 +145,13 @@ Shiny.addCustomMessageHandler("arrows", function(msg) {
     if (arrowsWanted === msg.url) arrowLayer.remove();
   });
 });
+
+// Move to a region and keep the map on it: panning stops a little past the
+// region's layers and zooming out stops one level below its starting view.
+Shiny.addCustomMessageHandler("region-view", function(msg) {
+  var map = HTMLWidgets.find("#map").getMap();
+  map.setMaxBounds(null); // lift the old region's limits before moving
+  map.setMinZoom(Math.floor(msg.view.zoom) - 1);
+  map.setView([msg.view.lat, msg.view.lng], msg.view.zoom, { animate: false });
+  map.setMaxBounds(msg.bounds);
+});
