@@ -146,16 +146,10 @@ Shiny.addCustomMessageHandler("arrows", function(msg) {
   });
 });
 
-// Move to a region and keep the map on it: panning stops a little past the
-// region's layers and zooming out stops one level below its starting view.
-var region = null;
-// Zooming out also stops before the view outgrows the bounds, or Leaflet keeps
-// snapping it back to their centre. That depends on the map's size, so it is
-// redone when the map resizes (divider, full screen).
-function setRegionMinZoom(map) {
-  map.setMinZoom(Math.max(Math.floor(region.view.zoom) - 1,
-                          map.getBoundsZoom(L.latLngBounds(region.bounds), true)));
-}
+// Move to a region and keep the map on it: panning stops 10 degrees past the
+// region's layers and zooming out stops two levels below its starting view.
+// Zoomed out far enough that the view is wider than those bounds, Leaflet
+// centres the map on them and it can't be panned.
 function showRegion(msg, tries) {
   var widget = HTMLWidgets.find("#map");
   var map = widget && widget.getMap();
@@ -164,10 +158,8 @@ function showRegion(msg, tries) {
     if (tries < 50) setTimeout(showRegion, 100, msg, tries + 1);
     return;
   }
-  if (!region) map.on("resize", function () { setRegionMinZoom(map); });
-  region = msg;
   map.setMaxBounds(null); // lift the old region's limits before moving
-  setRegionMinZoom(map);
+  map.setMinZoom(Math.floor(msg.view.zoom) - 2);
   map.setView([msg.view.lat, msg.view.lng], msg.view.zoom, { animate: false });
   map.setMaxBounds(msg.bounds);
 }

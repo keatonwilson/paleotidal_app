@@ -57,8 +57,8 @@ function(input, output, session) {
 
     # extent of every layer, padded; bounds are list(list(lat, lng), list(lat, lng))
     pts = unlist(static$bounds)
-    lats = range(pts[c(TRUE, FALSE)]) + c(-2, 2)
-    lngs = range(pts[c(FALSE, TRUE)]) + c(-2, 2)
+    lats = range(pts[c(TRUE, FALSE)]) + c(-10, 10)
+    lngs = range(pts[c(FALSE, TRUE)]) + c(-10, 10)
     # moves the map too (www/map_layers.js), so the limits never apply to the
     # old region's view
     session$sendCustomMessage("region-view", list(
