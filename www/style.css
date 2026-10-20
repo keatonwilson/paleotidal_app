@@ -306,6 +306,22 @@
   --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
 }
 
+/* Playback controls: Shiny's default negative margin pulls them onto the
+   slider scale, so push them down and enlarge them slightly */
+.selection-card .slider-animate-container {
+  margin-top: 8px;
+}
+.selection-card .slider-animate-button {
+  font-size: 1.35rem;
+}
+.selection-card .slider-animate-button .fa,
+.selection-card .slider-animate-button .fas,
+.selection-card .slider-animate-button svg {
+  font-size: inherit;
+  width: 1em;
+  height: 1em;
+}
+
 /* Dark mode: slider play/pause button. Shiny draws it at 50% opacity in the
    link color, which is faint on dark surfaces. */
 [data-bs-theme="dark"] .slider-animate-button {
