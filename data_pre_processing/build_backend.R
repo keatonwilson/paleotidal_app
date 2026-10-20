@@ -20,13 +20,17 @@
 library(raster) # needed for `[[` on the saved RasterBrick objects
 source("R/mod_map.R") # strat_cols, shared with the map legend
 
-# modern coastline, cropped to the region plus a margin for panning
-crop_coast = function(xs, ys, margin = 30) {
+# modern coastline, cropped to the region plus a margin for panning. GSHHS
+# intermediate resolution (~1 km): finer detail would not line up with the
+# model's grid cells and only adds weight to every region switch.
+crop_coast = function(xs, ys, margin = 3) {
   sf::sf_use_s2(FALSE)
-  sf::st_read("./data/raw_shape/coastline/GSHHS_l_L1.shp", quiet = TRUE) |>
+  sf::st_read("./data/raw_shape/coastline/GSHHS_i_L1.shp", quiet = TRUE) |>
     sf::st_make_valid() |>
     sf::st_crop(xmin = max(min(xs) - margin, -180), xmax = min(max(xs) + margin, 180),
-                ymin = max(min(ys) - margin, -85), ymax = min(max(ys) + margin, 85))
+                ymin = max(min(ys) - margin, -85), ymax = min(max(ys) + margin, 85)) |>
+    # the crop can leave stray points and lines on its edge
+    sf::st_collection_extract("POLYGON")
 }
 
 build_region = function(region, in_dir, view) {
