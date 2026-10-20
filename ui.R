@@ -24,6 +24,8 @@ ui = bslib::page_fillable(
       tags$script(src = asset("split_handle.js"))
       ),
     tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
+    # spinners on outputs while they recalculate
+    shiny::useBusyIndicators(),
     # waiter load animations (previously supplied by the navbar header)
     waiter::use_waiter(),
 

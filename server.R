@@ -111,7 +111,8 @@ function(input, output, session) {
   # Time-series Module - returns the grid point closest to the last map click
   closest_lat_lon = time_series_server("time_series",
                                        click = click,
-                                       data = data_list)
+                                       data = data_list,
+                                       dark_mode = reactive(input$color_mode))
 
   # Click marker
   observe({

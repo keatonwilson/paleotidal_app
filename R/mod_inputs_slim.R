@@ -3,6 +3,7 @@
 input_ui <- function(id) {
   tagList(
     shinyjs::useShinyjs(),
+    shinyWidgets::chooseSliderSkin("Flat", color = "#0b6e7f"),
     # Year display on the left, coastline toggle on the right
     div(
       class = "d-flex align-items-center justify-content-between flex-wrap gap-2",
@@ -23,7 +24,8 @@ input_ui <- function(id) {
     ),
     shinyWidgets::sliderTextInput(
       NS(id, "yearBP"),
-      "Years BP (*1000):",
+      # the year readout above labels the slider
+      label = NULL,
       choices = 21:0,
       selected = 21,
       grid = TRUE,

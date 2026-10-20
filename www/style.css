@@ -83,9 +83,69 @@
   color: var(--bs-secondary-color);
 }
 .year-display-value {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 600;
   line-height: 1.1;
+  /* fixed-width digits so the readout doesn't jump during playback */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Data type: separate pills that wrap, rather than one joined button bar */
+.selection-card .btn-group {
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.selection-card .btn-group > .btn {
+  border-radius: 999px !important;
+  margin-left: 0 !important;
+  flex: 0 0 auto;
+}
+/* the teal primary is too dark on a dark page; lighten outline buttons there */
+[data-bs-theme="dark"] .btn-outline-primary {
+  --bs-btn-color: #5eead4;
+  --bs-btn-border-color: rgba(94, 234, 212, 0.5);
+  --bs-btn-hover-color: #0f172a;
+  --bs-btn-hover-bg: #5eead4;
+  --bs-btn-hover-border-color: #5eead4;
+  --bs-btn-active-color: #0f172a;
+  --bs-btn-active-bg: #5eead4;
+  --bs-btn-active-border-color: #5eead4;
+}
+
+/* Year slider: thinner track, larger handle */
+.selection-card .irs--flat .irs-line,
+.selection-card .irs--flat .irs-bar {
+  height: 6px;
+  top: 28px;
+  border-radius: 999px;
+}
+.selection-card .irs--flat .irs-handle {
+  top: 22px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--bs-body-bg);
+  border: 3px solid var(--bs-primary);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+}
+.selection-card .irs--flat .irs-handle > i:first-child {
+  display: none;
+}
+/* the grid already labels both ends */
+.selection-card .irs--flat .irs-min,
+.selection-card .irs--flat .irs-max {
+  display: none;
+}
+.selection-card .irs--flat .irs-grid-text {
+  color: var(--bs-secondary-color);
+}
+[data-bs-theme="dark"] .selection-card .irs--flat .irs-line {
+  background: var(--bs-border-color);
+}
+
+/* Time series placeholder */
+.empty-state {
+  padding: 2rem 1rem;
 }
 
 .card-img, .card-img-top, .card-img-bottom {
@@ -197,13 +257,13 @@
     flex: 1 1 auto;
     min-height: 350px;
   }
-  /* Stacked: the time-series card needs room for two graphs (300px each) plus
-     the download button, otherwise they share 350px and the y axes squash */
+  /* Stacked: the time-series card needs room for both graphs (one 600px
+     subplot), otherwise they share 350px and the y axes squash */
   .split-right {
-    min-height: 740px;
+    min-height: 680px;
   }
   .split-right .plotly.html-widget {
-    min-height: 300px;
+    min-height: 600px;
     flex-shrink: 0;
   }
   /* the stacked content is taller than the window, so let the page scroll */
@@ -257,11 +317,30 @@
   opacity: 1;
 }
 
-/* Plotly graphs: white background kept in both color modes, softly rounded */
-.plotly.html-widget {
-  background: #fff;
-  border-radius: 0.75rem;
-  overflow: hidden;
+/* Map in dark mode. The layer colours are baked into the PNGs; everything
+   drawn around them follows the theme. */
+/* the coastline stays black: it sits mostly on the light ice and land of the
+   layers, so the map background is a mid grey rather than near-black */
+[data-bs-theme="dark"] .leaflet-container {
+  background: #495057;
+}
+[data-bs-theme="dark"] .leaflet-control.legend,
+[data-bs-theme="dark"] .leaflet-control-attribution {
+  background: rgba(33, 37, 41, 0.85);
+  color: var(--bs-body-color);
+}
+[data-bs-theme="dark"] .leaflet-control-attribution a {
+  color: var(--bs-link-color);
+}
+/* gradient legend tick labels are svg text, black by default */
+.leaflet-control.legend svg text {
+  fill: currentColor;
+}
+[data-bs-theme="dark"] .leaflet-bar a,
+[data-bs-theme="dark"] .leaflet-bar button {
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  border-color: var(--bs-border-color);
 }
 
 /* scale bar follows the theme in light and dark mode */

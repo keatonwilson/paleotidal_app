@@ -13,12 +13,13 @@ data_select_ui <- function(id) {
       choices = model_choices(labels[1]),
       inline = TRUE
     ),
-    selectizeInput(
+    shinyWidgets::radioGroupButtons(
       NS(id, "datatype"),
       label = "Data type",
       choices = datatype_choices(names(statics)[1]),
       selected = "Tidal Amplitude",
-      options = list(dropdownParent = "body")
+      size = "sm",
+      status = "outline-primary"
     )
   )
 }
@@ -67,8 +68,11 @@ data_select_server <- function(id) {
     # offer only what the region has, keeping the current data type if it can
     observeEvent(input_vals$region, {
       choices = datatype_choices(input_vals$region)
-      updateSelectizeInput(session, "datatype", choices = choices,
-                           selected = if (input$datatype %in% choices) input$datatype else choices[1])
+      shinyWidgets::updateRadioGroupButtons(
+        session, "datatype", choices = choices,
+        selected = if (input$datatype %in% choices) input$datatype else choices[1],
+        size = "sm", status = "outline-primary"
+      )
     }, ignoreInit = TRUE)
 
     return(input_vals)
