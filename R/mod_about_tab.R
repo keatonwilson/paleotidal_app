@@ -14,7 +14,7 @@ about_tab_ui <- function(id) {
             "How to Use", 
             tagList(
               p(
-                "PALTIDE is on online web-based data portal tool with intuitive 
+                "PALTIDE is an online web-based data portal tool with intuitive 
                 user interface to enable users to  visualise, interrogate and 
                 download datasets on relative sea level, palaeotidal amplitudes 
                 and other tide-dependant parameters.  The model domain is the 
