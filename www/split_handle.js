@@ -26,7 +26,9 @@
       return container.clientWidth - handle.offsetWidth;
     }
 
-    function setRatio(r) {
+    // `notify` is false when the call comes from a window resize, which the
+    // panes are already handling; notifying then would loop forever
+    function setRatio(r, notify) {
       var width = usableWidth();
       // too narrow for two minimum-width panes: leave the layout alone
       if (width < 2 * MIN_PX) return;
@@ -35,7 +37,7 @@
       container.style.setProperty("--split-left", ratio * 100);
       container.style.setProperty("--split-right", (1 - ratio) * 100);
       handle.setAttribute("aria-valuenow", Math.round(ratio * 100));
-      notifyResize();
+      if (notify !== false) notifyResize();
     }
 
     handle.addEventListener("pointerdown", function (e) {
@@ -74,7 +76,7 @@
 
     // after a window resize, re-apply the clamp so minimums still hold
     window.addEventListener("resize", function () {
-      setRatio(ratio);
+      setRatio(ratio, false);
     });
   });
 })();

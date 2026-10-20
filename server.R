@@ -40,8 +40,8 @@ function(input, output, session) {
       ))
   })
 
-  # The map sits on a tab that is hidden at startup, and proxy calls made
-  # before it has rendered are dropped. Hold them until it reports a zoom.
+  # Proxy calls made before the map widget has rendered (it starts behind the
+  # About modal) are dropped. Hold them until it reports a zoom.
   map_ready = reactiveVal(FALSE)
   observeEvent(input$map_zoom, map_ready(TRUE), once = TRUE)
 
@@ -118,13 +118,13 @@ function(input, output, session) {
   # Click marker
   observe({
 
-    # no selection: remove the pin
-    if (is.null(click())) {
-      map_proxy() |>
-        leaflet::removeMarker(layerId = "click_mark") |>
-        leaflet::removeShape(layerId = "click_cell")
-      return()
-    }
+    # clear the old pin and cell first: for a click on a cell with no data,
+    # closest_lat_lon() stops this observer before anything new is drawn
+    map_proxy() |>
+      leaflet::removeMarker(layerId = "click_mark") |>
+      leaflet::removeShape(layerId = "click_cell")
+    if (is.null(click())) return()
+    loc = closest_lat_lon()
 
     # grid spacing of the region's cube
     static = statics[[data_list$region]]
@@ -139,16 +139,15 @@ function(input, output, session) {
     )
 
     map_proxy() |>
-      leaflet::removeMarker(layerId = "click_mark") |>
-      leaflet::addAwesomeMarkers(lng = closest_lat_lon()$lon,
-                                 lat = closest_lat_lon()$lat,
+      leaflet::addAwesomeMarkers(lng = loc$lon,
+                                 lat = loc$lat,
                                  layerId = "click_mark",
                                  icon = icons) |>
       # outline the grid cell the time series comes from; clicks pass through
-      leaflet::addRectangles(lng1 = closest_lat_lon()$lon - dx / 2,
-                             lng2 = closest_lat_lon()$lon + dx / 2,
-                             lat1 = closest_lat_lon()$lat - dy / 2,
-                             lat2 = closest_lat_lon()$lat + dy / 2,
+      leaflet::addRectangles(lng1 = loc$lon - dx / 2,
+                             lng2 = loc$lon + dx / 2,
+                             lat1 = loc$lat - dy / 2,
+                             lat2 = loc$lat + dy / 2,
                              layerId = "click_cell",
                              weight = 2,
                              color = "#f59e0b",

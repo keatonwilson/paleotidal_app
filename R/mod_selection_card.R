@@ -46,6 +46,8 @@ selection_card_server <- function(id, data, inputs) {
         sep = "  \u00b7  "
       )
     })
+    # hidden while the panel is open; keep it current for when it collapses
+    outputOptions(output, "summary", suspendWhenHidden = FALSE)
     
   })
 }

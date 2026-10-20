@@ -148,13 +148,30 @@ Shiny.addCustomMessageHandler("arrows", function(msg) {
 
 // Move to a region and keep the map on it: panning stops a little past the
 // region's layers and zooming out stops one level below its starting view.
-Shiny.addCustomMessageHandler("region-view", function(msg) {
-  var map = HTMLWidgets.find("#map").getMap();
+var region = null;
+// Zooming out also stops before the view outgrows the bounds, or Leaflet keeps
+// snapping it back to their centre. That depends on the map's size, so it is
+// redone when the map resizes (divider, full screen).
+function setRegionMinZoom(map) {
+  map.setMinZoom(Math.max(Math.floor(region.view.zoom) - 1,
+                          map.getBoundsZoom(L.latLngBounds(region.bounds), true)));
+}
+function showRegion(msg, tries) {
+  var widget = HTMLWidgets.find("#map");
+  var map = widget && widget.getMap();
+  // the widget isn't up yet: try again shortly rather than drop the move
+  if (!map) {
+    if (tries < 50) setTimeout(showRegion, 100, msg, tries + 1);
+    return;
+  }
+  if (!region) map.on("resize", function () { setRegionMinZoom(map); });
+  region = msg;
   map.setMaxBounds(null); // lift the old region's limits before moving
-  map.setMinZoom(Math.floor(msg.view.zoom) - 1);
+  setRegionMinZoom(map);
   map.setView([msg.view.lat, msg.view.lng], msg.view.zoom, { animate: false });
   map.setMaxBounds(msg.bounds);
-});
+}
+Shiny.addCustomMessageHandler("region-view", function(msg) { showRegion(msg, 0); });
 
 // Year marker on the time series graphs: move it without redrawing them. The
 // graphs may not be up (no click yet), in which case there is nothing to move.

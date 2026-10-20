@@ -72,9 +72,15 @@ ts_plot = function(df, colour, label, yaxis) {
     plotly::layout(yaxis = yaxis)
 }
 
+# graph colours for the app's light/dark mode
+ts_colours = function(dark) {
+  if (dark) list(ink = "#cbd5e1", grid = "rgba(255,255,255,0.08)", accent = "#5eead4")
+  else list(ink = "#334155", grid = "rgba(15,23,42,0.08)", accent = "#0b6e7f")
+}
+
 # dashed line through both graphs at the year on the map, labelled above
 year_marker = function(year, dark) {
-  colour = if (dark) "#5eead4" else "#0b6e7f"
+  colour = ts_colours(dark)$accent
   list(
     shapes = list(list(type = "line", xref = "x", yref = "paper",
                        x0 = year, x1 = year, y0 = 0, y1 = 1,
@@ -88,8 +94,8 @@ year_marker = function(year, dark) {
 
 # shared look for the stacked graphs, following the app's light/dark mode
 ts_layout = function(p, dark) {
-  ink = if (dark) "#cbd5e1" else "#334155"
-  grid = if (dark) "rgba(255,255,255,0.08)" else "rgba(15,23,42,0.08)"
+  ink = ts_colours(dark)$ink
+  grid = ts_colours(dark)$grid
   p |>
     plotly::layout(
       paper_bgcolor = "rgba(0,0,0,0)",
@@ -117,6 +123,8 @@ time_series_server <- function(id,
                                dark_mode
                                ) {
   moduleServer(id, function(input, output, session) {
+
+    is_dark = reactive(identical(dark_mode(), "dark"))
 
 # Calculations ------------------------------------------------------------
 
@@ -173,8 +181,7 @@ time_series_server <- function(id,
 
       # drawn at the current year; the observer below moves it after that, so
       # a year step doesn't redraw the graphs
-      marker = isolate(year_marker(as.numeric(inputs$yearBP),
-                                   identical(dark_mode(), "dark")))
+      marker = isolate(year_marker(as.numeric(inputs$yearBP), is_dark()))
 
       plotly::subplot(
         ts_plot(rsl_filtered, "#1f77b4", "RSL",
@@ -187,7 +194,7 @@ time_series_server <- function(id,
                      fixedrange = TRUE)),
         nrows = 2, shareX = TRUE, titleY = TRUE, margin = 0.06
       ) |>
-        ts_layout(dark = identical(dark_mode(), "dark")) |>
+        ts_layout(dark = is_dark()) |>
         # one shape, not a list of them: after subplot() plotly drops a list
         plotly::layout(shapes = marker$shapes[[1]], annotations = marker$annotations)
     })
@@ -197,7 +204,7 @@ time_series_server <- function(id,
       req(inputs$yearBP)
       session$sendCustomMessage("ts-year", c(
         list(id = session$ns("timeseries_plot")),
-        year_marker(as.numeric(inputs$yearBP), identical(dark_mode(), "dark"))
+        year_marker(as.numeric(inputs$yearBP), is_dark())
       ))
     })
 

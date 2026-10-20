@@ -124,9 +124,3 @@ about_modal <- function(id = "about_tab_content") {
   )
 }
 
-about_tab_server <- function(id) {
-  moduleServer(id, function(input, output, session) {
-  # We don't need anything in the server for this module
-    
-  })
-}
