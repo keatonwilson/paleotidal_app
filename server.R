@@ -112,6 +112,7 @@ function(input, output, session) {
   closest_lat_lon = time_series_server("time_series",
                                        click = click,
                                        data = data_list,
+                                       inputs = input_list,
                                        dark_mode = reactive(input$color_mode))
 
   # Click marker

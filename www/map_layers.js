@@ -155,3 +155,10 @@ Shiny.addCustomMessageHandler("region-view", function(msg) {
   map.setView([msg.view.lat, msg.view.lng], msg.view.zoom, { animate: false });
   map.setMaxBounds(msg.bounds);
 });
+
+// Year marker on the time series graphs: move it without redrawing them. The
+// graphs may not be up (no click yet), in which case there is nothing to move.
+Shiny.addCustomMessageHandler("ts-year", function(msg) {
+  var el = document.querySelector("#" + msg.id + " .js-plotly-plot");
+  if (el) Plotly.relayout(el, { shapes: msg.shapes, annotations: msg.annotations });
+});

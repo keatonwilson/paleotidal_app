@@ -72,6 +72,20 @@ ts_plot = function(df, colour, label, yaxis) {
     plotly::layout(yaxis = yaxis)
 }
 
+# dashed line through both graphs at the year on the map, labelled above
+year_marker = function(year, dark) {
+  colour = if (dark) "#5eead4" else "#0b6e7f"
+  list(
+    shapes = list(list(type = "line", xref = "x", yref = "paper",
+                       x0 = year, x1 = year, y0 = 0, y1 = 1,
+                       line = list(color = colour, width = 1.5, dash = "dash"))),
+    annotations = list(list(text = paste0(year, "K BP"), showarrow = FALSE,
+                            xref = "x", yref = "paper", x = year, y = 1,
+                            yanchor = "bottom",
+                            font = list(color = colour, size = 11)))
+  )
+}
+
 # shared look for the stacked graphs, following the app's light/dark mode
 ts_layout = function(p, dark) {
   ink = if (dark) "#cbd5e1" else "#334155"
@@ -89,7 +103,8 @@ ts_layout = function(p, dark) {
       yaxis = list(gridcolor = grid, zerolinecolor = grid),
       yaxis2 = list(gridcolor = grid, zerolinecolor = grid),
       hoverlabel = list(font = list(family = "Inter, system-ui, sans-serif")),
-      margin = list(l = 10, r = 10, t = 10, b = 10),
+      # room above and to the right for the year marker's label
+      margin = list(l = 10, r = 24, t = 24, b = 10),
       showlegend = FALSE
     ) |>
     plotly::config(displayModeBar = FALSE)
@@ -98,6 +113,7 @@ ts_layout = function(p, dark) {
 time_series_server <- function(id,
                                click,
                                data,
+                               inputs,
                                dark_mode
                                ) {
   moduleServer(id, function(input, output, session) {
@@ -155,6 +171,11 @@ time_series_server <- function(id,
       amp_filtered = cell_data() |>
         dplyr::mutate(value = elevation_amplitude)
 
+      # drawn at the current year; the observer below moves it after that, so
+      # a year step doesn't redraw the graphs
+      marker = isolate(year_marker(as.numeric(inputs$yearBP),
+                                   identical(dark_mode(), "dark")))
+
       plotly::subplot(
         ts_plot(rsl_filtered, "#1f77b4", "RSL",
                 list(title = "Relative sea level (m)",
@@ -166,7 +187,18 @@ time_series_server <- function(id,
                      fixedrange = TRUE)),
         nrows = 2, shareX = TRUE, titleY = TRUE, margin = 0.06
       ) |>
-        ts_layout(dark = identical(dark_mode(), "dark"))
+        ts_layout(dark = identical(dark_mode(), "dark")) |>
+        # one shape, not a list of them: after subplot() plotly drops a list
+        plotly::layout(shapes = marker$shapes[[1]], annotations = marker$annotations)
+    })
+
+    # move the year marker (www/map_layers.js) as the slider or animation steps
+    observe({
+      req(inputs$yearBP)
+      session$sendCustomMessage("ts-year", c(
+        list(id = session$ns("timeseries_plot")),
+        year_marker(as.numeric(inputs$yearBP), identical(dark_mode(), "dark"))
+      ))
     })
 
 # Download ----------------------------------------------------------------
