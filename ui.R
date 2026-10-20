@@ -1,5 +1,12 @@
 
 # Single-page layout: a header bar (title + About link) above the visualizations
+
+# www/ file URL that changes with its contents, so browsers don't run a cached
+# copy against newer server code
+asset = function(file) {
+  paste0(file, "?v=", substr(tools::md5sum(file.path("www", file)), 1, 8))
+}
+
 ui = bslib::page_fillable(
 
 # Setup -------------------------------------------------------------------
@@ -12,11 +19,9 @@ ui = bslib::page_fillable(
       heading_font = bslib::font_google("Inter", wght = "600")
     ),
     tags$head(
-      # version query string so browsers reload the CSS after it changes
-      tags$link(rel = "stylesheet", type = "text/css",
-                href = paste0("style.css?v=", as.integer(file.mtime("www/style.css")))),
-      tags$script(src = "map_layers.js"),
-      tags$script(src = "split_handle.js")
+      tags$link(rel = "stylesheet", type = "text/css", href = asset("style.css")),
+      tags$script(src = asset("map_layers.js")),
+      tags$script(src = asset("split_handle.js"))
       ),
     tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
     # waiter load animations (previously supplied by the navbar header)
