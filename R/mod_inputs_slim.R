@@ -1,40 +1,37 @@
 # Card with the year display (text + hourglass icon), time slider and coastline toggle
 
 input_ui <- function(id) {
-  bslib::card(
-    class = "inputs-card",
+  tagList(
     shinyjs::useShinyjs(),
-    bslib::card_body(
-      # Year display on the left, coastline toggle on the right
+    shinyWidgets::chooseSliderSkin("Flat", color = "#0b6e7f"),
+    # Year display on the left, coastline toggle on the right
+    div(
+      class = "d-flex align-items-center justify-content-between flex-wrap gap-2",
+      # icon, label and value on a single line
       div(
-        class = "d-flex align-items-center justify-content-between",
-        div(
-          class = "year-display d-flex align-items-center gap-2",
-          div(class = "year-display-icon",
-              bsicons::bs_icon("hourglass-split", size = "1.25em")),
-          div(
-            div(class = "year-display-label", "Year"),
-            div(class = "year-display-value",
-                shiny::textOutput(NS(id, "year_bp"), inline = TRUE))
-          )
-        ),
-        checkboxInput(
-          NS(id, "coast_current"),
-          "Show modern coastline",
-          value = TRUE,
-          width = "auto"
-        )
+        class = "year-display d-flex align-items-baseline gap-2",
+        span(class = "year-display-icon",
+             bsicons::bs_icon("hourglass-split", size = "1.1em")),
+        span(class = "year-display-label", "Year"),
+        span(class = "year-display-value",
+             shiny::textOutput(NS(id, "year_bp"), inline = TRUE))
       ),
-      shinyWidgets::sliderTextInput(
-        NS(id, "yearBP"),
-        "Years BP (*1000):",
-        choices = 21:0,
-        selected = 21,
-        grid = TRUE,
-        width = "100%",
-        # play button steps through to the present
-        animate = animationOptions(interval = 600, loop = FALSE)
+      bslib::input_switch(
+        NS(id, "coast_current"),
+        "Show modern coastline",
+        value = TRUE
       )
+    ),
+    shinyWidgets::sliderTextInput(
+      NS(id, "yearBP"),
+      # the year readout above labels the slider
+      label = NULL,
+      choices = 21:0,
+      selected = 21,
+      grid = TRUE,
+      width = "100%",
+      # play button steps through to the present
+      animate = animationOptions(interval = 600, loop = FALSE)
     )
   )
 }

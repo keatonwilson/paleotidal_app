@@ -84,5 +84,6 @@ DuckDB note about `~/.duckdb` are expected.
 
 - `.Renviron` holds AWS credentials and is gitignored. Never commit it or echo its
   contents.
-- The map tab is hidden at startup, so `map_proxy` waits for `input$map_zoom` before
-  it resolves. Proxy calls made earlier would be silently dropped.
+- The map widget renders behind the About modal at startup, so `map_proxy` waits for
+  `input$map_zoom` before it resolves. Proxy calls made earlier would be silently
+  dropped.

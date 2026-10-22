@@ -1,49 +1,81 @@
 
-# Define UI for application that draws a histogram
-ui = bslib::page_navbar(
+# Single-page layout: a header bar (title + About link) above the visualizations
+
+# www/ file URL that changes with its contents, so browsers don't run a cached
+# copy against newer server code
+asset = function(file) {
+  paste0(file, "?v=", substr(tools::md5sum(file.path("www", file)), 1, 8))
+}
+
+ui = bslib::page_fillable(
 
 # Setup -------------------------------------------------------------------
+    title = "Palaeotidal Data Visualisations",
+    theme = bslib::bs_theme(
+      version = 5,
+      bootswatch = "zephyr",
+      primary = "#0b6e7f",
+      base_font = bslib::font_google("Inter"),
+      heading_font = bslib::font_google("Inter", wght = "600")
+    ),
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "style.css"),
-      tags$script(src = "map_layers.js")
+      tags$link(rel = "stylesheet", type = "text/css", href = asset("style.css")),
+      tags$script(src = asset("map_layers.js")),
+      tags$script(src = asset("split_handle.js"))
       ),
     tags$style(type = "text/css", ".irs-grid-pol.small {height: 0px;}"),
-    theme = bslib::bs_theme(bootswatch = "zephyr",
-                            version = 5),
-    title = "Paleotidal Visualization", 
+    # spinners on outputs while they recalculate
+    shiny::useBusyIndicators(),
 
-# Nav Panels --------------------------------------------------------------
-## About ------------------------------------------------------------------
-    bslib::nav_panel("About", 
-                     about_tab_ui("about_tab_content")), 
-## Data Viz ---------------------------------------------------------------
-    bslib::nav_panel("Explore Data Visualizations", 
-                     bslib::layout_columns(
-                       col_widths = c(7, 5),
-                       bslib::layout_columns(
-                         col_widths = 12,
-                         # top row sizes to its content; map takes the rest
-                         row_heights = list("auto", 1),
-                         bslib::layout_columns(
-                           col_widths = c(5, 7),
-                           bslib::card(
-                            class = "compact-card",
-                            data_select_ui("data_type")
-                           ),
-                           input_ui("inputs")
-                         ),
-                         bslib::card(
-                           full_screen = TRUE,
-                           bslib::card_header("Map"),
-                           leaflet::leafletOutput("map")
-                         )
-                       ),
-                       
-                       # Time series
-                       time_series_ui("time_series")
-                     )
-    ), 
-    bslib::nav_spacer()
+# Header ------------------------------------------------------------------
+    div(
+      class = "app-header d-flex align-items-center justify-content-between",
+      div(class = "app-title", "Palaeotidal Data Visualisations"),
+      div(
+        class = "d-flex align-items-center gap-3",
+        # opens the About modal
+        shiny::actionLink("show_about", "About", icon = shiny::icon("circle-info")),
+        # light/dark toggle; starts from the user's system setting
+        bslib::input_dark_mode(id = "color_mode")
+      )
+    ),
+
+# Data Viz ----------------------------------------------------------------
+    # all data selection inputs, collapsible, full width under the header
+    selection_card_ui("selection_card",
+                      data_id = "data_type",
+                      inputs_id = "inputs"),
+    
+    # map and time series side by side, with a draggable divider between them
+    # (behavior in www/split_handle.js, layout in www/style.css)
+    bslib::as_fill_item(
+      div(
+        class = "split-container",
+        bslib::card(
+          class = "split-pane split-left",
+          full_screen = TRUE,
+          # no padding so the map fills the whole card
+          bslib::card_body(
+            padding = 0,
+            leaflet::leafletOutput("map")
+          )
+        ),
+        div(
+          class = "split-handle",
+          role = "separator",
+          `aria-orientation` = "vertical",
+          `aria-label` = "Resize map and graph panels",
+          `aria-valuemin` = "0",
+          `aria-valuemax` = "100",
+          `aria-valuenow` = "58",
+          tabindex = "0"
+        ),
+        
+        # Time series
+        htmltools::tagAppendAttributes(
+          time_series_ui("time_series"),
+          class = "split-pane split-right"
+        )
+      )
+    )
   )
-
-

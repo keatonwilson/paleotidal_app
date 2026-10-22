@@ -145,3 +145,29 @@ Shiny.addCustomMessageHandler("arrows", function(msg) {
     if (arrowsWanted === msg.url) arrowLayer.remove();
   });
 });
+
+// Move to a region and keep the map on it: panning stops 10 degrees past the
+// region's layers and zooming out stops two levels below its starting view.
+// Zoomed out far enough that the view is wider than those bounds, Leaflet
+// centres the map on them and it can't be panned.
+function showRegion(msg, tries) {
+  var widget = HTMLWidgets.find("#map");
+  var map = widget && widget.getMap();
+  // the widget isn't up yet: try again shortly rather than drop the move
+  if (!map) {
+    if (tries < 50) setTimeout(showRegion, 100, msg, tries + 1);
+    return;
+  }
+  map.setMaxBounds(null); // lift the old region's limits before moving
+  map.setMinZoom(Math.floor(msg.view.zoom) - 2);
+  map.setView([msg.view.lat, msg.view.lng], msg.view.zoom, { animate: false });
+  map.setMaxBounds(msg.bounds);
+}
+Shiny.addCustomMessageHandler("region-view", function(msg) { showRegion(msg, 0); });
+
+// Year marker on the time series graphs: move it without redrawing them. The
+// graphs may not be up (no click yet), in which case there is nothing to move.
+Shiny.addCustomMessageHandler("ts-year", function(msg) {
+  var el = document.querySelector("#" + msg.id + " .js-plotly-plot");
+  if (el) Plotly.relayout(el, { shapes: msg.shapes, annotations: msg.annotations });
+});

@@ -2,19 +2,36 @@ time_series_ui <- function(id) {
 
   ns <- NS(id)
   bslib::card(
-    bslib::card_body(
-      bslib::as_fill_carrier(
-        class = "justify-content-center align-items-center text-align center",
-        shiny::uiOutput(ns("timeseries_plot"))
-      )
+    bslib::card_header(
+      class = "d-flex align-items-center gap-2",
+      "Time series",
+      shiny::uiOutput(ns("location"), inline = TRUE),
+      # hidden until there is a selection
+      shinyjs::hidden(shiny::downloadButton(
+        ns("download_data"),
+        label = NULL,
+        icon = bsicons::bs_icon("download"),
+        class = "btn-sm btn-outline-primary ms-auto",
+        title = "Download CSV",
+        `aria-label` = "Download CSV"
+      ))
     ),
     bslib::card_body(
-      # hide initially
-      shinyjs::hidden(shiny::downloadButton(ns("download_data"), "Download Data"))
+      bslib::as_fill_carrier(
+        class = "justify-content-center align-items-center",
+        shiny::uiOutput(ns("timeseries_plot"))
+      )
     ),
     full_screen = TRUE
   )
 
+}
+
+# centred icon and muted text for when there is no graph to show
+empty_state = function(icon, text) {
+  shiny::div(class = "empty-state text-center text-body-secondary",
+             bsicons::bs_icon(icon, size = "2rem"),
+             shiny::p(class = "mt-2 mb-0", text))
 }
 
 # columns in the downloaded csv, by data type
@@ -42,25 +59,58 @@ download_cols = list(
 )
 
 # one variable through time at the clicked cell: markers by land type on a line
-ts_plot = function(df, colour, label, title, yaxis) {
-  plotly::plot_ly() |>
-    plotly::add_lines(x = ~df$year,
-                      y = ~df$value,
-                      line = list(color = colour),
-                      hoverinfo = "none") |>
-    plotly::add_markers(x = ~df$year,
-                        y = ~df$value,
-                        symbol = ~df$land_type,
+ts_plot = function(df, colour, label, yaxis) {
+  plotly::plot_ly(df, x = ~year, y = ~value) |>
+    plotly::add_lines(line = list(color = colour, width = 2),
+                      hoverinfo = "skip") |>
+    plotly::add_markers(symbol = ~land_type,
                         symbols = c(16,18,1),
                         marker = list(color = colour, size = 8),
-                        hoverinfo = "text",
-                        text = ~paste('</br>', paste0(label, ': '), df$value,
-                                      '</br> Year: ', df$year, "K BP",
-                                      '</br> Landtype: ', stringr::str_to_title(df$land_type))) |>
+                        text = ~stringr::str_to_title(land_type),
+                        hovertemplate = paste0(label, ": %{y} m<br>",
+                                               "%{x}K BP · %{text}<extra></extra>")) |>
+    plotly::layout(yaxis = yaxis)
+}
+
+# graph colours for the app's light/dark mode
+ts_colours = function(dark) {
+  if (dark) list(ink = "#cbd5e1", grid = "rgba(255,255,255,0.08)", accent = "#5eead4")
+  else list(ink = "#334155", grid = "rgba(15,23,42,0.08)", accent = "#0b6e7f")
+}
+
+# dashed line through both graphs at the year on the map, labelled above
+year_marker = function(year, dark) {
+  colour = ts_colours(dark)$accent
+  list(
+    shapes = list(list(type = "line", xref = "x", yref = "paper",
+                       x0 = year, x1 = year, y0 = 0, y1 = 1,
+                       line = list(color = colour, width = 1.5, dash = "dash"))),
+    annotations = list(list(text = paste0(year, "K BP"), showarrow = FALSE,
+                            xref = "x", yref = "paper", x = year, y = 1,
+                            yanchor = "bottom",
+                            font = list(color = colour, size = 11)))
+  )
+}
+
+# shared look for the stacked graphs, following the app's light/dark mode
+ts_layout = function(p, dark) {
+  ink = ts_colours(dark)$ink
+  grid = ts_colours(dark)$grid
+  p |>
     plotly::layout(
-      title = title,
-      xaxis = list(title = "Thousand Years BP", range = c(22,0)),
-      yaxis = yaxis,
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)",
+      font = list(family = "Inter, system-ui, sans-serif", size = 12, color = ink),
+      xaxis = list(title = "Thousand years BP", range = c(22,0),
+                   gridcolor = grid, zeroline = FALSE,
+                   # guide line at the cursor's year
+                   showspikes = TRUE, spikemode = "across", spikesnap = "cursor",
+                   spikethickness = 1, spikedash = "dot", spikecolor = ink),
+      yaxis = list(gridcolor = grid, zerolinecolor = grid),
+      yaxis2 = list(gridcolor = grid, zerolinecolor = grid),
+      hoverlabel = list(font = list(family = "Inter, system-ui, sans-serif")),
+      # room above and to the right for the year marker's label
+      margin = list(l = 10, r = 24, t = 24, b = 10),
       showlegend = FALSE
     ) |>
     plotly::config(displayModeBar = FALSE)
@@ -68,9 +118,13 @@ ts_plot = function(df, colour, label, title, yaxis) {
 
 time_series_server <- function(id,
                                click,
-                               data
+                               data,
+                               inputs,
+                               dark_mode
                                ) {
   moduleServer(id, function(input, output, session) {
+
+    is_dark = reactive(identical(dark_mode(), "dark"))
 
 # Calculations ------------------------------------------------------------
 
@@ -97,27 +151,26 @@ time_series_server <- function(id,
 
 # Render Plotly Timeseries ------------------------------------------------
 
+    # location of the cell behind the graphs, as a badge in the card header
+    output$location = shiny::renderUI({
+      req(!is.null(statics[[data$region]]$xs), click(), nrow(cell_data()) > 0)
+      shiny::span(class = "badge rounded-pill bg-body-tertiary text-body border fw-normal",
+                  sprintf("%.2f, %.2f", cell_data()$y[1], cell_data()$x[1]))
+    })
+
     output$timeseries_plot = shiny::renderUI({
 
-      # Default is explanatory text
-      #TODO Make this look better with some css
       if (is.null(statics[[data$region]]$xs)) {
-        return(shiny::div(class = "font-italic text-secondary",
-                          "(No time series for this region yet)"))
+        return(empty_state("hourglass", "No time series for this region yet"))
       }
       if (is.null(click())) {
-        return(shiny::div(class = "font-italic text-secondary",
-                          "(Click anywhere on the map to generate timeseries)"))
+        return(empty_state("geo-alt", "Click the map to see a time series"))
       }
 
       # the cube only holds cells with model output
       if (nrow(cell_data()) == 0) {
-        return(shiny::div(class = "font-italic text-secondary",
-                          "(No model data at this point)"))
+        return(empty_state("water", "No model data at this point"))
       }
-
-      closest_lat = cell_data()$y[1]
-      closest_lon = cell_data()$x[1]
 
       rsl_filtered = cell_data() |>
         dplyr::filter(land_type != "land") |>
@@ -126,20 +179,33 @@ time_series_server <- function(id,
       amp_filtered = cell_data() |>
         dplyr::mutate(value = elevation_amplitude)
 
-      shiny::tagList(
+      # drawn at the current year; the observer below moves it after that, so
+      # a year step doesn't redraw the graphs
+      marker = isolate(year_marker(as.numeric(inputs$yearBP), is_dark()))
+
+      plotly::subplot(
         ts_plot(rsl_filtered, "#1f77b4", "RSL",
-                glue::glue("Relative Sea Level @ {closest_lat}, {closest_lon}"),
-                list(title = list(text = "Relative Sea Level (m)",
-                                  font = list(color = "#1f77b4")),
+                list(title = "Relative sea level (m)",
                      range = c(-120,120),
                      tickvals = list(-120, -80, -40, 0, 40, 80, 120))),
-        ts_plot(amp_filtered, "#33a02c", "Tidal Amp",
-                glue::glue("Tidal Amplitude @ {closest_lat}, {closest_lon}"),
-                list(title = list(text = "Tidal Amplitude (m)",
-                                  font = list(color = "#33a02c")),
+        ts_plot(amp_filtered, "#33a02c", "Tidal amp",
+                list(title = "Tidal amplitude (m)",
                      range = c(0,6),
-                     fixedrange = TRUE))
-      )
+                     fixedrange = TRUE)),
+        nrows = 2, shareX = TRUE, titleY = TRUE, margin = 0.06
+      ) |>
+        ts_layout(dark = is_dark()) |>
+        # one shape, not a list of them: after subplot() plotly drops a list
+        plotly::layout(shapes = marker$shapes[[1]], annotations = marker$annotations)
+    })
+
+    # move the year marker (www/map_layers.js) as the slider or animation steps
+    observe({
+      req(inputs$yearBP)
+      session$sendCustomMessage("ts-year", c(
+        list(id = session$ns("timeseries_plot")),
+        year_marker(as.numeric(inputs$yearBP), is_dark())
+      ))
     })
 
 # Download ----------------------------------------------------------------

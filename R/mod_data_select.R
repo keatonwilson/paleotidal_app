@@ -1,28 +1,25 @@
 data_select_ui <- function(id) {
   labels = unique(sapply(statics, `[[`, "label"))
   tagList(
-    shiny::h6("Data Selection", class = "mb-2"),
-    bslib::layout_columns(
-      col_widths = c(6, 6),
-      selectizeInput(
-        NS(id, "label"),
-        label = NULL,
-        choices = labels,
-        options = list(dropdownParent = "body")
-      ),
-      selectizeInput(
-        NS(id, "datatype"),
-        label = NULL,
-        choices = datatype_choices(names(statics)[1]),
-        selected = "Tidal Amplitude",
-        options = list(dropdownParent = "body")
-      )
+    selectizeInput(
+      NS(id, "label"),
+      label = "Region",
+      choices = labels,
+      options = list(dropdownParent = "body")
     ),
     radioButtons(
       NS(id, "model"),
-      label = NULL,
+      label = "Model",
       choices = model_choices(labels[1]),
       inline = TRUE
+    ),
+    shinyWidgets::radioGroupButtons(
+      NS(id, "datatype"),
+      label = "Data type",
+      choices = datatype_choices(names(statics)[1]),
+      selected = "Tidal Amplitude",
+      size = "sm",
+      status = "outline-primary"
     )
   )
 }
@@ -71,8 +68,11 @@ data_select_server <- function(id) {
     # offer only what the region has, keeping the current data type if it can
     observeEvent(input_vals$region, {
       choices = datatype_choices(input_vals$region)
-      updateSelectizeInput(session, "datatype", choices = choices,
-                           selected = if (input$datatype %in% choices) input$datatype else choices[1])
+      shinyWidgets::updateRadioGroupButtons(
+        session, "datatype", choices = choices,
+        selected = if (input$datatype %in% choices) input$datatype else choices[1],
+        size = "sm", status = "outline-primary"
+      )
     }, ignoreInit = TRUE)
 
     return(input_vals)
