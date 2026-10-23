@@ -1,0 +1,26 @@
+name: Deploy to Hugging Face
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy/hf
+      - run: pip install huggingface_hub
+      - env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          SPACE: ${{ vars.HF_SPACE }}
+        run: |
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          space = os.environ["SPACE"]
+          api.upload_folder(repo_id=space, repo_type="space", folder_path="deploy/hf")
+          # factory reboot rebuilds without cache, so the Space clones the latest main
+          api.restart_space(space, factory_reboot=True)
+          PY

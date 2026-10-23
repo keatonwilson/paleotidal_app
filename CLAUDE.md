@@ -34,6 +34,8 @@ app only reads them.
   only). `build_paltide2()` builds a PALTIDE2 region from its ascii transfer.
 - `notes/` — scratch experiments. Not loaded by the app. Ignore unless asked.
 - `www/` — static assets (`style.css`, `map_layers.js`, logos).
+- `deploy/hf/` + `.github/workflows/deploy-hf.yml` — publish a public preview to a
+  Hugging Face Space on every push to `main`. IT can ignore both.
 
 ## Conventions
 
