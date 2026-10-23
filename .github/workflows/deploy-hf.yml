@@ -13,7 +13,7 @@ jobs:
       - run: pip install huggingface_hub
       - env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          SPACE: ${{ vars.HF_SPACE }}
+          SPACE: ${{ secrets.HF_SPACE }}
         run: |
           python - <<'PY'
           import os
