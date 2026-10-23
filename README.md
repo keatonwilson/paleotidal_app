@@ -18,6 +18,13 @@ granular data, and choose some specifics/thresholds associated with
 particular data sets. The app will serve as a visualization
 tool for nonmodelers.
 
+## Test deployment
+
+A preview of `main` runs at <https://keatonwilson-paltide-v2.hf.space>
+(Hugging Face Space: <https://huggingface.co/spaces/keatonwilson/paltide_v2>).
+It redeploys on every push to `main`, and the first visit after it has
+been idle takes about a minute to wake up.
+
 ## Getting Started
 
 ```         
