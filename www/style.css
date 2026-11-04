@@ -372,3 +372,8 @@
   border-color: var(--bs-body-color);
   color: var(--bs-body-color);
 }
+
+/* crossfade between years; FADE_MS in map_layers.js matches it */
+.paleo-layer {
+  transition: opacity 450ms linear;
+}

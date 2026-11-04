@@ -63,16 +63,12 @@ map_server <- function(id,
       sprintf("layers/%s/%s_%02d.png", data$region, prefix, as.integer(year))
     }
 
-    # show a pre-rendered file in a raster slot; www/map_layers.js swaps it in
-    # over the previous image so there is no blank frame in between
-    add_layer = function(prefix, year, slot, z_index) {
+    # a pre-rendered file to show, stacked by z_index
+    layer_msg = function(prefix, year, z_index) {
       static = statics[[data$region]]
-      session$sendCustomMessage("swap-layer", list(
-        slot = slot,
-        url = layer_url(prefix, year),
-        bounds = static$bounds[[prefix]],
-        options = utils::modifyList(static$raster_opts, list(zIndex = z_index))
-      ))
+      list(url = layer_url(prefix, year),
+           bounds = static$bounds[[prefix]],
+           options = utils::modifyList(static$raster_opts, list(zIndex = z_index)))
     }
 
     # Layers: region, data type or year changed
@@ -89,14 +85,14 @@ map_server <- function(id,
       # catch up; wait for a combination that has a layer
       req(inputs$yearBP %in% years[[prefix]])
 
-      add_layer(prefix, inputs$yearBP, "data", 1)
-      # the ice thickness layer is its own ice cover
-      if (inputs$yearBP %in% years$ice && prefix != "icethk") {
-        add_layer("ice", inputs$yearBP, "ice", 2)
-      } else {
-        # no url empties the slot
-        session$sendCustomMessage("swap-layer", list(slot = "ice"))
-      }
+      # www/map_layers.js swaps these in together over the previous images, so
+      # there is no blank frame and land and ice change at the same moment.
+      # The ice thickness layer is its own ice cover.
+      show_ice = inputs$yearBP %in% years$ice && prefix != "icethk"
+      session$sendCustomMessage("swap-layers", list(layers = c(
+        list(layer_msg(prefix, inputs$yearBP, 1)),
+        if (show_ice) list(layer_msg("ice", inputs$yearBP, 2))
+      )))
 
       # bed stress arrows are drawn by www/map_layers.js from a file per year
       arrow_url = function(year) {

@@ -8,32 +8,47 @@ Shiny.addCustomMessageHandler("preload", function(urls) {
   });
 });
 
-// Show a new image in a raster slot ("data" or "ice") without a blank frame.
-// The new layer is drawn over the current ones, which are only removed once
-// the new one has loaded and faded in. A message with no url empties the slot.
-var layerSeq = {};    // slot -> number of the newest layer
-var layerOldest = {}; // slot -> number of the oldest layer still on the map
-Shiny.addCustomMessageHandler("swap-layer", function(msg) {
+// Show the images for a year (the data layer, and the ice layer if there is
+// one) without a blank frame. They load hidden over the current ones, then
+// all fade in at once, so land (in the data layer) and ice change together.
+// The fade is a CSS transition on .paleo-layer (style.css); FADE_MS matches it.
+var FADE_MS = 450;
+var swapSeq = 0;
+var rasters = []; // {id, seq} of every image on the map, oldest first
+Shiny.addCustomMessageHandler("swap-layers", function(msg) {
   var map = HTMLWidgets.find("#map").getMap();
-  var slot = msg.slot;
-  var seq = layerSeq[slot] = (layerSeq[slot] || 0) + 1;
-  layerOldest[slot] = layerOldest[slot] || 1;
-  if (!msg.url) {
-    for (; layerOldest[slot] < seq; layerOldest[slot]++) {
-      map.layerManager.removeLayer("image", slot + "-" + layerOldest[slot]);
-    }
-    return;
-  }
-  // the same method leaflet::addRasterImage() uses, pointed at a file
-  LeafletWidget.methods.addRasterImage.call(map, msg.url, msg.bounds, slot + "-" + seq, null, msg.options);
-  map.layerManager.getLayer("image", slot + "-" + seq).once("load", function() {
+  var seq = ++swapSeq;
+  var added = msg.layers.map(function(l, i) {
+    var id = "raster-" + seq + "-" + i;
+    var options = Object.assign({}, l.options, { opacity: 0, className: "paleo-layer" });
+    // the same method leaflet::addRasterImage() uses, pointed at a file
+    LeafletWidget.methods.addRasterImage.call(map, l.url, l.bounds, id, null, options);
+    rasters.push({ id: id, seq: seq });
+    return { layer: map.layerManager.getLayer("image", id), opacity: l.options.opacity };
+  });
+  Promise.all(added.map(function(a) {
+    return new Promise(function(resolve) {
+      a.layer.once("load", resolve);
+      // ponytail: Leaflet fires no load when none of a layer's tiles are in view
+      setTimeout(resolve, 2000);
+    });
+  })).then(function() {
+    // a later year was asked for meanwhile: its turn removes these, unseen
+    if (seq !== swapSeq) return;
+    added.forEach(function(a) { a.layer.setOpacity(a.opacity); });
+    // older layers go once the fade is done. The old data layer stays opaque
+    // beneath it, so the base map never shows through; ice above it fades out.
+    rasters.forEach(function(r) {
+      var layer = r.seq < seq && map.layerManager.getLayer("image", r.id);
+      if (layer && layer.options.zIndex > 1) layer.setOpacity(0);
+    });
     setTimeout(function() {
-      // every older layer, not just the previous one: a layer that is removed
-      // before it loads never gets to remove its own predecessor
-      for (; layerOldest[slot] < seq; layerOldest[slot]++) {
-        map.layerManager.removeLayer("image", slot + "-" + layerOldest[slot]);
-      }
-    }, 250);
+      rasters = rasters.filter(function(r) {
+        if (r.seq >= seq) return true;
+        map.layerManager.removeLayer("image", r.id);
+        return false;
+      });
+    }, FADE_MS);
   });
 });
 
