@@ -10,10 +10,12 @@ Shiny.addCustomMessageHandler("preload", function(urls) {
 
 // Show the images for a year (the data layer, and the ice layer if there is
 // one) without a blank frame. They load hidden over the current ones, then
-// all fade in at once, so land (in the data layer) and ice change together.
-// The fade is a CSS transition on .paleo-layer (style.css); FADE_MS matches it.
+// all fade in at once, so land (in the data layer), ice and the bed stress
+// arrows change together. The fade is a CSS transition on .paleo-layer
+// (style.css); FADE_MS matches it.
 var FADE_MS = 450;
-var swapSeq = 0;
+var swapSeq = 0;  // newest year asked for
+var shownSeq = 0; // newest year on screen
 var rasters = []; // {id, seq} of every image on the map, oldest first
 Shiny.addCustomMessageHandler("swap-layers", function(msg) {
   var map = HTMLWidgets.find("#map").getMap();
@@ -26,16 +28,29 @@ Shiny.addCustomMessageHandler("swap-layers", function(msg) {
     rasters.push({ id: id, seq: seq });
     return { layer: map.layerManager.getLayer("image", id), opacity: l.options.opacity };
   });
-  Promise.all(added.map(function(a) {
+  var loaded = added.map(function(a) {
     return new Promise(function(resolve) {
       a.layer.once("load", resolve);
       // ponytail: Leaflet fires no load when none of a layer's tiles are in view
       setTimeout(resolve, 2000);
     });
-  })).then(function() {
-    // a later year was asked for meanwhile: its turn removes these, unseen
-    if (seq !== swapSeq) return;
+  });
+  // a failed arrows file shows no arrows rather than another year's
+  loaded.push(msg.arrows ? arrowsFor(msg.arrows).catch(function() { return null; }) : null);
+  Promise.all(loaded).then(function(done) {
+    // A later year is already on screen: drop these unseen. A later year that
+    // is only asked for doesn't stop this one, so slow loads during playback
+    // still step through the years rather than freeze.
+    if (seq < shownSeq) return;
+    shownSeq = seq;
     added.forEach(function(a) { a.layer.setOpacity(a.opacity); });
+    var arrows = done[done.length - 1];
+    if (arrows) {
+      arrowLayer.setData(arrows[0], arrows[1]);
+      arrowLayer.addTo(map);
+    } else {
+      arrowLayer.remove();
+    }
     // older layers go once the fade is done. The old data layer stays opaque
     // beneath it, so the base map never shows through; ice above it fades out.
     rasters.forEach(function(r) {
@@ -125,7 +140,6 @@ var ArrowLayer = L.Layer.extend({
 
 var arrowLayer = new ArrowLayer();
 var arrowFiles = {}; // url -> promise of its contents
-var arrowsWanted = null;
 function arrowFile(url, parse) {
   return arrowFiles[url] = arrowFiles[url] || fetch(url).then(function(r) {
     if (!r.ok) throw new Error(url + ": " + r.status);
@@ -139,27 +153,15 @@ function arrowData(url) {
   return arrowFile(url, function(r) { return r.arrayBuffer().then(function(b) { return new Int16Array(b); }); });
 }
 
-// msg.url is the year to show; no url clears the arrows
-Shiny.addCustomMessageHandler("arrows", function(msg) {
-  var map = HTMLWidgets.find("#map").getMap();
-  arrowsWanted = msg.url || null;
-  if (!msg.url) {
-    arrowLayer.remove();
-    return;
-  }
-  msg.preload.forEach(function(url) { arrowData(url).catch(function() {}); });
-  Promise.all([
-    arrowFile(msg.axes, function(r) { return r.json(); }),
-    arrowData(msg.url)
-  ]).then(function(files) {
-    if (arrowsWanted !== msg.url) return; // a later year was asked for meanwhile
-    arrowLayer.setData(files[0], files[1]);
-    arrowLayer.addTo(map);
-  }).catch(function() {
-    // show no arrows rather than another year's; fetched again when next asked for
-    if (arrowsWanted === msg.url) arrowLayer.remove();
-  });
-});
+// [axes, arrows] for one year (arrows.url), fetching the other years
+// (arrows.preload) in the background
+function arrowsFor(arrows) {
+  arrows.preload.forEach(function(url) { arrowData(url).catch(function() {}); });
+  return Promise.all([
+    arrowFile(arrows.axes, function(r) { return r.json(); }),
+    arrowData(arrows.url)
+  ]);
+}
 
 // Move to a region and keep the map on it: panning stops 10 degrees past the
 // region's layers and zooming out stops two levels below its starting view.

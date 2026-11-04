@@ -85,27 +85,28 @@ map_server <- function(id,
       # catch up; wait for a combination that has a layer
       req(inputs$yearBP %in% years[[prefix]])
 
-      # www/map_layers.js swaps these in together over the previous images, so
-      # there is no blank frame and land and ice change at the same moment.
-      # The ice thickness layer is its own ice cover.
-      show_ice = inputs$yearBP %in% years$ice && prefix != "icethk"
-      session$sendCustomMessage("swap-layers", list(layers = c(
-        list(layer_msg(prefix, inputs$yearBP, 1)),
-        if (show_ice) list(layer_msg("ice", inputs$yearBP, 2))
-      )))
-
       # bed stress arrows are drawn by www/map_layers.js from a file per year
       arrow_url = function(year) {
         sprintf("layers/%s/arrows_%02d.bin", region, as.integer(year))
       }
-      session$sendCustomMessage("arrows", if (prefix == "bss") {
-        list(url = arrow_url(inputs$yearBP),
-             axes = sprintf("layers/%s/arrow_axes.json", region),
-             # a list, so that one year is still sent as an array
-             preload = as.list(arrow_url(years$bss)))
-      } else {
-        list()
-      })
+
+      # www/map_layers.js swaps these in together over the previous images, so
+      # there is no blank frame and land, ice and arrows change at the same
+      # moment. The ice thickness layer is its own ice cover.
+      show_ice = inputs$yearBP %in% years$ice && prefix != "icethk"
+      session$sendCustomMessage("swap-layers", list(
+        layers = c(
+          list(layer_msg(prefix, inputs$yearBP, 1)),
+          if (show_ice) list(layer_msg("ice", inputs$yearBP, 2))
+        ),
+        # no arrows clears them
+        arrows = if (prefix == "bss") {
+          list(url = arrow_url(inputs$yearBP),
+               axes = sprintf("layers/%s/arrow_axes.json", region),
+               # a list, so that one year is still sent as an array
+               preload = as.list(arrow_url(years$bss)))
+        }
+      ))
     })
 
     # Legends: region or data type changed
