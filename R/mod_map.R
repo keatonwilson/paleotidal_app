@@ -5,6 +5,12 @@ map_ui <- function(id) {
 
 }
 
+# Land, and water depth from shallow (light) to deep (dark). Baked into the
+# layers too, by data_pre_processing/build_backend.R. The light end of depth
+# stays darker than the ice colour (aliceblue) so shallow water doesn't look iced.
+land_col = "#c8b79a"
+depth_cols = c("#9ecae1", "#08306b")
+
 # What differs between data types: the layer file prefix and the legend.
 # The colours themselves are baked into the pre-rendered layers by
 # data_pre_processing/build_backend.R, so the domains here must match it.
@@ -27,6 +33,7 @@ map_layers = list(
   `Stratification` = list(prefix = "strat"),
   `Water Depth` = list(prefix = "depth",
                        title = "Water Depth (m, capped at 500)",
+                       palette = depth_cols,
                        domain = c(0, 500), values = c(0, 500), bins = 5),
   `Relative Sea Level` = list(prefix = "rsl",
                               title = "Relative Sea Level (m)",
@@ -115,7 +122,7 @@ map_server <- function(id,
 
       mp = map_proxy() |>
         leaflet::clearControls() |>
-        leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
+        leaflet::addLegend("topright", colors = c(land_col, "aliceblue"),
                            labels = c("Land", "Ice"),
                            opacity = 1)
 
@@ -130,7 +137,7 @@ map_server <- function(id,
         addLegend_decreasing(mp, "bottomright",
                              pal = leaflet::colorNumeric(palette = layer$palette %||% "viridis",
                                                          domain = layer$domain,
-                                                         na.color = "#bebebe"),
+                                                         na.color = land_col),
                              values = layer$values, bins = layer$bins,
                              title = layer$title,
                              opacity = 1,
