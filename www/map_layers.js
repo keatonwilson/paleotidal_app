@@ -28,15 +28,15 @@ Shiny.addCustomMessageHandler("swap-layers", function(msg) {
     rasters.push({ id: id, seq: seq });
     return { layer: map.layerManager.getLayer("image", id), opacity: l.options.opacity };
   });
+  // ponytail: Leaflet fires no load when none of a layer's tiles are in view,
+  // and a slow file shouldn't hold the year back for long
+  var timeout = new Promise(function(resolve) { setTimeout(resolve, 2000, null); });
   var loaded = added.map(function(a) {
-    return new Promise(function(resolve) {
-      a.layer.once("load", resolve);
-      // ponytail: Leaflet fires no load when none of a layer's tiles are in view
-      setTimeout(resolve, 2000);
-    });
+    return Promise.race([new Promise(function(resolve) { a.layer.once("load", resolve); }), timeout]);
   });
   // a failed arrows file shows no arrows rather than another year's
-  loaded.push(msg.arrows ? arrowsFor(msg.arrows).catch(function() { return null; }) : null);
+  var arrows = msg.arrows && arrowsFor(msg.arrows).catch(function() { return null; });
+  loaded.push(arrows && Promise.race([arrows, timeout]));
   Promise.all(loaded).then(function(done) {
     // A later year is already on screen: drop these unseen. A later year that
     // is only asked for doesn't stop this one, so slow loads during playback
@@ -44,13 +44,15 @@ Shiny.addCustomMessageHandler("swap-layers", function(msg) {
     if (seq < shownSeq) return;
     shownSeq = seq;
     added.forEach(function(a) { a.layer.setOpacity(a.opacity); });
-    var arrows = done[done.length - 1];
-    if (arrows) {
-      arrowLayer.setData(arrows[0], arrows[1]);
+    var showArrows = function(files) {
+      if (!files || shownSeq !== seq) return;
+      arrowLayer.setData(files[0], files[1]);
       arrowLayer.addTo(map);
-    } else {
-      arrowLayer.remove();
-    }
+    };
+    arrowLayer.remove();
+    showArrows(done[done.length - 1]);
+    // arrows that missed the fade go on when they arrive, if still this year
+    if (arrows && !done[done.length - 1]) arrows.then(showArrows);
     // older layers go once the fade is done. The old data layer stays opaque
     // beneath it, so the base map never shows through; ice above it fades out.
     rasters.forEach(function(r) {
@@ -156,11 +158,13 @@ function arrowData(url) {
 // [axes, arrows] for one year (arrows.url), fetching the other years
 // (arrows.preload) in the background
 function arrowsFor(arrows) {
-  arrows.preload.forEach(function(url) { arrowData(url).catch(function() {}); });
-  return Promise.all([
+  // this year's file first, so it isn't queued behind the others
+  var files = Promise.all([
     arrowFile(arrows.axes, function(r) { return r.json(); }),
     arrowData(arrows.url)
   ]);
+  arrows.preload.forEach(function(url) { arrowData(url).catch(function() {}); });
+  return files;
 }
 
 // Move to a region and keep the map on it: panning stops 10 degrees past the
