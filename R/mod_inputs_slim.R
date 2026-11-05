@@ -30,8 +30,9 @@ input_ui <- function(id) {
       selected = 21,
       grid = TRUE,
       width = "100%",
-      # play button steps through to the present
-      animate = animationOptions(interval = 600, loop = FALSE)
+      # play button steps through to the present; each step leaves the map's
+      # 1 s crossfade (www/map_layers.js) time to finish and settle
+      animate = animationOptions(interval = 1500, loop = FALSE)
     )
   )
 }

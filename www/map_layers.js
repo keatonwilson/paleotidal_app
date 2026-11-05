@@ -10,12 +10,13 @@ Shiny.addCustomMessageHandler("preload", function(urls) {
 
 // Show the images for a year (the data layer, and the ice layer if there is
 // one) without a blank frame. They load hidden over the current ones, then
-// all fade in at once, so land (in the data layer), ice and the bed stress
-// arrows change together. The fade is a CSS transition on .paleo-layer
-// (style.css); FADE_MS matches it.
-var FADE_MS = 450;
-var swapSeq = 0;  // newest year asked for
-var shownSeq = 0; // newest year on screen
+// all fade in at once, so land (in the data layer), ice, the bed stress
+// arrows and the year marker on the graphs change together. The fade is a
+// CSS transition on .paleo-layer (style.css); FADE_MS matches it.
+var FADE_MS = 1000;
+var swapSeq = 0;  // newest swap asked for
+var shownSeq = 0; // newest swap on screen
+var shownYear = null;
 var rasters = []; // {id, seq} of every image on the map, oldest first
 Shiny.addCustomMessageHandler("swap-layers", function(msg) {
   var map = HTMLWidgets.find("#map").getMap();
@@ -43,7 +44,9 @@ Shiny.addCustomMessageHandler("swap-layers", function(msg) {
     // still step through the years rather than freeze.
     if (seq < shownSeq) return;
     shownSeq = seq;
+    shownYear = msg.year;
     added.forEach(function(a) { a.layer.setOpacity(a.opacity); });
+    moveYearMarker();
     var showArrows = function(files) {
       if (!files || shownSeq !== seq) return;
       arrowLayer.setData(files[0], files[1]);
@@ -55,9 +58,14 @@ Shiny.addCustomMessageHandler("swap-layers", function(msg) {
     if (arrows && !done[done.length - 1]) arrows.then(showArrows);
     // older layers go once the fade is done. The old data layer stays opaque
     // beneath it, so the base map never shows through; ice above it fades out.
+    // It eases in while the new ice eases out (style.css), so ice that stays
+    // put barely dims midway.
     rasters.forEach(function(r) {
       var layer = r.seq < seq && map.layerManager.getLayer("image", r.id);
-      if (layer && layer.options.zIndex > 1) layer.setOpacity(0);
+      if (layer && layer.options.zIndex > 1) {
+        layer.getContainer().classList.add("paleo-leaving");
+        layer.setOpacity(0);
+      }
     });
     setTimeout(function() {
       rasters = rasters.filter(function(r) {
@@ -186,9 +194,17 @@ function showRegion(msg, tries) {
 }
 Shiny.addCustomMessageHandler("region-view", function(msg) { showRegion(msg, 0); });
 
-// Year marker on the time series graphs: move it without redrawing them. The
-// graphs may not be up (no click yet), in which case there is nothing to move.
-Shiny.addCustomMessageHandler("ts-year", function(msg) {
+// Year marker on the time series graphs: move it without redrawing them,
+// when the map shows that year (or now, if it already does). The graphs may
+// not be up (no click yet), in which case there is nothing to move.
+var yearMarker = null;
+function moveYearMarker() {
+  var msg = yearMarker;
+  if (!msg || msg.year !== shownYear) return;
   var el = document.querySelector("#" + msg.id + " .js-plotly-plot");
   if (el) Plotly.relayout(el, { shapes: msg.shapes, annotations: msg.annotations });
+}
+Shiny.addCustomMessageHandler("ts-year", function(msg) {
+  yearMarker = msg;
+  moveYearMarker();
 });

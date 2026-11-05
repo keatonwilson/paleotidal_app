@@ -95,6 +95,8 @@ map_server <- function(id,
       # moment. The ice thickness layer is its own ice cover.
       show_ice = inputs$yearBP %in% years$ice && prefix != "icethk"
       session$sendCustomMessage("swap-layers", list(
+        # the graphs' year marker moves when this year shows
+        year = as.numeric(inputs$yearBP),
         layers = c(
           list(layer_msg(prefix, inputs$yearBP, 1)),
           if (show_ice) list(layer_msg("ice", inputs$yearBP, 2))
@@ -119,8 +121,10 @@ map_server <- function(id,
 
       mp = map_proxy() |>
         leaflet::clearControls() |>
-        leaflet::addLegend("topright", colors = c(land_col, "aliceblue"),
-                           labels = c("Land", "Ice"),
+        # cells without output are transparent, so no output shows the map
+        # background (--map-bg, style.css)
+        leaflet::addLegend("topright", colors = c(land_col, "aliceblue", "var(--map-bg)"),
+                           labels = c("Land", "Ice", "No model output"),
                            opacity = 1)
 
       if (layer$prefix == "strat") {

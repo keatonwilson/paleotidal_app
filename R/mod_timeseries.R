@@ -203,7 +203,8 @@ time_series_server <- function(id,
     observe({
       req(inputs$yearBP)
       session$sendCustomMessage("ts-year", c(
-        list(id = session$ns("timeseries_plot")),
+        # held until the map shows this year (www/map_layers.js)
+        list(id = session$ns("timeseries_plot"), year = as.numeric(inputs$yearBP)),
         year_marker(as.numeric(inputs$yearBP), is_dark())
       ))
     })
