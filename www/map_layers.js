@@ -8,32 +8,72 @@ Shiny.addCustomMessageHandler("preload", function(urls) {
   });
 });
 
-// Show a new image in a raster slot ("data" or "ice") without a blank frame.
-// The new layer is drawn over the current ones, which are only removed once
-// the new one has loaded and faded in. A message with no url empties the slot.
-var layerSeq = {};    // slot -> number of the newest layer
-var layerOldest = {}; // slot -> number of the oldest layer still on the map
-Shiny.addCustomMessageHandler("swap-layer", function(msg) {
+// Show the images for a year (the data layer, and the ice layer if there is
+// one) without a blank frame. They load hidden over the current ones, then
+// all fade in at once, so land (in the data layer), ice, the bed stress
+// arrows and the year marker on the graphs change together. The fade is a
+// CSS transition on .paleo-layer (style.css); FADE_MS matches it.
+var FADE_MS = 1000;
+var swapSeq = 0;  // newest swap asked for
+var shownSeq = 0; // newest swap on screen
+var shownYear = null;
+var rasters = []; // {id, seq} of every image on the map, oldest first
+Shiny.addCustomMessageHandler("swap-layers", function(msg) {
   var map = HTMLWidgets.find("#map").getMap();
-  var slot = msg.slot;
-  var seq = layerSeq[slot] = (layerSeq[slot] || 0) + 1;
-  layerOldest[slot] = layerOldest[slot] || 1;
-  if (!msg.url) {
-    for (; layerOldest[slot] < seq; layerOldest[slot]++) {
-      map.layerManager.removeLayer("image", slot + "-" + layerOldest[slot]);
-    }
-    return;
-  }
-  // the same method leaflet::addRasterImage() uses, pointed at a file
-  LeafletWidget.methods.addRasterImage.call(map, msg.url, msg.bounds, slot + "-" + seq, null, msg.options);
-  map.layerManager.getLayer("image", slot + "-" + seq).once("load", function() {
-    setTimeout(function() {
-      // every older layer, not just the previous one: a layer that is removed
-      // before it loads never gets to remove its own predecessor
-      for (; layerOldest[slot] < seq; layerOldest[slot]++) {
-        map.layerManager.removeLayer("image", slot + "-" + layerOldest[slot]);
+  var seq = ++swapSeq;
+  var added = msg.layers.map(function(l, i) {
+    var id = "raster-" + seq + "-" + i;
+    var options = Object.assign({}, l.options, { opacity: 0, className: "paleo-layer" });
+    // the same method leaflet::addRasterImage() uses, pointed at a file
+    LeafletWidget.methods.addRasterImage.call(map, l.url, l.bounds, id, null, options);
+    rasters.push({ id: id, seq: seq });
+    return { layer: map.layerManager.getLayer("image", id), opacity: l.options.opacity };
+  });
+  // ponytail: Leaflet fires no load when none of a layer's tiles are in view,
+  // and a slow file shouldn't hold the year back for long
+  var timeout = new Promise(function(resolve) { setTimeout(resolve, 2000, null); });
+  var loaded = added.map(function(a) {
+    return Promise.race([new Promise(function(resolve) { a.layer.once("load", resolve); }), timeout]);
+  });
+  // a failed arrows file shows no arrows rather than another year's
+  var arrows = msg.arrows && arrowsFor(msg.arrows).catch(function() { return null; });
+  loaded.push(arrows && Promise.race([arrows, timeout]));
+  Promise.all(loaded).then(function(done) {
+    // A later year is already on screen: drop these unseen. A later year that
+    // is only asked for doesn't stop this one, so slow loads during playback
+    // still step through the years rather than freeze.
+    if (seq < shownSeq) return;
+    shownSeq = seq;
+    shownYear = msg.year;
+    added.forEach(function(a) { a.layer.setOpacity(a.opacity); });
+    moveYearMarker();
+    var showArrows = function(files) {
+      if (!files || shownSeq !== seq) return;
+      arrowLayer.setData(files[0], files[1]);
+      arrowLayer.addTo(map);
+    };
+    arrowLayer.remove();
+    showArrows(done[done.length - 1]);
+    // arrows that missed the fade go on when they arrive, if still this year
+    if (arrows && !done[done.length - 1]) arrows.then(showArrows);
+    // older layers go once the fade is done. The old data layer stays opaque
+    // beneath it, so the base map never shows through; ice above it fades out.
+    // It eases in while the new ice eases out (style.css), so ice that stays
+    // put barely dims midway.
+    rasters.forEach(function(r) {
+      var layer = r.seq < seq && map.layerManager.getLayer("image", r.id);
+      if (layer && layer.options.zIndex > 1) {
+        layer.getContainer().classList.add("paleo-leaving");
+        layer.setOpacity(0);
       }
-    }, 250);
+    });
+    setTimeout(function() {
+      rasters = rasters.filter(function(r) {
+        if (r.seq >= seq) return true;
+        map.layerManager.removeLayer("image", r.id);
+        return false;
+      });
+    }, FADE_MS);
   });
 });
 
@@ -110,7 +150,6 @@ var ArrowLayer = L.Layer.extend({
 
 var arrowLayer = new ArrowLayer();
 var arrowFiles = {}; // url -> promise of its contents
-var arrowsWanted = null;
 function arrowFile(url, parse) {
   return arrowFiles[url] = arrowFiles[url] || fetch(url).then(function(r) {
     if (!r.ok) throw new Error(url + ": " + r.status);
@@ -124,27 +163,17 @@ function arrowData(url) {
   return arrowFile(url, function(r) { return r.arrayBuffer().then(function(b) { return new Int16Array(b); }); });
 }
 
-// msg.url is the year to show; no url clears the arrows
-Shiny.addCustomMessageHandler("arrows", function(msg) {
-  var map = HTMLWidgets.find("#map").getMap();
-  arrowsWanted = msg.url || null;
-  if (!msg.url) {
-    arrowLayer.remove();
-    return;
-  }
-  msg.preload.forEach(function(url) { arrowData(url).catch(function() {}); });
-  Promise.all([
-    arrowFile(msg.axes, function(r) { return r.json(); }),
-    arrowData(msg.url)
-  ]).then(function(files) {
-    if (arrowsWanted !== msg.url) return; // a later year was asked for meanwhile
-    arrowLayer.setData(files[0], files[1]);
-    arrowLayer.addTo(map);
-  }).catch(function() {
-    // show no arrows rather than another year's; fetched again when next asked for
-    if (arrowsWanted === msg.url) arrowLayer.remove();
-  });
-});
+// [axes, arrows] for one year (arrows.url), fetching the other years
+// (arrows.preload) in the background
+function arrowsFor(arrows) {
+  // this year's file first, so it isn't queued behind the others
+  var files = Promise.all([
+    arrowFile(arrows.axes, function(r) { return r.json(); }),
+    arrowData(arrows.url)
+  ]);
+  arrows.preload.forEach(function(url) { arrowData(url).catch(function() {}); });
+  return files;
+}
 
 // Move to a region and keep the map on it: panning stops 10 degrees past the
 // region's layers and zooming out stops two levels below its starting view.
@@ -165,9 +194,17 @@ function showRegion(msg, tries) {
 }
 Shiny.addCustomMessageHandler("region-view", function(msg) { showRegion(msg, 0); });
 
-// Year marker on the time series graphs: move it without redrawing them. The
-// graphs may not be up (no click yet), in which case there is nothing to move.
-Shiny.addCustomMessageHandler("ts-year", function(msg) {
+// Year marker on the time series graphs: move it without redrawing them,
+// when the map shows that year (or now, if it already does). The graphs may
+// not be up (no click yet), in which case there is nothing to move.
+var yearMarker = null;
+function moveYearMarker() {
+  var msg = yearMarker;
+  if (!msg || msg.year !== shownYear) return;
   var el = document.querySelector("#" + msg.id + " .js-plotly-plot");
   if (el) Plotly.relayout(el, { shapes: msg.shapes, annotations: msg.annotations });
+}
+Shiny.addCustomMessageHandler("ts-year", function(msg) {
+  yearMarker = msg;
+  moveYearMarker();
 });

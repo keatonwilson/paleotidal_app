@@ -5,6 +5,12 @@ map_ui <- function(id) {
 
 }
 
+# Land, and water depth from shallow (light) to deep (dark). Baked into the
+# layers too, by data_pre_processing/build_backend.R. The light end of depth
+# stays darker than the ice colour (aliceblue) so shallow water doesn't look iced.
+land_col = "#c8b79a"
+depth_cols = c("#9ecae1", "#08306b")
+
 # What differs between data types: the layer file prefix and the legend.
 # The colours themselves are baked into the pre-rendered layers by
 # data_pre_processing/build_backend.R, so the domains here must match it.
@@ -27,6 +33,7 @@ map_layers = list(
   `Stratification` = list(prefix = "strat"),
   `Water Depth` = list(prefix = "depth",
                        title = "Water Depth (m, capped at 500)",
+                       palette = depth_cols,
                        domain = c(0, 500), values = c(0, 500), bins = 5),
   `Relative Sea Level` = list(prefix = "rsl",
                               title = "Relative Sea Level (m)",
@@ -56,16 +63,12 @@ map_server <- function(id,
       sprintf("layers/%s/%s_%02d.png", data$region, prefix, as.integer(year))
     }
 
-    # show a pre-rendered file in a raster slot; www/map_layers.js swaps it in
-    # over the previous image so there is no blank frame in between
-    add_layer = function(prefix, year, slot, z_index) {
+    # a pre-rendered file to show, stacked by z_index
+    layer_msg = function(prefix, year, z_index) {
       static = statics[[data$region]]
-      session$sendCustomMessage("swap-layer", list(
-        slot = slot,
-        url = layer_url(prefix, year),
-        bounds = static$bounds[[prefix]],
-        options = utils::modifyList(static$raster_opts, list(zIndex = z_index))
-      ))
+      list(url = layer_url(prefix, year),
+           bounds = static$bounds[[prefix]],
+           options = utils::modifyList(static$raster_opts, list(zIndex = z_index)))
     }
 
     # Layers: region, data type or year changed
@@ -82,27 +85,30 @@ map_server <- function(id,
       # catch up; wait for a combination that has a layer
       req(inputs$yearBP %in% years[[prefix]])
 
-      add_layer(prefix, inputs$yearBP, "data", 1)
-      # the ice thickness layer is its own ice cover
-      if (inputs$yearBP %in% years$ice && prefix != "icethk") {
-        add_layer("ice", inputs$yearBP, "ice", 2)
-      } else {
-        # no url empties the slot
-        session$sendCustomMessage("swap-layer", list(slot = "ice"))
-      }
-
       # bed stress arrows are drawn by www/map_layers.js from a file per year
       arrow_url = function(year) {
         sprintf("layers/%s/arrows_%02d.bin", region, as.integer(year))
       }
-      session$sendCustomMessage("arrows", if (prefix == "bss") {
-        list(url = arrow_url(inputs$yearBP),
-             axes = sprintf("layers/%s/arrow_axes.json", region),
-             # a list, so that one year is still sent as an array
-             preload = as.list(arrow_url(years$bss)))
-      } else {
-        list()
-      })
+
+      # www/map_layers.js swaps these in together over the previous images, so
+      # there is no blank frame and land, ice and arrows change at the same
+      # moment. The ice thickness layer is its own ice cover.
+      show_ice = inputs$yearBP %in% years$ice && prefix != "icethk"
+      session$sendCustomMessage("swap-layers", list(
+        # the graphs' year marker moves when this year shows
+        year = as.numeric(inputs$yearBP),
+        layers = c(
+          list(layer_msg(prefix, inputs$yearBP, 1)),
+          if (show_ice) list(layer_msg("ice", inputs$yearBP, 2))
+        ),
+        # no arrows clears them
+        arrows = if (prefix == "bss") {
+          list(url = arrow_url(inputs$yearBP),
+               axes = sprintf("layers/%s/arrow_axes.json", region),
+               # a list, so that one year is still sent as an array
+               preload = as.list(arrow_url(years$bss)))
+        }
+      ))
     })
 
     # Legends: region or data type changed
@@ -115,8 +121,10 @@ map_server <- function(id,
 
       mp = map_proxy() |>
         leaflet::clearControls() |>
-        leaflet::addLegend("topright", colors = c("#bebebe", "aliceblue"),
-                           labels = c("Land", "Ice"),
+        # cells without output are transparent, so no output shows the map
+        # background (--map-bg, style.css)
+        leaflet::addLegend("topright", colors = c(land_col, "aliceblue", "var(--map-bg)"),
+                           labels = c("Land", "Ice", "No model output"),
                            opacity = 1)
 
       if (layer$prefix == "strat") {
@@ -130,7 +138,7 @@ map_server <- function(id,
         addLegend_decreasing(mp, "bottomright",
                              pal = leaflet::colorNumeric(palette = layer$palette %||% "viridis",
                                                          domain = layer$domain,
-                                                         na.color = "#bebebe"),
+                                                         na.color = land_col),
                              values = layer$values, bins = layer$bins,
                              title = layer$title,
                              opacity = 1,

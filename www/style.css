@@ -344,8 +344,12 @@
    drawn around them follows the theme. */
 /* the coastline stays black: it sits mostly on the light ice and land of the
    layers, so the map background is a mid grey rather than near-black */
+.leaflet-container {
+  --map-bg: #ddd; /* Leaflet's own default */
+  background: var(--map-bg);
+}
 [data-bs-theme="dark"] .leaflet-container {
-  background: #495057;
+  --map-bg: #495057;
 }
 [data-bs-theme="dark"] .leaflet-control.legend,
 [data-bs-theme="dark"] .leaflet-control-attribution {
@@ -371,4 +375,13 @@
   background: color-mix(in srgb, var(--bs-body-bg) 80%, transparent);
   border-color: var(--bs-body-color);
   color: var(--bs-body-color);
+}
+
+/* crossfade between years; FADE_MS in map_layers.js matches it. New layers
+   ease out and old ones ease in, so a layer that stays put barely dims. */
+.paleo-layer {
+  transition: opacity 1000ms ease-out;
+}
+.paleo-leaving {
+  transition-timing-function: ease-in;
 }

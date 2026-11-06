@@ -18,7 +18,7 @@
 # Run from the project root: Rscript data_pre_processing/build_backend.R
 
 library(raster) # needed for `[[` on the saved RasterBrick objects
-source("R/mod_map.R") # strat_cols, shared with the map legend
+source("R/mod_map.R") # land_col, depth_cols, strat_cols: shared with the map legend
 
 # modern coastline, cropped to the region plus the map's 10 degree pan margin. GSHHS
 # intermediate resolution (~1 km): finer detail would not line up with the
@@ -119,25 +119,25 @@ build_region = function(region, in_dir, view) {
   read_brick = function(file) readr::read_rds(file.path(in_dir, file))
 
   render_layers("amp", read_brick("amp_raster.rds"), function(layer) {
-    leaflet::colorNumeric(palette = "viridis", domain = c(0, 5), na.color = "#bebebe")
+    leaflet::colorNumeric(palette = "viridis", domain = c(0, 5), na.color = land_col)
   })
   render_layers("vel", read_brick("vel_raster.rds"), function(layer) {
-    leaflet::colorNumeric(palette = "viridis", domain = c(0, 2.5), na.color = "#bebebe")
+    leaflet::colorNumeric(palette = "viridis", domain = c(0, 2.5), na.color = land_col)
   })
   render_layers("strat", read_brick("strat_raster.rds"), function(layer) {
     leaflet::colorFactor(palette = rev(c("#43A2CA", "#A8DDB5", "#f1ffed")),
                          domain = raster::values(layer),
-                         na.color = "#bebebe",
+                         na.color = land_col,
                          reverse = TRUE)
   })
   render_layers("bss", read_brick("bss_raster.rds"), function(layer) {
-    leaflet::colorNumeric(palette = "viridis", domain = c(0, 15), na.color = "#bebebe")
+    leaflet::colorNumeric(palette = "viridis", domain = c(0, 15), na.color = land_col)
   })
   render_layers("ice", read_brick("ice_raster.rds"), function(layer) "aliceblue")
 
   # Static bits -------------------------------------------------------------
 
-  saveRDS(list(label = "NW European Shelf",
+  saveRDS(list(label = "Northwest European Shelf",
                model = "PALTIDE1",
                xs = xs,
                ys = ys,
@@ -201,11 +201,10 @@ build_paltide2 = function(region, label, view, dir) {
   grid = data.frame(x = rep(xs, times = length(ys)), y = rep(ys, each = length(xs)))
 
   # Colours are baked in here; numeric domains must match map_layers (R/mod_map.R).
-  # Values above a cap take the top colour. Land is grey (marked by a sentinel,
+  # Values above a cap take the top colour. Land is land_col (marked by a sentinel,
   # as NaN would not survive the raster round trip), off-shelf water with no
   # output is transparent.
   land = -9999
-  land_col = "#bebebe"
   none_col = "#00000000"
   numeric_cols = function(palette, domain) {
     pal = leaflet::colorNumeric(palette = palette, domain = domain)
@@ -226,8 +225,8 @@ build_paltide2 = function(region, label, view, dir) {
                  }),
     amp = list(folder = "ascii_m2amplitude", stem = "m2amplitude", cols = numeric_cols("viridis", c(0, 5))),
     range = list(folder = "ascii_springtidalrange", stem = "springtidalrange", cols = numeric_cols("viridis", c(0, 11))),
-    depth = list(folder = "ascii_water_depth", stem = "h", cols = numeric_cols("viridis", c(0, 500))),
-    # RSL covers land too, so no grey
+    depth = list(folder = "ascii_water_depth", stem = "h", cols = numeric_cols(depth_cols, c(0, 500))),
+    # RSL covers land too, so no land colour
     rsl = list(folder = "ascii_rsl", stem = "rsl", cols = numeric_cols("RdBu", c(-150, 150))),
     icethk = list(folder = "ascii_mask_ice", stem = "mask_ice", cols = numeric_cols("Blues", c(0, 2500)))
   )
@@ -359,7 +358,7 @@ if (dir.exists("./data/processed_data")) {
 
 transfer2 = "./data/raw/Transfer2"
 
-build_paltide2("nw_europe_p2", "NW European Shelf",
+build_paltide2("nw_europe_p2", "Northwest European Shelf",
                view = list(lng = -4, lat = 56, zoom = 5.25),
                dir = file.path(transfer2, "NWESS"))
 
