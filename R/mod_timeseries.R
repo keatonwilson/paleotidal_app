@@ -186,17 +186,16 @@ time_series_server <- function(id,
         return(empty_state("water", "No model data at this point"))
       }
 
-      rsl_filtered = cell_data() |>
-        dplyr::filter(land_type != "land") |>
+      rsl_data = cell_data() |>
         dplyr::mutate(value = rsl)
 
-      amp_filtered = cell_data() |>
+      amp_data = cell_data() |>
         dplyr::mutate(value = elevation_amplitude)
 
       # y-axis fits the plotted RSL, padded; falls back to the old fixed range
-      # when the cell has no non-land RSL values
-      rsl_axis = if (any(is.finite(rsl_filtered$value))) {
-        rsl_axis_limits(range(rsl_filtered$value, na.rm = TRUE))
+      # when the cell has no finite RSL values
+      rsl_axis = if (any(is.finite(rsl_data$value))) {
+        rsl_axis_limits(range(rsl_data$value, na.rm = TRUE))
       } else {
         list(range = c(-120, 120), dtick = 40)
       }
@@ -206,11 +205,11 @@ time_series_server <- function(id,
       marker = isolate(year_marker(as.numeric(inputs$yearBP), is_dark()))
 
       plotly::subplot(
-        ts_plot(rsl_filtered, "#1f77b4", "RSL",
+        ts_plot(rsl_data, "#1f77b4", "RSL",
                 list(title = "Relative sea level (m)",
                      range = rsl_axis$range,
                      tick0 = 0, dtick = rsl_axis$dtick)),
-        ts_plot(amp_filtered, "#33a02c", "Tidal amp",
+        ts_plot(amp_data, "#33a02c", "Tidal amp",
                 list(title = "Tidal amplitude (m)",
                      range = c(0,6),
                      fixedrange = TRUE)),
