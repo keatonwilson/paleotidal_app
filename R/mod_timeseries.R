@@ -77,9 +77,17 @@ ts_plot = function(df, colour, label, yaxis) {
   plotly::plot_ly(df, x = ~year, y = ~value) |>
     plotly::add_lines(line = list(color = colour, width = 2),
                       hoverinfo = "skip") |>
-    plotly::add_markers(symbol = ~land_type,
-                        symbols = c(16,18,1),
-                        marker = list(color = colour, size = 8),
+    plotly::add_markers(# symbols are set per point: plotly ignores the
+                        # `symbols` argument when a lines trace comes first
+                        # land slightly larger; ice drawn with a heavier
+                        # outline so the hollow marker reads clearly
+                        marker = list(color = colour,
+                                      symbol = unname(c(water = "circle",
+                                                        land = "diamond",
+                                                        ice = "square-open")[as.character(df$land_type)]),
+                                      size = ifelse(df$land_type == "land", 10, 8),
+                                      line = list(color = colour,
+                                                  width = ifelse(df$land_type == "ice", 2, 0))),
                         text = ~stringr::str_to_title(land_type),
                         hovertemplate = paste0(label, ": %{y} m<br>",
                                                "%{x}K BP · %{text}<extra></extra>")) |>
