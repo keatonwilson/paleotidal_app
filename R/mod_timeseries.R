@@ -109,7 +109,7 @@ ts_plot = function(df, colour, label, yaxis) {
                                       symbol = unname(c(water = "circle",
                                                         land = "diamond",
                                                         ice = "square-open")[as.character(df$land_type)]),
-                                      size = ifelse(df$land_type == "land", 10, 8),
+                                      size = ifelse(df$land_type == "land", 8.5, 8),
                                       line = list(color = colour,
                                                   width = ifelse(df$land_type == "ice", 2, 0))),
                         text = ~stringr::str_to_title(land_type),
