@@ -58,6 +58,20 @@ download_cols = list(
                       "ice_thickness", "rsl", "elevation_amplitude")
 )
 
+# metres of padding above and below the plotted RSL range
+RSL_PAD = 10
+
+# y-axis limits for the data range: padded by RSL_PAD, then rounded outward to
+# a multiple of the tick step so both ends of the axis carry a label
+rsl_axis_limits = function(data_range) {
+  padded = data_range + c(-RSL_PAD, RSL_PAD)
+  steps = c(5, 10, 20, 25, 50, 100, 200)
+  step = steps[which(diff(padded) / steps <= 6)[1]]
+  if (is.na(step)) step = max(steps)
+  list(range = c(floor(padded[1] / step), ceiling(padded[2] / step)) * step,
+       dtick = step)
+}
+
 # one variable through time at the clicked cell: markers by land type on a line
 ts_plot = function(df, colour, label, yaxis) {
   plotly::plot_ly(df, x = ~year, y = ~value) |>
@@ -179,6 +193,14 @@ time_series_server <- function(id,
       amp_filtered = cell_data() |>
         dplyr::mutate(value = elevation_amplitude)
 
+      # y-axis fits the plotted RSL, padded; falls back to the old fixed range
+      # when the cell has no non-land RSL values
+      rsl_axis = if (any(is.finite(rsl_filtered$value))) {
+        rsl_axis_limits(range(rsl_filtered$value, na.rm = TRUE))
+      } else {
+        list(range = c(-120, 120), dtick = 40)
+      }
+
       # drawn at the current year; the observer below moves it after that, so
       # a year step doesn't redraw the graphs
       marker = isolate(year_marker(as.numeric(inputs$yearBP), is_dark()))
@@ -186,8 +208,8 @@ time_series_server <- function(id,
       plotly::subplot(
         ts_plot(rsl_filtered, "#1f77b4", "RSL",
                 list(title = "Relative sea level (m)",
-                     range = c(-120,120),
-                     tickvals = list(-120, -80, -40, 0, 40, 80, 120))),
+                     range = rsl_axis$range,
+                     tick0 = 0, dtick = rsl_axis$dtick)),
         ts_plot(amp_filtered, "#33a02c", "Tidal amp",
                 list(title = "Tidal amplitude (m)",
                      range = c(0,6),
