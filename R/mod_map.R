@@ -120,12 +120,17 @@ map_server <- function(id,
       req(years[[layer$prefix]])
 
       mp = map_proxy() |>
-        leaflet::clearControls() |>
+        leaflet::clearControls()
+
+      # not shown for RSL, which has no separate land/ice/no-output classes
+      if (layer$prefix != "rsl") {
         # cells without output are transparent, so no output shows the map
         # background (--map-bg, style.css)
-        leaflet::addLegend("topright", colors = c(land_col, "aliceblue", "var(--map-bg)"),
-                           labels = c("Land", "Ice", "No model output"),
-                           opacity = 1)
+        mp = leaflet::addLegend(mp, "topright",
+                                colors = c(land_col, "aliceblue", "var(--map-bg)"),
+                                labels = c("Land", "Ice", "No model output"),
+                                opacity = 1)
+      }
 
       if (layer$prefix == "strat") {
         model = statics[[data$region]]$model
