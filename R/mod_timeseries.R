@@ -17,6 +17,10 @@ time_series_ui <- function(id) {
       ))
     ),
     bslib::card_body(
+      # tighter than bslib's default gap between legend and graph
+      style = "gap: 0.25rem;",
+      # only rendered while a graph is showing
+      shiny::uiOutput(ns("marker_legend")),
       bslib::as_fill_carrier(
         class = "justify-content-center align-items-center",
         shiny::uiOutput(ns("timeseries_plot"))
@@ -32,6 +36,26 @@ empty_state = function(icon, text) {
   shiny::div(class = "empty-state text-center text-body-secondary",
              bsicons::bs_icon(icon, size = "2rem"),
              shiny::p(class = "mt-2 mb-0", text))
+}
+
+# key to the marker shapes on the graphs (matches the symbols in ts_plot);
+# drawn in the current text colour so it follows light/dark mode
+marker_legend = function() {
+  svg = function(shape) {
+    shiny::HTML(paste0(
+      "<svg width='14' height='14' viewBox='0 0 14 14' aria-hidden='true' ",
+      "style='vertical-align:-2px' fill='currentColor' stroke='currentColor'>",
+      shape, "</svg>"))
+  }
+  item = function(shape, label) {
+    shiny::span(class = "d-inline-flex align-items-center gap-1", svg(shape), label)
+  }
+  shiny::div(
+    class = "d-flex justify-content-center flex-wrap gap-3 small text-body-secondary",
+    item("<circle cx='7' cy='7' r='4' stroke-width='0'/>", "Water"),
+    item("<polygon points='7,1.5 12.5,7 7,12.5 1.5,7' stroke-width='0'/>", "Land"),
+    item("<rect x='3' y='3' width='8' height='8' fill='none' stroke-width='2'/>", "Ice")
+  )
 }
 
 # columns in the downloaded csv, by data type
@@ -178,6 +202,11 @@ time_series_server <- function(id,
       req(!is.null(statics[[data$region]]$xs), click(), nrow(cell_data()) > 0)
       shiny::span(class = "badge rounded-pill bg-body-tertiary text-body border fw-normal",
                   sprintf("%.2f, %.2f", cell_data()$y[1], cell_data()$x[1]))
+    })
+
+    output$marker_legend = shiny::renderUI({
+      req(!is.null(statics[[data$region]]$xs), click(), nrow(cell_data()) > 0)
+      marker_legend()
     })
 
     output$timeseries_plot = shiny::renderUI({
