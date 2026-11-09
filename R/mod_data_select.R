@@ -17,7 +17,7 @@ data_select_ui <- function(id) {
       NS(id, "datatype"),
       label = "Data type",
       choices = datatype_choices(names(statics)[1]),
-      selected = "Tidal Amplitude",
+      selected = "M₂ Elevation Amplitude",
       size = "sm",
       status = "outline-primary"
     )
@@ -26,7 +26,7 @@ data_select_ui <- function(id) {
 
 # data types a region has layers for, in menu order
 datatype_choices = function(region) {
-  all_types = c("Tidal Amplitude", "Spring Tidal Range", "Stratification",
+  all_types = c("M₂ Elevation Amplitude", "Spring Tidal Range", "Seasonal Stratification",
                 "Peak Bed Stress", "Peak Bed Stress (90th pct)", "Tidal Current",
                 "Water Depth", "Relative Sea Level", "Ice Thickness")
   prefixes = sapply(map_layers[all_types], `[[`, "prefix")
