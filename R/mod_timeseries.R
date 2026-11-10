@@ -82,18 +82,22 @@ download_cols = list(
                       "ice_thickness", "rsl", "elevation_amplitude")
 )
 
-# metres of padding above and below the plotted RSL range
+# candidate tick steps (metres) and padding for each graph's y-axis
 RSL_PAD = 10
+RSL_STEPS = c(5, 10, 20, 25, 50, 100, 200)
+AMP_PAD = 0.25
+AMP_STEPS = c(0.1, 0.2, 0.25, 0.5, 1, 2)
 
-# y-axis limits for the data range: padded by RSL_PAD, then rounded outward to
-# a multiple of the tick step so both ends of the axis carry a label
-rsl_axis_limits = function(data_range) {
-  padded = data_range + c(-RSL_PAD, RSL_PAD)
-  steps = c(5, 10, 20, 25, 50, 100, 200)
+# y-axis limits for the data range: padded by `pad`, then rounded outward to a
+# multiple of the smallest step in `steps` that gives at most 6 intervals, so
+# both ends of the axis carry a label. `lower` pins the bottom (e.g. 0).
+axis_limits = function(data_range, pad, steps, lower = NULL) {
+  padded = data_range + c(-pad, pad)
+  if (!is.null(lower)) padded[1] = lower
   step = steps[which(diff(padded) / steps <= 6)[1]]
   if (is.na(step)) step = max(steps)
-  list(range = c(floor(padded[1] / step), ceiling(padded[2] / step)) * step,
-       dtick = step)
+  bottom = if (is.null(lower)) floor(padded[1] / step) * step else lower
+  list(range = c(bottom, ceiling(padded[2] / step) * step), dtick = step)
 }
 
 # one variable through time at the clicked cell: markers by land type on a line
@@ -232,9 +236,17 @@ time_series_server <- function(id,
       # y-axis fits the plotted RSL, padded; falls back to the old fixed range
       # when the cell has no finite RSL values
       rsl_axis = if (any(is.finite(rsl_data$value))) {
-        rsl_axis_limits(range(rsl_data$value, na.rm = TRUE))
+        axis_limits(range(rsl_data$value, na.rm = TRUE), RSL_PAD, RSL_STEPS)
       } else {
         list(range = c(-120, 120), dtick = 40)
+      }
+
+      # bottom stays at 0; the top fits the amplitude
+      amp_axis = if (any(is.finite(amp_data$value))) {
+        axis_limits(range(amp_data$value, na.rm = TRUE), AMP_PAD, AMP_STEPS,
+                    lower = 0)
+      } else {
+        list(range = c(0, 6), dtick = 1)
       }
 
       # drawn at the current year; the observer below moves it after that, so
@@ -248,7 +260,8 @@ time_series_server <- function(id,
                      tick0 = 0, dtick = rsl_axis$dtick)),
         ts_plot(amp_data, "#33a02c", "M₂ amp",
                 list(title = "M₂ elevation amplitude (m)",
-                     range = c(0,6),
+                     range = amp_axis$range,
+                     tick0 = 0, dtick = amp_axis$dtick,
                      fixedrange = TRUE)),
         nrows = 2, shareX = TRUE, titleY = TRUE, margin = 0.06
       ) |>
