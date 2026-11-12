@@ -18,7 +18,7 @@ selection_card_ui <- function(id, data_id, inputs_id) {
         span(class = "selection-heading", "Data selection"),
         # only visible while the panel is collapsed (see style.css)
         span(class = "selection-summary",
-             shiny::textOutput(ns("summary"), inline = TRUE))
+             shiny::uiOutput(ns("summary"), inline = TRUE))
       ),
       bslib::layout_columns(
         col_widths = c(4, 8),
@@ -32,18 +32,19 @@ selection_card_ui <- function(id, data_id, inputs_id) {
 selection_card_server <- function(id, data, inputs) {
   moduleServer(id, function(input, output, session) {
     
-    output$summary = shiny::renderText({
+    output$summary = shiny::renderUI({
       req(data$region, data$datatype, inputs$yearBP)
       year = prettyNum(as.numeric(inputs$yearBP) * 1000,
                        big.mark = ",", scientific = FALSE)
       coast = if (isTRUE(inputs$coast_current)) "on" else "off"
-      paste(
-        statics[[data$region]]$label,
-        statics[[data$region]]$model,
-        data$datatype,
-        paste(year, "BP"),
-        paste("Modern coastline:", coast),
-        sep = "  \u00b7  "
+      sep = "  \u00b7  "
+      # the model run is bold
+      tagList(
+        statics[[data$region]]$label, sep,
+        tags$strong(statics[[data$region]]$model), sep,
+        data$datatype, sep,
+        paste(year, "BP"), sep,
+        paste("Modern coastline:", coast)
       )
     })
     # hidden while the panel is open; keep it current for when it collapses

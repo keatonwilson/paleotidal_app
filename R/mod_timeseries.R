@@ -17,6 +17,10 @@ time_series_ui <- function(id) {
       ))
     ),
     bslib::card_body(
+      # tighter than bslib's default gap between legend and graph
+      style = "gap: 0.25rem;",
+      # only rendered while a graph is showing
+      shiny::uiOutput(ns("marker_legend")),
       bslib::as_fill_carrier(
         class = "justify-content-center align-items-center",
         shiny::uiOutput(ns("timeseries_plot"))
@@ -34,13 +38,33 @@ empty_state = function(icon, text) {
              shiny::p(class = "mt-2 mb-0", text))
 }
 
+# key to the marker shapes on the graphs (matches the symbols in ts_plot);
+# drawn in the current text colour so it follows light/dark mode
+marker_legend = function() {
+  svg = function(shape) {
+    shiny::HTML(paste0(
+      "<svg width='14' height='14' viewBox='0 0 14 14' aria-hidden='true' ",
+      "style='vertical-align:-2px' fill='currentColor' stroke='currentColor'>",
+      shape, "</svg>"))
+  }
+  item = function(shape, label) {
+    shiny::span(class = "d-inline-flex align-items-center gap-1", svg(shape), label)
+  }
+  shiny::div(
+    class = "d-flex justify-content-center flex-wrap gap-3 small text-body-secondary",
+    item("<circle cx='7' cy='7' r='4' stroke-width='0'/>", "Water"),
+    item("<polygon points='7,1.5 12.5,7 7,12.5 1.5,7' stroke-width='0'/>", "Land"),
+    item("<rect x='3' y='3' width='8' height='8' fill='none' stroke-width='2'/>", "Ice")
+  )
+}
+
 # columns in the downloaded csv, by data type
 download_cols = list(
-  `Tidal Amplitude` = c("longitude", "latitude", "year", "land_type",
+  `M₂ Elevation Amplitude` = c("longitude", "latitude", "year", "land_type",
                         "rsl", "elevation_amplitude"),
   `Tidal Current` = c("longitude", "latitude", "year", "land_type",
                       "vel", "rsl", "elevation_amplitude"),
-  `Stratification` = c("longitude", "latitude", "year", "land_type",
+  `Seasonal Stratification` = c("longitude", "latitude", "year", "land_type",
                        "strat", "rsl", "elevation_amplitude"),
   `Peak Bed Stress` = c("longitude", "latitude", "year", "rsl",
                         "elevation_amplitude", "BSS_u", "BSS_v",
@@ -58,14 +82,40 @@ download_cols = list(
                       "ice_thickness", "rsl", "elevation_amplitude")
 )
 
+# candidate tick steps (metres) and padding for each graph's y-axis
+RSL_PAD = 10
+RSL_STEPS = c(5, 10, 20, 25, 50, 100, 200)
+AMP_PAD = 0.25
+AMP_STEPS = c(0.1, 0.2, 0.25, 0.5, 1, 2)
+
+# y-axis limits for the data range: padded by `pad`, then rounded outward to a
+# multiple of the smallest step in `steps` that gives at most 6 intervals, so
+# both ends of the axis carry a label. `lower` pins the bottom (e.g. 0).
+axis_limits = function(data_range, pad, steps, lower = NULL) {
+  padded = data_range + c(-pad, pad)
+  if (!is.null(lower)) padded[1] = lower
+  step = steps[which(diff(padded) / steps <= 6)[1]]
+  if (is.na(step)) step = max(steps)
+  bottom = if (is.null(lower)) floor(padded[1] / step) * step else lower
+  list(range = c(bottom, ceiling(padded[2] / step) * step), dtick = step)
+}
+
 # one variable through time at the clicked cell: markers by land type on a line
 ts_plot = function(df, colour, label, yaxis) {
   plotly::plot_ly(df, x = ~year, y = ~value) |>
     plotly::add_lines(line = list(color = colour, width = 2),
                       hoverinfo = "skip") |>
-    plotly::add_markers(symbol = ~land_type,
-                        symbols = c(16,18,1),
-                        marker = list(color = colour, size = 8),
+    plotly::add_markers(# symbols are set per point: plotly ignores the
+                        # `symbols` argument when a lines trace comes first
+                        # land slightly larger; ice drawn with a heavier
+                        # outline so the hollow marker reads clearly
+                        marker = list(color = colour,
+                                      symbol = unname(c(water = "circle",
+                                                        land = "diamond",
+                                                        ice = "square-open")[as.character(df$land_type)]),
+                                      size = ifelse(df$land_type == "land", 8.5, 8),
+                                      line = list(color = colour,
+                                                  width = ifelse(df$land_type == "ice", 2, 0))),
                         text = ~stringr::str_to_title(land_type),
                         hovertemplate = paste0(label, ": %{y} m<br>",
                                                "%{x}K BP · %{text}<extra></extra>")) |>
@@ -158,6 +208,11 @@ time_series_server <- function(id,
                   sprintf("%.2f, %.2f", cell_data()$y[1], cell_data()$x[1]))
     })
 
+    output$marker_legend = shiny::renderUI({
+      req(!is.null(statics[[data$region]]$xs), click(), nrow(cell_data()) > 0)
+      marker_legend()
+    })
+
     output$timeseries_plot = shiny::renderUI({
 
       if (is.null(statics[[data$region]]$xs)) {
@@ -172,25 +227,41 @@ time_series_server <- function(id,
         return(empty_state("water", "No model data at this point"))
       }
 
-      rsl_filtered = cell_data() |>
-        dplyr::filter(land_type != "land") |>
+      rsl_data = cell_data() |>
         dplyr::mutate(value = rsl)
 
-      amp_filtered = cell_data() |>
+      amp_data = cell_data() |>
         dplyr::mutate(value = elevation_amplitude)
+
+      # y-axis fits the plotted RSL, padded; falls back to the old fixed range
+      # when the cell has no finite RSL values
+      rsl_axis = if (any(is.finite(rsl_data$value))) {
+        axis_limits(range(rsl_data$value, na.rm = TRUE), RSL_PAD, RSL_STEPS)
+      } else {
+        list(range = c(-120, 120), dtick = 40)
+      }
+
+      # bottom stays at 0; the top fits the amplitude
+      amp_axis = if (any(is.finite(amp_data$value))) {
+        axis_limits(range(amp_data$value, na.rm = TRUE), AMP_PAD, AMP_STEPS,
+                    lower = 0)
+      } else {
+        list(range = c(0, 6), dtick = 1)
+      }
 
       # drawn at the current year; the observer below moves it after that, so
       # a year step doesn't redraw the graphs
       marker = isolate(year_marker(as.numeric(inputs$yearBP), is_dark()))
 
       plotly::subplot(
-        ts_plot(rsl_filtered, "#1f77b4", "RSL",
+        ts_plot(rsl_data, "#1f77b4", "RSL",
                 list(title = "Relative sea level (m)",
-                     range = c(-120,120),
-                     tickvals = list(-120, -80, -40, 0, 40, 80, 120))),
-        ts_plot(amp_filtered, "#33a02c", "Tidal amp",
-                list(title = "Tidal amplitude (m)",
-                     range = c(0,6),
+                     range = rsl_axis$range,
+                     tick0 = 0, dtick = rsl_axis$dtick)),
+        ts_plot(amp_data, "#33a02c", "M₂ amp",
+                list(title = "M₂ elevation amplitude (m)",
+                     range = amp_axis$range,
+                     tick0 = 0, dtick = amp_axis$dtick,
                      fixedrange = TRUE)),
         nrows = 2, shareX = TRUE, titleY = TRUE, margin = 0.06
       ) |>
@@ -217,7 +288,7 @@ time_series_server <- function(id,
     output$download_data = shiny::downloadHandler(
       filename = function() {
         # Use the selected dataset as the suggested file name
-        paste0(data$datatype, ".csv")
+        paste0(gsub("₂", "2", data$datatype), ".csv")
       },
       content = function(file) {
         to_download = cell_data() |>

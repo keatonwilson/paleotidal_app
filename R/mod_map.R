@@ -15,8 +15,8 @@ depth_cols = c("#9ecae1", "#08306b")
 # The colours themselves are baked into the pre-rendered layers by
 # data_pre_processing/build_backend.R, so the domains here must match it.
 map_layers = list(
-  `Tidal Amplitude` = list(prefix = "amp",
-                           title = "Tidal Amplitude (m)",
+  `M₂ Elevation Amplitude` = list(prefix = "amp",
+                           title = "M₂ Elevation Amplitude (m)",
                            domain = c(0, 5), values = c(0, 4), bins = 5),
   `Tidal Current` = list(prefix = "vel",
                          title = "Tidal Current (m/s)",
@@ -30,7 +30,7 @@ map_layers = list(
   `Spring Tidal Range` = list(prefix = "range",
                               title = "Spring Tidal Range (m)",
                               domain = c(0, 11), values = c(0, 11), bins = 5),
-  `Stratification` = list(prefix = "strat"),
+  `Seasonal Stratification` = list(prefix = "strat"),
   `Water Depth` = list(prefix = "depth",
                        title = "Water Depth (m, capped at 500)",
                        palette = depth_cols,
@@ -120,19 +120,24 @@ map_server <- function(id,
       req(years[[layer$prefix]])
 
       mp = map_proxy() |>
-        leaflet::clearControls() |>
+        leaflet::clearControls()
+
+      # not shown for RSL, which has no separate land/ice/no-output classes
+      if (layer$prefix != "rsl") {
         # cells without output are transparent, so no output shows the map
         # background (--map-bg, style.css)
-        leaflet::addLegend("topright", colors = c(land_col, "aliceblue", "var(--map-bg)"),
-                           labels = c("Land", "Ice", "No model output"),
-                           opacity = 1)
+        mp = leaflet::addLegend(mp, "topright",
+                                colors = c(land_col, "aliceblue", "var(--map-bg)"),
+                                labels = c("Land", "Ice", "No model output"),
+                                opacity = 1)
+      }
 
       if (layer$prefix == "strat") {
         model = statics[[data$region]]$model
         leaflet::addLegend(mp, "bottomright",
                            colors = strat_cols[[model]],
                            labels = strat_labels[[model]],
-                           title = "Stratification",
+                           title = "Seasonal Stratification",
                            opacity = 1)
       } else {
         addLegend_decreasing(mp, "bottomright",
