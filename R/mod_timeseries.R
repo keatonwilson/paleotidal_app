@@ -58,29 +58,23 @@ marker_legend = function() {
   )
 }
 
-# columns in the downloaded csv, by data type
-download_cols = list(
-  "M\u2082 Elevation Amplitude" = c("longitude", "latitude", "year", "land_type",
-                        "rsl", "elevation_amplitude"),
-  `Tidal Current` = c("longitude", "latitude", "year", "land_type",
-                      "vel", "rsl", "elevation_amplitude"),
-  `Seasonal Stratification` = c("longitude", "latitude", "year", "land_type",
-                       "strat", "rsl", "elevation_amplitude"),
-  `Peak Bed Stress` = c("longitude", "latitude", "year", "rsl",
-                        "elevation_amplitude", "BSS_u", "BSS_v",
-                        "BSS_magnitude", "land_type"),
-  `Water Depth` = c("longitude", "latitude", "year", "land_type",
-                    "depth", "rsl", "elevation_amplitude"),
+# columns in the downloaded csv: the shared ones first, in the same order for
+# every data type, then whatever is specific to the type
+shared_cols = c("longitude", "latitude", "year", "land_type", "rsl",
+                "elevation_amplitude")
+extra_cols = list(
+  "M\u2082 Elevation Amplitude" = NULL,
+  `Tidal Current` = "vel",
+  `Seasonal Stratification` = "strat",
+  `Peak Bed Stress` = c("BSS_u", "BSS_v", "BSS_magnitude"),
+  `Water Depth` = "depth",
   # PALTIDE2 only
-  `Peak Bed Stress (90th pct)` = c("longitude", "latitude", "year", "land_type",
-                              "BSS_magnitude", "rsl", "elevation_amplitude"),
-  `Spring Tidal Range` = c("longitude", "latitude", "year", "land_type",
-                           "spring_range", "rsl", "elevation_amplitude"),
-  `Relative Sea Level` = c("longitude", "latitude", "year", "land_type",
-                           "rsl", "elevation_amplitude"),
-  `Ice Thickness` = c("longitude", "latitude", "year", "land_type",
-                      "ice_thickness", "rsl", "elevation_amplitude")
+  `Peak Bed Stress (90th pct)` = "BSS_magnitude",
+  `Spring Tidal Range` = "spring_range",
+  `Relative Sea Level` = NULL,
+  `Ice Thickness` = "ice_thickness"
 )
+download_cols = function(datatype) c(shared_cols, extra_cols[[datatype]])
 
 # candidate tick steps (metres) and padding for each graph's y-axis
 RSL_PAD = 10
@@ -299,7 +293,7 @@ time_series_server <- function(id,
 
         # Write the dataset to the `file` that will be downloaded
         # the two model runs have different columns
-        cols = intersect(download_cols[[data$datatype]], names(to_download))
+        cols = intersect(download_cols(data$datatype), names(to_download))
         write.csv(to_download[cols], file, row.names = FALSE)
       }
     )
