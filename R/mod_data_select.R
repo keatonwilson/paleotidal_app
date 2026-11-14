@@ -5,11 +5,13 @@ data_select_ui <- function(id) {
   start_region = names(Filter(function(s) s$label == labels[1] && s$model == start_model,
                               statics))[1]
   tagList(
-    selectizeInput(
+    shinyWidgets::radioGroupButtons(
       NS(id, "label"),
       label = "Region",
       choices = labels,
-      options = list(dropdownParent = "body")
+      selected = labels[1],
+      size = "sm",
+      status = "outline-primary"
     ),
     shinyWidgets::radioGroupButtons(
       NS(id, "model"),
