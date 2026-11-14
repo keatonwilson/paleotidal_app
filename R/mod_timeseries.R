@@ -60,7 +60,7 @@ marker_legend = function() {
 
 # columns in the downloaded csv, by data type
 download_cols = list(
-  `M₂ Elevation Amplitude` = c("longitude", "latitude", "year", "land_type",
+  "M\u2082 Elevation Amplitude" = c("longitude", "latitude", "year", "land_type",
                         "rsl", "elevation_amplitude"),
   `Tidal Current` = c("longitude", "latitude", "year", "land_type",
                       "vel", "rsl", "elevation_amplitude"),
@@ -258,8 +258,8 @@ time_series_server <- function(id,
                 list(title = "Relative sea level (m)",
                      range = rsl_axis$range,
                      tick0 = 0, dtick = rsl_axis$dtick)),
-        ts_plot(amp_data, "#33a02c", "M₂ amp",
-                list(title = "M₂ elevation amplitude (m)",
+        ts_plot(amp_data, "#33a02c", "M\u2082 amp",
+                list(title = "M\u2082 elevation amplitude (m)",
                      range = amp_axis$range,
                      tick0 = 0, dtick = amp_axis$dtick,
                      fixedrange = TRUE)),
@@ -288,7 +288,7 @@ time_series_server <- function(id,
     output$download_data = shiny::downloadHandler(
       filename = function() {
         # Use the selected dataset as the suggested file name
-        paste0(gsub("₂", "2", data$datatype), ".csv")
+        paste0(gsub("\u2082", "2", data$datatype), ".csv")
       },
       content = function(file) {
         to_download = cell_data() |>
