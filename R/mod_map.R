@@ -15,8 +15,8 @@ depth_cols = c("#9ecae1", "#08306b")
 # The colours themselves are baked into the pre-rendered layers by
 # data_pre_processing/build_backend.R, so the domains here must match it.
 map_layers = list(
-  `M₂ Elevation Amplitude` = list(prefix = "amp",
-                           title = "M₂ Elevation Amplitude (m)",
+  "M\u2082 Elevation Amplitude" = list(prefix = "amp",
+                           title = "M\u2082 Elevation Amplitude (m)",
                            domain = c(0, 5), values = c(0, 4), bins = 5),
   `Tidal Current` = list(prefix = "vel",
                          title = "Tidal Current (m/s)",
