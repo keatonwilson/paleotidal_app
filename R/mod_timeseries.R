@@ -113,7 +113,9 @@ ts_plot = function(df, colour, label, yaxis) {
                         text = ~stringr::str_to_title(land_type),
                         hovertemplate = paste0(label, ": %{y} m<br>",
                                                "%{x}K BP · %{text}<extra></extra>")) |>
-    plotly::layout(yaxis = yaxis)
+    # standoff keeps the title clear of the tick labels; it lives here because
+    # layout() would replace the title text with a bare standoff list
+    plotly::layout(yaxis = modifyList(yaxis, list(title = list(text = yaxis$title, standoff = 8))))
 }
 
 # graph colours for the app's light/dark mode
@@ -150,8 +152,9 @@ ts_layout = function(p, dark) {
                    # guide line at the cursor's year
                    showspikes = TRUE, spikemode = "across", spikesnap = "cursor",
                    spikethickness = 1, spikedash = "dot", spikecolor = ink),
-      yaxis = list(gridcolor = grid, zerolinecolor = grid),
-      yaxis2 = list(gridcolor = grid, zerolinecolor = grid),
+      # automargin widens the left margin to fit the longest axis label
+      yaxis = list(gridcolor = grid, zerolinecolor = grid, automargin = TRUE),
+      yaxis2 = list(gridcolor = grid, zerolinecolor = grid, automargin = TRUE),
       hoverlabel = list(font = list(family = "Inter, system-ui, sans-serif")),
       # room above and to the right for the year marker's label
       margin = list(l = 10, r = 24, t = 24, b = 10),

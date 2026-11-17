@@ -250,8 +250,8 @@
   pointer-events: none;
 }
 
-/* too narrow for two 300px panes: stack them and hide the handle */
-@media (max-width: 679px) {
+/* too narrow for two panes plus their controls: stack them and hide the handle */
+@media (max-width: 824px) {
   .split-container {
     flex-direction: column;
     gap: 1rem;
