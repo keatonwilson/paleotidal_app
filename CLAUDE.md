@@ -63,7 +63,7 @@ app only reads them.
 
 ## R and packages
 
-R 4.6.1, dependencies pinned with renv.
+R 4.6.2, dependencies pinned with renv.
 
 - After cloning or pulling a new `renv.lock`: `renv::restore()`.
 - After adding a package: `renv::snapshot()` and commit `renv.lock`.

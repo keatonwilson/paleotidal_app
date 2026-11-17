@@ -5,11 +5,13 @@ data_select_ui <- function(id) {
   start_region = names(Filter(function(s) s$label == labels[1] && s$model == start_model,
                               statics))[1]
   tagList(
-    selectizeInput(
+    shinyWidgets::radioGroupButtons(
       NS(id, "label"),
       label = "Region",
       choices = labels,
-      options = list(dropdownParent = "body")
+      selected = labels[1],
+      size = "sm",
+      status = "outline-primary"
     ),
     shinyWidgets::radioGroupButtons(
       NS(id, "model"),
@@ -23,7 +25,7 @@ data_select_ui <- function(id) {
       NS(id, "datatype"),
       label = "Data type",
       choices = datatype_choices(start_region),
-      selected = "M₂ Elevation Amplitude",
+      selected = "M\u2082 Elevation Amplitude",
       size = "sm",
       status = "outline-primary"
     )
@@ -32,7 +34,7 @@ data_select_ui <- function(id) {
 
 # data types a region has layers for, in menu order
 datatype_choices = function(region) {
-  all_types = c("M₂ Elevation Amplitude", "Spring Tidal Range", "Seasonal Stratification",
+  all_types = c("M\u2082 Elevation Amplitude", "Spring Tidal Range", "Seasonal Stratification",
                 "Peak Bed Stress", "Peak Bed Stress (90th pct)", "Tidal Current",
                 "Water Depth", "Relative Sea Level", "Ice Thickness")
   prefixes = sapply(map_layers[all_types], `[[`, "prefix")

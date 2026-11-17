@@ -216,6 +216,19 @@
 .split-right {
   flex: var(--split-right) 1 0;
 }
+/* Each graph needs ~190px so its full-length y title fits beside it; when
+   the window is short the page scrolls rather than squashing the graphs */
+.split-left,
+.split-right {
+  min-height: 520px;
+}
+.split-right .plotly.html-widget {
+  min-height: 440px;
+  flex-shrink: 0;
+}
+.bslib-page-fill {
+  overflow-y: auto;
+}
 .split-handle {
   flex: 0 0 12px;
   position: relative;
@@ -250,8 +263,8 @@
   pointer-events: none;
 }
 
-/* too narrow for two 300px panes: stack them and hide the handle */
-@media (max-width: 679px) {
+/* too narrow for two panes plus their controls: stack them and hide the handle */
+@media (max-width: 824px) {
   .split-container {
     flex-direction: column;
     gap: 1rem;
@@ -272,10 +285,6 @@
   .split-right .plotly.html-widget {
     min-height: 600px;
     flex-shrink: 0;
-  }
-  /* the stacked content is taller than the window, so let the page scroll */
-  .bslib-page-fill {
-    overflow-y: auto;
   }
 }
 
