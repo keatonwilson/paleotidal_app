@@ -31,9 +31,9 @@ about_tab_ui <- function(id) {
                 shelf and the Patagonian Shelf and can be chosen under Data
                 Selection. Its hydrodynamics come from TELEMAC and are masked to
                 the shelf and to water at least 5 m deep. Bed shear stress is
-                the 90th percentile magnitude, combining M2, S2, K1 and O1;
-                unlike PALTIDE1 there are no bed stress vectors or tidal
-                currents. It adds the M2 elevation amplitude, the spring tidal
+                the 90th percentile magnitude, combining M2, S2, K1 and O1,
+                with approximate bed stress vectors; unlike PALTIDE1 there are
+                no tidal currents. It adds the M2 elevation amplitude, the spring tidal
                 range (2 × (M2 + S2)), and maps of relative sea level and ice
                 thickness, both interpolated from the Bradley reconstructions."
               ), 
