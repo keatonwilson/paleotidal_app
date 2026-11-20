@@ -355,10 +355,15 @@
    layers, so the map background is a mid grey rather than near-black */
 .leaflet-container {
   --map-bg: #ddd; /* Leaflet's own default */
-  background: var(--map-bg);
+  --map-line: #d3d3d3;
+  /* diagonal hatching marks cells with no model output (they are transparent
+     in the layer PNGs); the legend swatch uses the same value */
+  --map-hatch: repeating-linear-gradient(45deg, var(--map-bg) 0 4px, var(--map-line) 4px 5px);
+  background: var(--map-hatch);
 }
 [data-bs-theme="dark"] .leaflet-container {
   --map-bg: #495057;
+  --map-line: #505860;
 }
 [data-bs-theme="dark"] .leaflet-control.legend,
 [data-bs-theme="dark"] .leaflet-control-attribution {

@@ -7,8 +7,9 @@ map_ui <- function(id) {
 
 # Land, and water depth from shallow (light) to deep (dark). Baked into the
 # layers too, by data_pre_processing/build_backend.R. The light end of depth
-# stays darker than the ice colour (aliceblue) so shallow water doesn't look iced.
+# stays darker than the ice colour so shallow water doesn't look iced.
 land_col = "#c8b79a"
+ice_col = "#ffffff"
 depth_cols = c("#9ecae1", "#08306b")
 
 # What differs between data types: the layer file prefix and the legend.
@@ -124,10 +125,10 @@ map_server <- function(id,
 
       # not shown for RSL, which has no separate land/ice/no-output classes
       if (layer$prefix != "rsl") {
-        # cells without output are transparent, so no output shows the map
-        # background (--map-bg, style.css)
+        # cells without output are transparent, so no output shows the hatched
+        # map background (--map-hatch, style.css)
         mp = leaflet::addLegend(mp, "topright",
-                                colors = c(land_col, "aliceblue", "var(--map-bg)"),
+                                colors = c(land_col, ice_col, "var(--map-hatch)"),
                                 labels = c("Land", "Ice", "No model output"),
                                 opacity = 1)
       }
