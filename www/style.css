@@ -16,8 +16,24 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   border-radius: 0.75rem;
 }
+/* One spacing unit between Region, Model and Data type; the inputs and the
+   top row carry no bottom margin of their own */
+.selection-card {
+  --selection-gap: 0.75rem;
+}
 .selection-card .shiny-input-container {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0;
+}
+.selection-card .selection-top {
+  margin-bottom: 0;
+}
+.selection-card .selection-region-model {
+  display: flex;
+  flex-direction: column;
+  gap: var(--selection-gap);
+}
+.selection-card .selection-datatype {
+  margin-top: var(--selection-gap);
 }
 .selection-card .accordion-button {
   font-size: 1rem;

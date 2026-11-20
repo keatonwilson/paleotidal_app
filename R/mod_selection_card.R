@@ -20,11 +20,20 @@ selection_card_ui <- function(id, data_id, inputs_id) {
         span(class = "selection-summary",
              shiny::uiOutput(ns("summary"), inline = TRUE))
       ),
-      bslib::layout_columns(
-        col_widths = c(4, 8),
-        div(data_select_ui(data_id)),
-        div(input_ui(inputs_id))
-      )
+      {
+        data_ui <- data_select_ui(data_id)
+        tagList(
+          # Top row: Region and Model beside the year readout and slider
+          bslib::layout_columns(
+            class = "selection-top",
+            col_widths = c(5, 7),
+            div(class = "selection-region-model", data_ui$region_model),
+            div(input_ui(inputs_id))
+          ),
+          # Full-width row for the data type pills
+          div(class = "selection-datatype", data_ui$datatype)
+        )
+      }
     )
   )
 }

@@ -4,24 +4,28 @@ data_select_ui <- function(id) {
   # the region folder for the starting shelf and model run
   start_region = names(Filter(function(s) s$label == labels[1] && s$model == start_model,
                               statics))[1]
-  tagList(
-    shinyWidgets::radioGroupButtons(
-      NS(id, "label"),
-      label = "Region",
-      choices = labels,
-      selected = labels[1],
-      size = "sm",
-      status = "outline-primary"
+  # Returned in two parts so the card can put the datatype pills on their own
+  # full-width row: `region_model` (Region + Model) and `datatype`
+  list(
+    region_model = tagList(
+      shinyWidgets::radioGroupButtons(
+        NS(id, "label"),
+        label = "Region",
+        choices = labels,
+        selected = labels[1],
+        size = "sm",
+        status = "outline-primary"
+      ),
+      shinyWidgets::radioGroupButtons(
+        NS(id, "model"),
+        label = "Model",
+        choices = model_choices(labels[1]),
+        selected = start_model,
+        size = "sm",
+        status = "outline-primary"
+      )
     ),
-    shinyWidgets::radioGroupButtons(
-      NS(id, "model"),
-      label = "Model",
-      choices = model_choices(labels[1]),
-      selected = start_model,
-      size = "sm",
-      status = "outline-primary"
-    ),
-    shinyWidgets::radioGroupButtons(
+    datatype = shinyWidgets::radioGroupButtons(
       NS(id, "datatype"),
       label = "Data type",
       choices = datatype_choices(start_region),
