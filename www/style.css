@@ -24,17 +24,34 @@
 .selection-card .shiny-input-container {
   margin-bottom: 0;
 }
-.selection-card .selection-top {
-  margin-bottom: 0;
+.selection-card .selection-grid {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  grid-template-areas:
+    "region-model year"
+    "datatype datatype";
+  column-gap: 1rem;
+  row-gap: var(--selection-gap);
+}
+.selection-card .selection-region-model { grid-area: region-model; }
+.selection-card .selection-year { grid-area: year; min-width: 0; }
+.selection-card .selection-datatype { grid-area: datatype; }
+/* Stack below this page width: Region/Model, Data type, then the year block */
+@media (max-width: 824px) {
+  .selection-card .selection-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "region-model"
+      "datatype"
+      "year";
+  }
 }
 .selection-card .selection-region-model {
   display: flex;
   flex-direction: column;
   gap: var(--selection-gap);
 }
-.selection-card .selection-datatype {
-  margin-top: var(--selection-gap);
-}
+
 .selection-card .accordion-button {
   font-size: 1rem;
   background-color: transparent;

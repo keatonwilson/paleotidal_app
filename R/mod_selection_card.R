@@ -22,16 +22,14 @@ selection_card_ui <- function(id, data_id, inputs_id) {
       ),
       {
         data_ui <- data_select_ui(data_id)
-        tagList(
-          # Top row: Region and Model beside the year readout and slider
-          bslib::layout_columns(
-            class = "selection-top",
-            col_widths = c(5, 7),
-            div(class = "selection-region-model", data_ui$region_model),
-            div(input_ui(inputs_id))
-          ),
-          # Full-width row for the data type pills
-          div(class = "selection-datatype", data_ui$datatype)
+        # A CSS grid (see style.css) places the three blocks: wide, the year
+        # block sits beside Region/Model with Data type full width below;
+        # narrow, they stack as Region/Model, Data type, year block
+        div(
+          class = "selection-grid",
+          div(class = "selection-region-model", data_ui$region_model),
+          div(class = "selection-datatype", data_ui$datatype),
+          div(class = "selection-year", input_ui(inputs_id))
         )
       }
     )
