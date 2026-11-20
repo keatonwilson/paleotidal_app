@@ -5,7 +5,7 @@
 A Shiny app for exploring paleotidal model outputs (tidal amplitude, stratification,
 bed shear stress, tidal current, water depth, RSL, ice) over the last 21k years, from two
 model runs: PALTIDE1 (NW Europe) and PALTIDE2 (NW Europe and the Patagonian Shelf; no
-tidal current or bed stress vectors). Map images and a per-cell table are pre-built; the
+tidal current). Map images and a per-cell table are pre-built; the
 app only reads them.
 
 ## Layout
@@ -26,8 +26,10 @@ app only reads them.
   `cell`). `data/raw_shape/` — shapefiles. `data/raw/` — model transfers as delivered
   (x/y/value ascii; PALTIDE2 is `data/raw/Transfer2/{NWESS,Patagonia}`); gitignored.
 - `www/layers/<region>/` — one pre-rendered PNG per variable and year
-  (`amp_00.png` … `ice_21.png`) and, for PALTIDE1, the bed stress arrows per year
-  (`arrows_00.bin` …, plus `arrow_axes.json`), served as static files.
+  (`amp_00.png` … `ice_21.png`) and the bed stress arrows per year
+  (`arrows_00.bin` …, plus `arrow_axes.json`; years in `years$arrows`), served as
+  static files. PALTIDE2 arrows come from `ascii_bssvectors/` (lon/lat/u/v), whose
+  signs are opposite to PALTIDE1's; the build negates them into PALTIDE1's convention.
 - `data_pre_processing/` — not run by the app. In `build_backend.R`, `build_region()`
   builds `data/app/` and `www/layers/` from the long tables and raster bricks that
   `data_pre_process.R` writes; those inputs are no longer in the repo (git history
