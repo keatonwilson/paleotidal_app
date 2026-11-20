@@ -338,6 +338,24 @@
   --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
 }
 
+/* Coastline toggle: left aligned on the play button's row. The play button is
+   the last thing inside the slider, so the wrapper's bottom edge is its row. */
+.selection-card .slider-with-toggle {
+  position: relative;
+}
+.selection-card .coast-toggle {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  /* match the play button's height so the two centre on the same line */
+  height: calc(1.35rem + 8px);
+  display: flex;
+  align-items: center;
+}
+.selection-card .coast-toggle .form-switch {
+  margin-bottom: 0;
+}
+
 /* Playback controls: Shiny's default negative margin pulls them onto the
    slider scale, so push them down and enlarge them slightly */
 .selection-card .slider-animate-container {
