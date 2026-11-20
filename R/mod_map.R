@@ -46,10 +46,10 @@ map_layers = list(
 )
 
 # Stratification classes 1-3 (mixed, frontal/transitional, stratified), by
-# model run. PALTIDE2 follows the colours its modellers use (parula ends and
-# middle); PALTIDE1 keeps the colours baked into its layers.
+# model run. The colours are baked into the layer PNGs, so a change here needs a
+# rebuild (build_backend.R) and the legend follows it.
 strat_cols = list(PALTIDE1 = c("#43A2CA", "#A8DDB5", "#f1ffed"),
-                  PALTIDE2 = c("#3E26A8", "#13BEB9", "#F9FB15"))
+                  PALTIDE2 = c("#43A2CA", "#A8DDB5", "#f1ffed"))
 strat_labels = list(PALTIDE1 = c("Mixed", "Frontal", "Stratified"),
                     PALTIDE2 = c("Mixed", "Transitional", "Stratified"))
 
