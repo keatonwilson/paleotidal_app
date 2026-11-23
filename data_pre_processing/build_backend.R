@@ -18,7 +18,7 @@
 # Run from the project root: Rscript data_pre_processing/build_backend.R
 
 library(raster) # needed for `[[` on the saved RasterBrick objects
-source("R/mod_map.R") # land_col, depth_cols, strat_cols: shared with the map legend
+source("R/mod_map.R") # land_col, ice_col, depth_cols, strat_cols: shared with the map legend
 
 # modern coastline, cropped to the region plus the map's 10 degree pan margin. GSHHS
 # intermediate resolution (~1 km): finer detail would not line up with the
@@ -133,7 +133,7 @@ build_region = function(region, in_dir, view) {
   render_layers("bss", read_brick("bss_raster.rds"), function(layer) {
     leaflet::colorNumeric(palette = "viridis", domain = c(0, 15), na.color = land_col)
   })
-  render_layers("ice", read_brick("ice_raster.rds"), function(layer) "aliceblue")
+  render_layers("ice", read_brick("ice_raster.rds"), function(layer) ice_col)
 
   # Static bits -------------------------------------------------------------
 
@@ -271,7 +271,7 @@ build_paltide2 = function(region, label, view, dir) {
       checks[[year + 1]][[prefix]] = xyz[sample(nrow(xyz), 50)]
     }
     render("ice", year, ifelse(mask == 3, 1, NA),
-           function(v) ifelse(is.na(v), none_col, "aliceblue"))
+           function(v) ifelse(is.na(v), none_col, ice_col))
 
     cube[[year + 1]] = data.table::data.table(
       cell = wet_cells, year = year,
