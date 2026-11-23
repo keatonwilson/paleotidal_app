@@ -103,11 +103,11 @@ map_server <- function(id,
           if (show_ice) list(layer_msg("ice", inputs$yearBP, 2))
         ),
         # no arrows clears them
-        arrows = if (prefix == "bss") {
+        arrows = if (prefix %in% c("bss", "bss90") && inputs$yearBP %in% years$arrows) {
           list(url = arrow_url(inputs$yearBP),
                axes = sprintf("layers/%s/arrow_axes.json", region),
                # a list, so that one year is still sent as an array
-               preload = as.list(arrow_url(years$bss)))
+               preload = as.list(arrow_url(years$arrows)))
         }
       ))
     })

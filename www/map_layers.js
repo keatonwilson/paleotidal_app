@@ -132,7 +132,8 @@ var ArrowLayer = L.Layer.extend({
       var u = d[i + 2] / 100, v = d[i + 3] / 100, magnitude = Math.sqrt(u * u + v * v);
       if (!magnitude) continue;
       // Drawn in screen pixels so the direction is true on the map. Arrows
-      // point along (-u, -v), east and north, as the app always has. Length
+      // point along (-u, -v), east and north, as the app always has. PALTIDE2
+      // files are built in PALTIDE1's sign convention, so both draw alike. Length
       // grows with magnitude up to 2 N/m2, then stays capped.
       var length = maxLength * Math.min(1, Math.max(0.4, magnitude / 2));
       var dx = -u / magnitude, dy = v / magnitude;

@@ -142,7 +142,7 @@ build_region = function(region, in_dir, view) {
                xs = xs,
                ys = ys,
                bounds = bounds,
-               years = lapply(bounds, function(b) 0:21),
+               years = c(lapply(bounds, function(b) 0:21), list(arrows = 0:21)),
                raster_opts = raster_opts,
                coast = crop_coast(xs, ys),
                view = view),
@@ -170,8 +170,38 @@ build_region = function(region, in_dir, view) {
   message(region, ": built ", cube_path, " (", round(file.size(cube_path) / 1e6, 1), " MB)")
 }
 
+# Bed stress arrows for a Paltide2 region, from the lon/lat/u/v files in
+# `vec_dir` (bss_vectors_07.ascii, ...), in the same format as build_region()'s.
+# u and v are signed stress components in N/m2; their magnitude tracks the bss90
+# layer. Returns the years written, as not every region has every year.
+write_paltide2_arrows = function(vec_dir, layer_dir, xs, ys) {
+  # every 4th 0.02 degree cell: about PALTIDE1's arrow density (every 2nd of ~0.04)
+  arrow_stride = 4L
+  files = list.files(vec_dir, pattern = "^bss_vectors_\\d{2}\\.ascii$")
+  years = as.integer(sub("^bss_vectors_(\\d{2})\\.ascii$", "\\1", files))
+  for (i in seq_along(files)) {
+    xyuv = data.table::fread(file.path(vec_dir, files[i]), col.names = c("x", "y", "u", "v"))
+    ix = match(sprintf("%.4f", xyuv$x), sprintf("%.4f", xs)) - 1L
+    iy = match(sprintf("%.4f", xyuv$y), sprintf("%.4f", ys)) - 1L
+    stopifnot(!anyNA(ix), !anyNA(iy), !anyNA(xyuv$u), !anyNA(xyuv$v))
+    keep = ix %% arrow_stride == 0 & iy %% arrow_stride == 0 & sqrt(xyuv$u^2 + xyuv$v^2) > 0.1
+    # PALTIDE2's u, v are opposite in sign to PALTIDE1's (median 180 degrees
+    # apart on shared cells at 0 ka), so negate them into PALTIDE1's convention
+    values = rbind(ix[keep], iy[keep], round(-xyuv$u[keep] * 100), round(-xyuv$v[keep] * 100))
+    stopifnot(abs(values) < 2^15)
+    path = file.path(layer_dir, sprintf("arrows_%02d.bin", years[i]))
+    writeBin(as.integer(values), path, size = 2, endian = "little")
+    stopifnot(file.size(path) == sum(keep) * 8)
+  }
+  jsonlite::write_json(list(xs = xs, ys = ys, stride = arrow_stride),
+                       file.path(layer_dir, "arrow_axes.json"),
+                       auto_unbox = TRUE, digits = NA)
+  sort(years)
+}
+
 # Map layers and cube for a Paltide2 region, from the ascii transfer in `dir`
-# (x/y/value, one file per variable and year, e.g. ascii_bss/bss_07.ascii).
+# (x/y/value, one file per variable and year, e.g. ascii_bss/bss_07.ascii;
+# bed stress vectors are x/y/u/v in ascii_bssvectors/bss_vectors_07.ascii).
 # The land/ice/water mask, ice thickness and RSL cover the whole grid;
 # hydrodynamic output is cut to water >= 5 m on the shelf and sits on the same
 # grid.
@@ -306,6 +336,8 @@ build_paltide2 = function(region, label, view, dir) {
   rm(cube, tbl)
   gc()
 
+  arrow_years = write_paltide2_arrows(file.path(dir, "ascii_bssvectors"), layer_dir, xs, ys)
+
   # Static bits -------------------------------------------------------------
 
   saveRDS(list(label = label,
@@ -313,7 +345,7 @@ build_paltide2 = function(region, label, view, dir) {
                xs = xs,
                ys = ys,
                bounds = bounds,
-               years = lapply(bounds, function(b) 0:21),
+               years = c(lapply(bounds, function(b) 0:21), list(arrows = arrow_years)),
                raster_opts = raster_opts,
                coast = crop_coast(xs, ys),
                view = view),
