@@ -27,7 +27,7 @@ been idle takes about a minute to wake up.
 
 ## Outstanding issues (PALTIDE2 round 2)
 
-Status as of 2026-11-20. Round 2 is waiting on corrected files and answers from
+Status as of 2026-11-23. Round 2 is waiting on corrected files and answers from
 Sophie. The questions below are in an email drafted to her on 2026-11-20.
 
 ### Where the data is
@@ -59,27 +59,31 @@ because the first download had only years 00-17 for Patagonia.
   would be our workaround and not the model's correction. The `issue-115-patagonia-mask`
   branch has an unpushed commit that stops `build_paltide2()` when input folders
   are missing, and lets `build_backend.R` take region names as arguments.
-- **Patagonia vector gaps** (#113, PR #118). The vector files leave out 1.5% (0 ka)
+- **Patagonia vector gaps** (#113, PR #118, merged). The vector files leave out 1.5% (0 ka)
   to 6% (21 ka) of the shelf cells that have bss90 values. About 80% of those cells
   are above the 0.1 arrow threshold, and some reach 20-25 N/m². Question for Sophie:
   are these left out on purpose?
 
-### Open PRs to review
+### Merged, not yet viewed in a browser
 
-- **#116 (#112), strat colours.** The pixel check and load check pass. Not yet
-  viewed in a browser. A corrected NWESS delivery means a rebuild, which uses the
-  new `strat_cols`.
-- **#117 (#111), white ice and hatched no-output cells.** Not yet viewed in a
-  browser. The hatch (`#d3d3d3` on `#ddd`) may be too faint, and the hatched legend
-  swatch is untested. Everything outside the model grid is hatched too. The
-  technique for #109 (ice on the RSL tab) is still open, and dropping the ice
-  overlay there avoids the question.
+PRs #116, #117, #118 and #120 are merged into `main`. The load check passes on `main`,
+but none of this has been looked at in a running app yet.
+
+- **#116 (#112), strat colours.** The pixel check passes. A corrected NWESS delivery
+  means a rebuild, which uses the new `strat_cols`.
+- **#117 (#111), white ice and hatched no-output cells.** The hatch (`#d3d3d3` on
+  `#ddd`) may be too faint, and the hatched legend swatch is untested. Everything
+  outside the model grid is hatched too. The technique for #109 (ice on the RSL tab)
+  is still open, and dropping the ice overlay there avoids the question.
 - **#118 (#113), PALTIDE2 bed stress arrows.** The vector signs were kept. PALTIDE2's
   u, v point opposite to PALTIDE1's on shared cells (median 180°), so the build
-  negates them. The arrows haven't been viewed in a running app. The NWESS 10 ka
-  arrows come from the bad slice. If `ascii_bssvectors/` is missing,
-  `build_paltide2()` writes no arrows and doesn't fail, so check that it's present
-  before any rebuild.
+  negates them. The NWESS 10 ka arrows come from the bad slice. If
+  `ascii_bssvectors/` is missing, `build_paltide2()` writes no arrows and doesn't
+  fail, so check that it's present before any rebuild.
+- **#120 (#107, #108), selection card layout and time series markers.** The coastline
+  toggle is absolutely positioned to line up with the play button, so check it at
+  narrow widths and in dark mode. Issues #107 and #108 are still open on GitHub
+  because #120 doesn't close them. #109 was not addressed.
 
 ### When Sophie's files arrive
 
