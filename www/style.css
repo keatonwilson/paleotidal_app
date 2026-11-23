@@ -16,9 +16,42 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   border-radius: 0.75rem;
 }
-.selection-card .shiny-input-container {
-  margin-bottom: 0.25rem;
+/* One spacing unit between Region, Model and Data type; the inputs and the
+   top row carry no bottom margin of their own */
+.selection-card {
+  --selection-gap: 0.75rem;
 }
+.selection-card .shiny-input-container {
+  margin-bottom: 0;
+}
+.selection-card .selection-grid {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  grid-template-areas:
+    "region-model year"
+    "datatype datatype";
+  column-gap: 1rem;
+  row-gap: var(--selection-gap);
+}
+.selection-card .selection-region-model { grid-area: region-model; }
+.selection-card .selection-year { grid-area: year; min-width: 0; }
+.selection-card .selection-datatype { grid-area: datatype; }
+/* Stack below this page width: Region/Model, Data type, then the year block */
+@media (max-width: 824px) {
+  .selection-card .selection-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "region-model"
+      "datatype"
+      "year";
+  }
+}
+.selection-card .selection-region-model {
+  display: flex;
+  flex-direction: column;
+  gap: var(--selection-gap);
+}
+
 .selection-card .accordion-button {
   font-size: 1rem;
   background-color: transparent;
@@ -320,6 +353,24 @@
 [data-bs-theme="dark"] .selection-card .accordion-button:not(.collapsed)::after {
   --bs-accordion-btn-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23dee2e6'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
   --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
+}
+
+/* Coastline toggle: left aligned on the play button's row. The play button is
+   the last thing inside the slider, so the wrapper's bottom edge is its row. */
+.selection-card .slider-with-toggle {
+  position: relative;
+}
+.selection-card .coast-toggle {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  /* match the play button's height so the two centre on the same line */
+  height: calc(1.35rem + 8px);
+  display: flex;
+  align-items: center;
+}
+.selection-card .coast-toggle .form-switch {
+  margin-bottom: 0;
 }
 
 /* Playback controls: Shiny's default negative margin pulls them onto the

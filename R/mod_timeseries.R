@@ -38,9 +38,14 @@ empty_state = function(icon, text) {
              shiny::p(class = "mt-2 mb-0", text))
 }
 
+# marker colour by land type, shared by the graphs and the legend
+MARKER_COLOURS = c(water = "#6baed6", land = "#8b5a2b", ice = "#e5e7eb")
+
 # key to the marker shapes on the graphs (matches the symbols in ts_plot);
 # drawn in the current text colour so it follows light/dark mode
-marker_legend = function() {
+marker_legend = function(dark = FALSE) {
+  # filled markers are outlined in the line colour, as on the graphs
+  edge = ts_colours(dark)$line
   svg = function(shape) {
     shiny::HTML(paste0(
       "<svg width='14' height='14' viewBox='0 0 14 14' aria-hidden='true' ",
@@ -52,9 +57,14 @@ marker_legend = function() {
   }
   shiny::div(
     class = "d-flex justify-content-center flex-wrap gap-3 small text-body-secondary",
-    item("<circle cx='7' cy='7' r='4' stroke-width='0'/>", "Water"),
-    item("<polygon points='7,1.5 12.5,7 7,12.5 1.5,7' stroke-width='0'/>", "Land"),
-    item("<rect x='3' y='3' width='8' height='8' fill='none' stroke-width='2'/>", "Ice")
+    item(paste0("<circle cx='7' cy='7' r='4.5' fill='", MARKER_COLOURS[["water"]],
+                "' stroke='", edge, "' stroke-width='1'/>"), "Water"),
+    item(paste0("<polygon points='7,1 13,7 7,13 1,7' fill='",
+                MARKER_COLOURS[["land"]], "' stroke='", edge,
+                "' stroke-width='1'/>"), "Land"),
+    item(paste0("<polygon points='7,1.5 13,12 1,12' fill='",
+                MARKER_COLOURS[["ice"]], "' stroke='", edge,
+                "' stroke-width='1'/>"), "Ice")
   )
 }
 
@@ -95,21 +105,25 @@ axis_limits = function(data_range, pad, steps, lower = NULL) {
 }
 
 # one variable through time at the clicked cell: markers by land type on a line
-ts_plot = function(df, colour, label, yaxis) {
+ts_plot = function(df, line_colour, label, yaxis) {
+  land = as.character(df$land_type)
+  marker_colour = unname(MARKER_COLOURS[land])
   plotly::plot_ly(df, x = ~year, y = ~value) |>
-    plotly::add_lines(line = list(color = colour, width = 2),
+    plotly::add_lines(line = list(color = line_colour, width = 2),
                       hoverinfo = "skip") |>
-    plotly::add_markers(# symbols are set per point: plotly ignores the
+    plotly::add_markers(# alpha = 1: plotly's default makes markers translucent
+                        alpha = 1,
+                        # symbols are set per point: plotly ignores the
                         # `symbols` argument when a lines trace comes first
-                        # land slightly larger; ice drawn with a heavier
-                        # outline so the hollow marker reads clearly
-                        marker = list(color = colour,
+                        # land slightly larger
+                        marker = list(color = marker_colour,
                                       symbol = unname(c(water = "circle",
                                                         land = "diamond",
-                                                        ice = "square-open")[as.character(df$land_type)]),
-                                      size = ifelse(df$land_type == "land", 8.5, 8),
-                                      line = list(color = colour,
-                                                  width = ifelse(df$land_type == "ice", 2, 0))),
+                                                        ice = "triangle-up")[land]),
+                                      opacity = 1,
+                                      size = unname(c(water = 10, land = 10.5, ice = 11.5)[land]),
+                                      # every marker gets a line-coloured border
+                                      line = list(color = line_colour, width = 1)),
                         text = ~stringr::str_to_title(land_type),
                         hovertemplate = paste0(label, ": %{y} m<br>",
                                                "%{x}K BP · %{text}<extra></extra>")) |>
@@ -120,8 +134,10 @@ ts_plot = function(df, colour, label, yaxis) {
 
 # graph colours for the app's light/dark mode
 ts_colours = function(dark) {
-  if (dark) list(ink = "#cbd5e1", grid = "rgba(255,255,255,0.08)", accent = "#5eead4")
-  else list(ink = "#334155", grid = "rgba(15,23,42,0.08)", accent = "#0b6e7f")
+  if (dark) list(ink = "#cbd5e1", grid = "rgba(255,255,255,0.08)", accent = "#5eead4",
+                 line = "#94a3b8")
+  else list(ink = "#334155", grid = "rgba(15,23,42,0.08)", accent = "#0b6e7f",
+            line = "#4b5563")
 }
 
 # dashed line through both graphs at the year on the map, labelled above
@@ -207,7 +223,7 @@ time_series_server <- function(id,
 
     output$marker_legend = shiny::renderUI({
       req(!is.null(statics[[data$region]]$xs), click(), nrow(cell_data()) > 0)
-      marker_legend()
+      marker_legend(is_dark())
     })
 
     output$timeseries_plot = shiny::renderUI({
@@ -251,11 +267,11 @@ time_series_server <- function(id,
       marker = isolate(year_marker(as.numeric(inputs$yearBP), is_dark()))
 
       plotly::subplot(
-        ts_plot(rsl_data, "#1f77b4", "RSL",
+        ts_plot(rsl_data, ts_colours(is_dark())$line, "RSL",
                 list(title = "Relative sea level (m)",
                      range = rsl_axis$range,
                      tick0 = 0, dtick = rsl_axis$dtick)),
-        ts_plot(amp_data, "#33a02c", "M\u2082 amp",
+        ts_plot(amp_data, ts_colours(is_dark())$line, "M\u2082 amp",
                 list(title = "M\u2082 elevation amplitude (m)",
                      range = amp_axis$range,
                      tick0 = 0, dtick = amp_axis$dtick,
